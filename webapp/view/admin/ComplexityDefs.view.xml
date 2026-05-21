@@ -1,0 +1,53 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
+    controllerName="com.syntax.ricefbuilder.controller.admin.ComplexityDefs">
+    <Page title="Complexity Definitions" showNavButton="true" navButtonPress="onNavBack">
+        <headerContent>
+            <Button text="Add" icon="sap-icon://add" press="onAdd" type="Emphasized"/>
+        </headerContent>
+        <content>
+            <IconTabBar id="teamTabs" select="onTeamSelect" selectedKey="DEV">
+                <items>
+                    <IconTabFilter key="DEV" text="DEV" icon="sap-icon://developer-scenario"/>
+                    <IconTabFilter key="BI" text="BI" icon="sap-icon://business-objects-experience"/>
+                    <IconTabFilter key="MIGRATION" text="Migration" icon="sap-icon://database"/>
+                </items>
+            </IconTabBar>
+
+            <Table id="defsTable" items="{ path: 'defs>/' }">
+                <columns>
+                    <Column width="16rem"><Text text="Classification"/></Column>
+                    <Column hAlign="Center"><Text text="FUNC V.Low"/></Column>
+                    <Column hAlign="Center"><Text text="FUNC Low"/></Column>
+                    <Column hAlign="Center"><Text text="FUNC Med"/></Column>
+                    <Column hAlign="Center"><Text text="FUNC High"/></Column>
+                    <Column hAlign="Center"><Text text="FUNC V.High"/></Column>
+                    <Column hAlign="Center"><Text text="TECH V.Low"/></Column>
+                    <Column hAlign="Center"><Text text="TECH Low"/></Column>
+                    <Column hAlign="Center"><Text text="TECH Med"/></Column>
+                    <Column hAlign="Center"><Text text="TECH High"/></Column>
+                    <Column hAlign="Center"><Text text="TECH V.High"/></Column>
+                    <Column width="3rem"/>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <Select selectedKey="{defs>_classificationKey}" items="{ path: 'classifs>/' }"
+                            change="onClassificationChange">
+                            <core:Item key="{classifs>value}" text="{classifs>value}"/>
+                        </Select>
+                        <Input value="{defs>func_very_low}" type="Number" textAlign="Center" change="onFieldChange"/>
+                        <Input value="{defs>func_low}" type="Number" textAlign="Center" change="onFieldChange"/>
+                        <Input value="{defs>func_medium}" type="Number" textAlign="Center" change="onFieldChange"/>
+                        <Input value="{defs>func_high}" type="Number" textAlign="Center" change="onFieldChange"/>
+                        <Input value="{defs>func_very_high}" type="Number" textAlign="Center" change="onFieldChange"/>
+                        <Input value="{defs>tech_very_low}" type="Number" textAlign="Center" change="onFieldChange"/>
+                        <Input value="{defs>tech_low}" type="Number" textAlign="Center" change="onFieldChange"/>
+                        <Input value="{defs>tech_medium}" type="Number" textAlign="Center" change="onFieldChange"/>
+                        <Input value="{defs>tech_high}" type="Number" textAlign="Center" change="onFieldChange"/>
+                        <Input value="{defs>tech_very_high}" type="Number" textAlign="Center" change="onFieldChange"/>
+                        <Button icon="sap-icon://delete" type="Reject" press="onDelete"/>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+    </Page>
+</mvc:View>

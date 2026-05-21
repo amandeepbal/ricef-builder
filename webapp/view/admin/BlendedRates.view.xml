@@ -1,0 +1,54 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m"
+    controllerName="com.syntax.ricefbuilder.controller.admin.BlendedRates">
+    <Page title="Blended Rates" showNavButton="true" navButtonPress="onNavBack">
+        <headerContent>
+            <Button text="Save All" icon="sap-icon://save" press="onSaveAll" type="Emphasized"/>
+        </headerContent>
+        <content>
+            <IconTabBar id="teamTabs" select="onTabSelect">
+                <!-- Tabs built dynamically per team config -->
+            </IconTabBar>
+            <Panel headerText="Effort Multiplier by Complexity" class="sapUiSmallMargin">
+                <Table id="effortTable" items="{ path: 'rates>/effort_by_complexity' }">
+                    <columns>
+                        <Column><Text text="Complexity"/></Column>
+                        <Column width="10rem" hAlign="End"><Text text="Multiplier"/></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <Text text="{rates>complexity}"/>
+                            <StepInput value="{rates>multiplier}" min="0" max="10" step="0.01"
+                                displayValuePrecision="2" width="8rem" textAlign="End"/>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </Panel>
+            <Panel headerText="Delivery Levels &amp; Rates" class="sapUiSmallMargin">
+                <Table id="ratesTable" items="{ path: 'rates>/allRates' }">
+                    <columns>
+                        <Column><Text text="Level"/></Column>
+                        <Column width="6rem"><Text text="Currency"/></Column>
+                        <Column width="10rem" hAlign="End"><Text text="Billable Rate"/></Column>
+                        <Column width="10rem" hAlign="End"><Text text="Effort Mult."/></Column>
+                        <Column width="10rem" hAlign="End"><Text text="Blended Cost"/></Column>
+                        <Column width="10rem" hAlign="End"><Text text="Margin %"/></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <Text text="{rates>level_label}"/>
+                            <Text text="{rates>currency}"/>
+                            <StepInput value="{rates>billable_rate}" min="0" max="999" step="1"
+                                displayValuePrecision="2" width="8rem" textAlign="End"/>
+                            <StepInput value="{rates>effort_multiplier}" min="0" max="10" step="0.01"
+                                displayValuePrecision="2" width="8rem" textAlign="End"/>
+                            <StepInput value="{rates>blended_cost}" min="0" max="999" step="0.01"
+                                displayValuePrecision="2" width="8rem" textAlign="End"/>
+                            <StepInput value="{rates>margin_pct}" min="0" max="1" step="0.001"
+                                displayValuePrecision="3" width="8rem" textAlign="End"/>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </Panel>
+        </content>
+    </Page>
+</mvc:View>

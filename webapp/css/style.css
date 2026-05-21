@@ -1,0 +1,14 @@
+.ricefAppShell {
+    height: 100%;
+}
+.projectTile {
+    margin: 0.5rem;
+}
+.calcField {
+    font-weight: bold;
+}
+.separatorItem {
+    font-weight: bold;
+    font-style: italic;
+    color: #666;
+}

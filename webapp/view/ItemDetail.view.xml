@@ -1,0 +1,55 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.ui.layout.form"
+    controllerName="com.syntax.ricefbuilder.controller.ItemDetail">
+    <Page id="itemPage" title="{item>/ricef_number}" showNavButton="true" navButtonPress="onNavBack">
+        <headerContent>
+            <Button text="Recalculate" icon="sap-icon://synchronize" press="onRecalculate" type="Transparent"/>
+            <Button text="Save" icon="sap-icon://save" press="onSave" type="Emphasized"/>
+        </headerContent>
+        <content>
+            <Panel headerText="Identification" class="sapUiSmallMargin">
+                <f:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsL="2" columnsM="1">
+                    <Label text="RICEF #"/><Text text="{item>/ricef_number}"/>
+                    <Label text="Object Type"/><Text text="{item>/type_label}"/>
+                    <Label text="Backlog #"/><Input value="{item>/backlog_number}" change="onFieldChange"/>
+                    <Label text="Architecture #"/><Input value="{item>/architecture_ref}" change="onFieldChange"/>
+                    <Label text="TSA Group"/><Input value="{item>/tsa_group}" type="Number" change="onFieldChange"/>
+                    <Label text="TSA Process"/><Input value="{item>/tsa_process}" change="onFieldChange"/>
+                    <Label text="Module"/><Input value="{item>/module}" change="onFieldChange"/>
+                    <Label text="Predecessor"/><Input value="{item>/predecessor}" change="onFieldChange"/>
+                    <Label text="Description"/><Input value="{item>/description}" change="onFieldChange"/>
+                    <Label text="Design Notes"/><TextArea value="{item>/design_notes}" rows="3" change="onFieldChange"/>
+                    <Label text="Special Notes"/><TextArea value="{item>/special_notes}" rows="2" change="onFieldChange"/>
+                </f:SimpleForm>
+            </Panel>
+
+            <Panel headerText="Classification &amp; Effort" class="sapUiSmallMargin">
+                <f:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsL="2" columnsM="1">
+                    <Label text="Status"/><Select id="statusSelect" selectedKey="{item>/status}" change="onFieldChange"/>
+                    <Label text="Complexity"/><Select id="complexitySelect" selectedKey="{item>/complexity}" change="onFieldChange"/>
+                    <Label text="Classification"/><Select id="classificationSelect" selectedKey="{item>/classification}" change="onFieldChange"/>
+                    <Label text="FUNC Effort ADJ"/><StepInput value="{item>/func_effort_adj}" min="0" max="10" step="0.1" displayValuePrecision="1" change="onFieldChange"/>
+                    <Label text="FUNC Team"/><Select id="funcTeamSelect" selectedKey="{item>/func_team}" change="onFieldChange"/>
+                    <Label text="FUNC Role"/><Select id="funcRoleSelect" selectedKey="{item>/func_role}" change="onFieldChange"/>
+                    <Label text="TECH Effort ADJ"/><StepInput value="{item>/tech_effort_adj}" min="0" max="10" step="0.1" displayValuePrecision="1" change="onFieldChange"/>
+                    <Label text="TECH Team"/><Select id="techTeamSelect" selectedKey="{item>/tech_team}" change="onFieldChange"/>
+                    <Label text="TECH Role"/><Select id="techRoleSelect" selectedKey="{item>/tech_role}" change="onFieldChange"/>
+                </f:SimpleForm>
+            </Panel>
+
+            <Panel headerText="Calculated Effort" class="sapUiSmallMargin">
+                <f:SimpleForm layout="ResponsiveGridLayout" columnsL="3" columnsM="1">
+                    <Label text="Blended Multiplier"/><ObjectNumber number="{item>/blended_multiplier}" emphasized="true"/>
+                    <Label text="SUB Items FUNC"/><ObjectNumber number="{ path: 'item>/sub_items_func', formatter: '.formatter.hoursDisplay' }" unit="h"/>
+                    <Label text="SUB Items TECH"/><ObjectNumber number="{ path: 'item>/sub_items_tech', formatter: '.formatter.hoursDisplay' }" unit="h"/>
+                    <Label text="(BUILD) FUNC"/><ObjectNumber number="{ path: 'item>/build_func', formatter: '.formatter.hoursDisplay' }" unit="h"/>
+                    <Label text="(BUILD) TECH"/><ObjectNumber number="{ path: 'item>/build_tech', formatter: '.formatter.hoursDisplay' }" unit="h"/>
+                    <Label text="(SIT) FUNC"/><ObjectNumber number="{ path: 'item>/sit_func', formatter: '.formatter.hoursDisplay' }" unit="h"/>
+                    <Label text="(SIT) TECH"/><ObjectNumber number="{ path: 'item>/sit_tech', formatter: '.formatter.hoursDisplay' }" unit="h"/>
+                    <Label text="Total FUNC"/><ObjectNumber number="{ path: 'item>/total_func_hours', formatter: '.formatter.hoursDisplay' }" unit="h" state="Information"/>
+                    <Label text="Total TECH"/><ObjectNumber number="{ path: 'item>/total_tech_hours', formatter: '.formatter.hoursDisplay' }" unit="h" state="Information"/>
+                    <Label text="Grand Total"/><ObjectNumber number="{ path: 'item>/grand_total_hours', formatter: '.formatter.hoursDisplay' }" unit="h" state="Success" emphasized="true"/>
+                </f:SimpleForm>
+            </Panel>
+        </content>
+    </Page>
+</mvc:View>

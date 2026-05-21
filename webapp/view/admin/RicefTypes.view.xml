@@ -1,0 +1,36 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
+    controllerName="com.syntax.ricefbuilder.controller.admin.RicefTypes">
+    <Page title="RICEF Types" showNavButton="true" navButtonPress="onNavBack">
+        <headerContent>
+            <Button text="Add" icon="sap-icon://add" press="onAdd" type="Emphasized"/>
+        </headerContent>
+        <content>
+            <Table id="typesTable" items="{ path: 'types>/' }">
+                <columns>
+                    <Column width="4rem"><Text text="Code"/></Column>
+                    <Column><Text text="Label"/></Column>
+                    <Column width="6rem"><Text text="Seq From"/></Column>
+                    <Column width="6rem"><Text text="Seq To"/></Column>
+                    <Column width="8rem"><Text text="Sheet Type"/></Column>
+                    <Column width="5rem"><Text text="Active"/></Column>
+                    <Column width="5rem"><Text text="Action"/></Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <Text text="{types>code}"/>
+                        <Text text="{types>label}"/>
+                        <Text text="{types>seq_from}"/>
+                        <Text text="{types>seq_to}"/>
+                        <Text text="{types>sheet_type_code}"/>
+                        <Switch state="{types>is_active}" change="onToggle">
+                            <customData>
+                                <core:CustomData key="id" value="{types>id}"/>
+                            </customData>
+                        </Switch>
+                        <Button icon="sap-icon://edit" press="onEdit" type="Transparent"/>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+    </Page>
+</mvc:View>

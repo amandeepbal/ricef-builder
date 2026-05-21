@@ -1,0 +1,31 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:tnt="sap.tnt"
+    controllerName="com.syntax.ricefbuilder.controller.App">
+    <tnt:ToolPage id="toolPage" class="ricefAppShell">
+        <tnt:header>
+            <tnt:ToolHeader>
+                <Button icon="sap-icon://menu2" press="onToggleSideNav" type="Transparent"/>
+                <Title text="RICEFW Estimator" level="H4"/>
+                <ToolbarSpacer/>
+                <Button text="Admin" icon="sap-icon://settings" press="onNavToAdmin" type="Transparent"/>
+            </tnt:ToolHeader>
+        </tnt:header>
+        <tnt:sideContent>
+            <tnt:SideNavigation id="sideNav" selectedKey="home">
+                <tnt:NavigationList>
+                    <tnt:NavigationListItem text="Projects" icon="sap-icon://home" key="home" select="onNavHome"/>
+                    <tnt:NavigationListItem text="Admin" icon="sap-icon://settings" key="admin" select="onNavToAdmin">
+                        <tnt:NavigationListItem text="RICEF Types" key="adminRicefTypes" select="onNavAdmin"/>
+                        <tnt:NavigationListItem text="Estimation Grid" key="adminGrid" select="onNavAdmin"/>
+                        <tnt:NavigationListItem text="Blended Rates" key="adminRates" select="onNavAdmin"/>
+                        <tnt:NavigationListItem text="Complexity" key="adminComplexity" select="onNavAdmin"/>
+                        <tnt:NavigationListItem text="Dropdowns" key="adminDropdowns" select="onNavAdmin"/>
+                        <tnt:NavigationListItem text="Sheet Config" key="adminSheetConfig" select="onNavAdmin"/>
+                    </tnt:NavigationListItem>
+                </tnt:NavigationList>
+            </tnt:SideNavigation>
+        </tnt:sideContent>
+        <tnt:mainContents>
+            <NavContainer id="appNavContainer"/>
+        </tnt:mainContents>
+    </tnt:ToolPage>
+</mvc:View>

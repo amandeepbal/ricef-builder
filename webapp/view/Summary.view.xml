@@ -1,0 +1,307 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form" xmlns:l="sap.ui.layout"
+    controllerName="com.syntax.ricefbuilder.controller.Summary">
+    <Page id="summaryPage" title="Project Summary" showNavButton="true" navButtonPress="onNavBack">
+        <content>
+            <!-- Project Settings (Editable Control Section) -->
+            <Panel id="settingsPanel" headerText="Project Settings" expandable="true" expanded="false"
+                class="sapUiSmallMargin">
+                <Table id="controlTable" fixedLayout="true">
+                    <columns>
+                        <Column width="14rem"><Text text="Setting"/></Column>
+                        <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
+                        <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
+                        <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
+                        <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
+                        <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
+                        <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
+                        <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
+                        <Column hAlign="Center" width="6rem"><Text text="Extra"/></Column>
+                    </columns>
+                    <items>
+                        <!-- # of Weeks -->
+                        <ColumnListItem>
+                            <HBox alignItems="Center" class="sapUiSmallMarginBegin">
+                                <Text text="# of Weeks"/>
+                                <core:Icon src="sap-icon://hint" color="#0854a0" class="sapUiTinyMarginBegin"
+                                    tooltip="Source: SUMMARY sheet, row 4 (Orange Grid).&#10;&#10;Drives: Fixed role hours (hours/week x weeks), HYP calculation for fixed roles, and the Phases row in the summary grid."/>
+                            </HBox>
+                            <Input value="{ctrl>/phases/prep}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="phases"/></customData></Input>
+                            <Input value="{ctrl>/phases/fts}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="phases"/></customData></Input>
+                            <Input value="{ctrl>/phases/design}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="phases"/></customData></Input>
+                            <Input value="{ctrl>/phases/build}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="phases"/></customData></Input>
+                            <Input value="{ctrl>/phases/sit_uat}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="phases"/></customData></Input>
+                            <Input value="{ctrl>/phases/dep}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="phases"/></customData></Input>
+                            <Input value="{ctrl>/phases/hyp}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="phases"/></customData></Input>
+                            <Text text=""/>
+                        </ColumnListItem>
+                        <!-- PGO % -->
+                        <ColumnListItem>
+                            <HBox alignItems="Center" class="sapUiSmallMarginBegin">
+                                <Text text="PGO %"/>
+                                <core:Icon src="sap-icon://hint" color="#0854a0" class="sapUiTinyMarginBegin"
+                                    tooltip="Source: SUMMARY sheet, row 16 (% Calculated for Total Functional Hours).&#10;&#10;Drives: PGO (Project Governance Overhead) row in the summary. PGO = (FUNC total + TECH total) x PGO% per phase."/>
+                            </HBox>
+                            <Input value="{ctrl>/pgo/prep}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="pgo"/></customData></Input>
+                            <Input value="{ctrl>/pgo/fts}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="pgo"/></customData></Input>
+                            <Input value="{ctrl>/pgo/design}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="pgo"/></customData></Input>
+                            <Input value="{ctrl>/pgo/build}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="pgo"/></customData></Input>
+                            <Input value="{ctrl>/pgo/sit_uat}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="pgo"/></customData></Input>
+                            <Input value="{ctrl>/pgo/dep}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="pgo"/></customData></Input>
+                            <Input value="{ctrl>/pgo/hyp}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="pgo"/></customData></Input>
+                            <Text text=""/>
+                        </ColumnListItem>
+                        <!-- Contingency % -->
+                        <ColumnListItem>
+                            <HBox alignItems="Center" class="sapUiSmallMarginBegin">
+                                <Text text="Contingency %"/>
+                                <core:Icon src="sap-icon://hint" color="#0854a0" class="sapUiTinyMarginBegin"
+                                    tooltip="Source: FUNCTIONAL sheet, row 13 (FUNCT Architects, Functional).&#10;&#10;Drives: Applied as a multiplier on each Functional role's phase hours in the SUMMARY. E.g., BUILD contingency 15% means FUNC hours x 1.15. Also applied to the Architect row."/>
+                            </HBox>
+                            <Input value="{ctrl>/contingency/prep}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                            <Input value="{ctrl>/contingency/fts}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                            <Input value="{ctrl>/contingency/design}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                            <Input value="{ctrl>/contingency/build}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                            <Input value="{ctrl>/contingency/sit_uat}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                            <Input value="{ctrl>/contingency/dep}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                            <Input value="{ctrl>/contingency/hyp}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                            <Text text=""/>
+                        </ColumnListItem>
+                        <!-- Functional Phase % -->
+                        <ColumnListItem>
+                            <HBox alignItems="Center" class="sapUiSmallMarginBegin">
+                                <Text text="FUNC Phase %"/>
+                                <core:Icon src="sap-icon://hint" color="#0854a0" class="sapUiTinyMarginBegin"
+                                    tooltip="Source: FUNCTIONAL sheet, rows 7-8 (Scope - Split per Phase %).&#10;&#10;Drives: How FUNCTIONAL scope item hours are distributed across phases. E.g., PREP=15% means 15% of each role's scope hours go to the PREP phase. Must sum to ~100% (excl. HYP which is additive). Arch% sets the Architect row as a % of total FUNC hours."/>
+                            </HBox>
+                            <Input value="{ctrl>/funcPhasePct/prep}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                            <Input value="{ctrl>/funcPhasePct/fts}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                            <Input value="{ctrl>/funcPhasePct/design}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                            <Input value="{ctrl>/funcPhasePct/build}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                            <Input value="{ctrl>/funcPhasePct/sit_uat}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                            <Input value="{ctrl>/funcPhasePct/dep}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                            <Input value="{ctrl>/funcPhasePct/hyp}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                            <VBox>
+                                <Label text="Arch %" design="Bold"/>
+                                <Input value="{ctrl>/funcPhasePct/architect_pct}" type="Number" textAlign="Center" change="onCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                            </VBox>
+                        </ColumnListItem>
+                        <!-- Lead / Consultant Split -->
+                        <ColumnListItem>
+                            <HBox alignItems="Center" class="sapUiSmallMarginBegin">
+                                <Text text="Lead / Consultant Split"/>
+                                <core:Icon src="sap-icon://hint" color="#0854a0" class="sapUiTinyMarginBegin"
+                                    tooltip="Source: SUMMARY sheet, rows 21-22 (OG Split between Lead and Consultant).&#10;&#10;Drives: The Lead and Consultant columns in the Functional Scope table. Each role's total FUNC hours are multiplied by these splits (e.g., Lead=0.23 means 23% of hours assigned to Lead)."/>
+                            </HBox>
+                            <Text text=""/>
+                            <Text text=""/>
+                            <Text text=""/>
+                            <Text text=""/>
+                            <Text text=""/>
+                            <Text text=""/>
+                            <Text text=""/>
+                            <HBox justifyContent="Center">
+                                <VBox class="sapUiTinyMarginEnd">
+                                    <Label text="Lead" design="Bold"/>
+                                    <Input value="{ctrl>/pgo/lead_split}" type="Number" textAlign="Center" width="4rem" change="onCtrlChange"><customData><core:CustomData key="s" value="pgo"/></customData></Input>
+                                </VBox>
+                                <VBox>
+                                    <Label text="Cons" design="Bold"/>
+                                    <Input value="{ctrl>/pgo/consultant_split}" type="Number" textAlign="Center" width="4rem" change="onCtrlChange"><customData><core:CustomData key="s" value="pgo"/></customData></Input>
+                                </VBox>
+                            </HBox>
+                        </ColumnListItem>
+                        <!-- Item Calculation Factors -->
+                        <ColumnListItem highlight="Warning">
+                            <HBox alignItems="Center" class="sapUiSmallMarginBegin">
+                                <Text text="Item Factors (recalc)"/>
+                                <core:Icon src="sap-icon://hint" color="#bb0000" class="sapUiTinyMarginBegin"
+                                    tooltip="Source: Each sheet's row 48 (CONT and SIT % cells).&#10;&#10;Drives: Per-item BUILD and SIT calculations. FUNC Cont% (default 0) is applied to BUILD FUNC. TECH Cont% (default 15%) is applied to BUILD TECH. SIT FUNC% (default 10%) and SIT TECH% (default 12%) determine SIT hours from BUILD hours.&#10;&#10;WARNING: Changing these triggers a full recalculation of ALL items in the project."/>
+                            </HBox>
+                            <VBox>
+                                <Label text="FUNC Cont%" design="Bold"/>
+                                <Input value="{ctrl>/factors/cont_func_pct}" type="Number" textAlign="Center" change="onFactorsChange"/>
+                            </VBox>
+                            <VBox>
+                                <Label text="TECH Cont%" design="Bold"/>
+                                <Input value="{ctrl>/factors/cont_tech_pct}" type="Number" textAlign="Center" change="onFactorsChange"/>
+                            </VBox>
+                            <VBox>
+                                <Label text="SIT FUNC%" design="Bold"/>
+                                <Input value="{ctrl>/factors/sit_func_pct}" type="Number" textAlign="Center" change="onFactorsChange"/>
+                            </VBox>
+                            <VBox>
+                                <Label text="SIT TECH%" design="Bold"/>
+                                <Input value="{ctrl>/factors/sit_tech_pct}" type="Number" textAlign="Center" change="onFactorsChange"/>
+                            </VBox>
+                            <Text text=""/>
+                            <Text text=""/>
+                            <Text text=""/>
+                            <Text text=""/>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </Panel>
+
+            <!-- Orange Grid: Project phases -->
+            <Panel headerText="Project Phases" expandable="true" expanded="true" class="sapUiSmallMargin">
+                <Table id="phasesTable" items="{ path: 'summary>/phases' }">
+                    <columns>
+                        <Column/><Column hAlign="End"><Text text="PREP"/></Column>
+                        <Column hAlign="End"><Text text="FTS"/></Column>
+                        <Column hAlign="End"><Text text="DESIGN"/></Column>
+                        <Column hAlign="End"><Text text="BUILD"/></Column>
+                        <Column hAlign="End"><Text text="SIT/UAT"/></Column>
+                        <Column hAlign="End"><Text text="DEP"/></Column>
+                        <Column hAlign="End"><Text text="HYP"/></Column>
+                        <Column hAlign="End"><Text text="TOTAL"/></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem highlight="{= ${summary>highlight} || 'None' }">
+                            <Text text="{summary>role}"/>
+                            <ObjectNumber number="{summary>prep}"/><ObjectNumber number="{summary>fts}"/>
+                            <ObjectNumber number="{summary>design}"/><ObjectNumber number="{summary>build}"/>
+                            <ObjectNumber number="{summary>sit_uat}"/><ObjectNumber number="{summary>dep}"/>
+                            <ObjectNumber number="{summary>hyp}"/>
+                            <ObjectNumber number="{summary>total}" emphasized="true"/>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </Panel>
+
+            <!-- Functional Effort by Role by Phase -->
+            <Panel headerText="Functional Scope" expandable="true" expanded="true" class="sapUiSmallMargin">
+                <Table id="archTable" items="{ path: 'summary>/funcArchRows' }">
+                    <columns>
+                        <Column/><Column><Text text="Role"/></Column>
+                        <Column hAlign="End"><Text text="PREP"/></Column>
+                        <Column hAlign="End"><Text text="FTS"/></Column>
+                        <Column hAlign="End"><Text text="DESIGN"/></Column>
+                        <Column hAlign="End"><Text text="BUILD"/></Column>
+                        <Column hAlign="End"><Text text="SIT/UAT"/></Column>
+                        <Column hAlign="End"><Text text="DEP"/></Column>
+                        <Column hAlign="End"><Text text="HYP"/></Column>
+                        <Column hAlign="End"><Text text="TOTAL"/></Column>
+                        <Column hAlign="End"><Text text="Lead"/></Column>
+                        <Column hAlign="End"><Text text="Consultant"/></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <Text text="FUNC"/>
+                            <Text text="{summary>role}"/>
+                            <ObjectNumber number="{summary>prep}"/><ObjectNumber number="{summary>fts}"/>
+                            <ObjectNumber number="{summary>design}"/><ObjectNumber number="{summary>build}"/>
+                            <ObjectNumber number="{summary>sit_uat}"/><ObjectNumber number="{summary>dep}"/>
+                            <ObjectNumber number="{summary>hyp}"/>
+                            <ObjectNumber number="{summary>total}" emphasized="true"/>
+                            <ObjectNumber number="{summary>lead}"/>
+                            <ObjectNumber number="{summary>consultant}"/>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </Panel>
+
+            <!-- Technical DEV -->
+            <Panel headerText="Technical - Development" expandable="true" expanded="true" class="sapUiSmallMargin">
+                <Table id="devTable" items="{ path: 'summary>/techDev' }">
+                    <columns>
+                        <Column><Text text="Role"/></Column>
+                        <Column hAlign="End"><Text text="PREP"/></Column>
+                        <Column hAlign="End"><Text text="FTS"/></Column>
+                        <Column hAlign="End"><Text text="DESIGN"/></Column>
+                        <Column hAlign="End"><Text text="BUILD"/></Column>
+                        <Column hAlign="End"><Text text="SIT/UAT"/></Column>
+                        <Column hAlign="End"><Text text="DEP"/></Column>
+                        <Column hAlign="End"><Text text="HYP"/></Column>
+                        <Column hAlign="End"><Text text="TOTAL"/></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <Text text="{summary>role}"/>
+                            <ObjectNumber number="{summary>prep}"/><ObjectNumber number="{summary>fts}"/>
+                            <ObjectNumber number="{summary>design}"/><ObjectNumber number="{summary>build}"/>
+                            <ObjectNumber number="{summary>sit_uat}"/><ObjectNumber number="{summary>dep}"/>
+                            <ObjectNumber number="{summary>hyp}"/>
+                            <ObjectNumber number="{summary>total}" emphasized="true"/>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+                <Panel id="devBlendedPanel" headerText="DEV Blended Rate" class="sapUiSmallMarginTop"/>
+            </Panel>
+
+            <!-- Technical BI -->
+            <Panel headerText="Technical - BI" expandable="true" expanded="true" class="sapUiSmallMargin">
+                <Table id="biTable" items="{ path: 'summary>/techBi' }">
+                    <columns>
+                        <Column><Text text="Role"/></Column>
+                        <Column hAlign="End"><Text text="PREP"/></Column>
+                        <Column hAlign="End"><Text text="FTS"/></Column>
+                        <Column hAlign="End"><Text text="DESIGN"/></Column>
+                        <Column hAlign="End"><Text text="BUILD"/></Column>
+                        <Column hAlign="End"><Text text="SIT/UAT"/></Column>
+                        <Column hAlign="End"><Text text="DEP"/></Column>
+                        <Column hAlign="End"><Text text="HYP"/></Column>
+                        <Column hAlign="End"><Text text="TOTAL"/></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <Text text="{summary>role}"/>
+                            <ObjectNumber number="{summary>prep}"/><ObjectNumber number="{summary>fts}"/>
+                            <ObjectNumber number="{summary>design}"/><ObjectNumber number="{summary>build}"/>
+                            <ObjectNumber number="{summary>sit_uat}"/><ObjectNumber number="{summary>dep}"/>
+                            <ObjectNumber number="{summary>hyp}"/>
+                            <ObjectNumber number="{summary>total}" emphasized="true"/>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+                <Panel id="biBlendedPanel" headerText="BI Blended Rate" class="sapUiSmallMarginTop"/>
+            </Panel>
+
+            <!-- Technical MIGRATION -->
+            <Panel headerText="Technical - Migration" expandable="true" expanded="true" class="sapUiSmallMargin">
+                <Table id="migTable" items="{ path: 'summary>/techMig' }">
+                    <columns>
+                        <Column><Text text="Role"/></Column>
+                        <Column hAlign="End"><Text text="PREP"/></Column>
+                        <Column hAlign="End"><Text text="FTS"/></Column>
+                        <Column hAlign="End"><Text text="DESIGN"/></Column>
+                        <Column hAlign="End"><Text text="BUILD"/></Column>
+                        <Column hAlign="End"><Text text="SIT/UAT"/></Column>
+                        <Column hAlign="End"><Text text="DEP"/></Column>
+                        <Column hAlign="End"><Text text="HYP"/></Column>
+                        <Column hAlign="End"><Text text="TOTAL"/></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <Text text="{summary>role}"/>
+                            <ObjectNumber number="{summary>prep}"/><ObjectNumber number="{summary>fts}"/>
+                            <ObjectNumber number="{summary>design}"/><ObjectNumber number="{summary>build}"/>
+                            <ObjectNumber number="{summary>sit_uat}"/><ObjectNumber number="{summary>dep}"/>
+                            <ObjectNumber number="{summary>hyp}"/>
+                            <ObjectNumber number="{summary>total}" emphasized="true"/>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+                <Panel id="migBlendedPanel" headerText="Migration Blended Rate" class="sapUiSmallMarginTop"/>
+            </Panel>
+
+            <!-- Grand Totals -->
+            <Panel headerText="Grand Totals" expandable="true" expanded="true" class="sapUiSmallMargin">
+                <HBox class="sapUiSmallMargin" justifyContent="SpaceAround">
+                    <VBox alignItems="Center">
+                        <Label text="Items"/><ObjectNumber id="totalItems" number="0" emphasized="true"/>
+                    </VBox>
+                    <VBox alignItems="Center">
+                        <Label text="Functional"/><ObjectNumber id="totalFunc" number="0" unit="h" state="Information"/>
+                    </VBox>
+                    <VBox alignItems="Center">
+                        <Label text="Technical"/><ObjectNumber id="totalTech" number="0" unit="h" state="Information"/>
+                    </VBox>
+                    <VBox alignItems="Center">
+                        <Label text="Grand Total"/><ObjectNumber id="totalGrand" number="0" unit="h" state="Success" emphasized="true"/>
+                    </VBox>
+                </HBox>
+            </Panel>
+        </content>
+    </Page>
+</mvc:View>

@@ -1,0 +1,44 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
+    controllerName="com.syntax.ricefbuilder.controller.admin.SheetConfig">
+    <Page title="Sheet Column Configuration" showNavButton="true" navButtonPress="onNavBack">
+        <headerContent>
+            <Button text="Save" icon="sap-icon://save" press="onSave" type="Emphasized"/>
+        </headerContent>
+        <subHeader>
+            <Toolbar>
+                <Label text="Sheet Type:"/>
+                <Select id="sheetSelect" change="onSheetChange">
+                    <items>
+                        <core:Item key="RICEF" text="RICEF"/>
+                        <core:Item key="BI" text="BI"/>
+                        <core:Item key="MIGRATION" text="MIGRATION"/>
+                    </items>
+                </Select>
+            </Toolbar>
+        </subHeader>
+        <content>
+            <Table id="colsTable" items="{ path: 'cols>/' }">
+                <columns>
+                    <Column width="4rem"><Text text="Order"/></Column>
+                    <Column><Text text="Column Key"/></Column>
+                    <Column><Text text="Label"/></Column>
+                    <Column width="6rem"><Text text="Type"/></Column>
+                    <Column width="5rem"><Text text="Visible"/></Column>
+                    <Column width="5rem"><Text text="Editable"/></Column>
+                    <Column width="7rem"><Text text="Width"/></Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <Input value="{cols>sort_order}" type="Number" width="3rem"/>
+                        <Text text="{cols>column_key}"/>
+                        <Input value="{cols>column_label}"/>
+                        <Text text="{cols>data_type}"/>
+                        <CheckBox selected="{cols>is_visible}"/>
+                        <CheckBox selected="{cols>is_editable}"/>
+                        <Input value="{cols>width}" width="5rem"/>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+    </Page>
+</mvc:View>

@@ -1,0 +1,37 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m"
+    controllerName="com.syntax.ricefbuilder.controller.Home">
+    <Page title="Projects" id="homePage">
+        <headerContent>
+            <Button text="New Project" icon="sap-icon://add" press="onCreateProject" type="Emphasized"/>
+        </headerContent>
+        <content>
+            <Table id="projectTable" items="{ path: 'projects>/' }"
+                noDataText="No projects yet. Create your first estimation project to get started."
+                growing="true" growingThreshold="50">
+                <columns>
+                    <Column width="8rem"><Text text="Project #"/></Column>
+                    <Column><Text text="Description"/></Column>
+                    <Column width="6rem" hAlign="Center"><Text text="Currency"/></Column>
+                    <Column width="5rem" hAlign="Center"><Text text="Level"/></Column>
+                    <Column width="5rem" hAlign="Center"><Text text="Items"/></Column>
+                    <Column width="10rem"><Text text="Created"/></Column>
+                    <Column width="6rem" hAlign="Center"><Text text="Actions"/></Column>
+                </columns>
+                <items>
+                    <ColumnListItem type="Navigation" press="onProjectPress">
+                        <Text text="{projects>project_number}"/>
+                        <Text text="{projects>description}"/>
+                        <Text text="{projects>currency}"/>
+                        <Text text="{projects>delivery_level}"/>
+                        <ObjectNumber number="{projects>item_count}" emphasized="false"/>
+                        <Text text="{projects>created_at}"/>
+                        <HBox>
+                            <Button icon="sap-icon://copy" tooltip="Copy as Template" type="Transparent" press="onCopyProject"/>
+                            <Button icon="sap-icon://delete" tooltip="Delete" type="Transparent" press="onDeleteProject"/>
+                        </HBox>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+    </Page>
+</mvc:View>

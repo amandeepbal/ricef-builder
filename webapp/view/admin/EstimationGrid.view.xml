@@ -1,0 +1,39 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m"
+    controllerName="com.syntax.ricefbuilder.controller.admin.EstimationGrid">
+    <Page title="Estimation Grid" showNavButton="true" navButtonPress="onNavBack">
+        <subHeader>
+            <Toolbar>
+                <SearchField width="15rem" search="onSearch" id="gridSearch"/>
+                <ToolbarSpacer/>
+                <Label text="Filter by FRICE:"/>
+                <Select id="friceFilter" change="onFilter">
+                    <items><core:Item xmlns:core="sap.ui.core" key="" text="All"/></items>
+                </Select>
+            </Toolbar>
+        </subHeader>
+        <content>
+            <Table id="gridTable" items="{ path: 'grid>/' }" growing="true" growingThreshold="100">
+                <columns>
+                    <Column><Text text="FRICE"/></Column>
+                    <Column><Text text="Classification"/></Column>
+                    <Column><Text text="Complexity"/></Column>
+                    <Column hAlign="End"><Text text="Baseline"/></Column>
+                    <Column hAlign="End"><Text text="FUNC Total"/></Column>
+                    <Column hAlign="End"><Text text="TECH Total"/></Column>
+                    <Column hAlign="End"><Text text="Grand Total"/></Column>
+                </columns>
+                <items>
+                    <ColumnListItem type="Navigation" press="onRowPress">
+                        <Text text="{grid>frice}"/>
+                        <Text text="{grid>classification}"/>
+                        <Text text="{grid>complexity}"/>
+                        <ObjectNumber number="{grid>baseline}" unit="h"/>
+                        <ObjectNumber number="{grid>total_func}" unit="h"/>
+                        <ObjectNumber number="{grid>total_tech}" unit="h"/>
+                        <ObjectNumber number="{grid>grand_total}" unit="h" emphasized="true"/>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+    </Page>
+</mvc:View>

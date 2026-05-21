@@ -1,0 +1,39 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
+    controllerName="com.syntax.ricefbuilder.controller.admin.AdminMain">
+    <Page title="Administration" showNavButton="true" navButtonPress="onNavBack">
+        <content>
+            <FlexBox wrap="Wrap" justifyContent="Center" class="sapUiMediumMargin">
+                <GenericTile header="RICEF Types" subheader="Manage object types and sequence ranges"
+                    press="onNav" class="projectTile">
+                    <customData><core:CustomData key="key" value="adminRicefTypes"/></customData>
+                    <TileContent><ImageContent src="sap-icon://customize"/></TileContent>
+                </GenericTile>
+                <GenericTile header="Estimation Grid" subheader="Baseline hours per type/complexity"
+                    press="onNav" class="projectTile">
+                    <customData><core:CustomData key="key" value="adminGrid"/></customData>
+                    <TileContent><ImageContent src="sap-icon://grid"/></TileContent>
+                </GenericTile>
+                <GenericTile header="Blended Rates" subheader="Delivery levels and billing rates"
+                    press="onNav" class="projectTile">
+                    <customData><core:CustomData key="key" value="adminRates"/></customData>
+                    <TileContent><ImageContent src="sap-icon://money-bills"/></TileContent>
+                </GenericTile>
+                <GenericTile header="Complexity" subheader="Complexity definitions and factors"
+                    press="onNav" class="projectTile">
+                    <customData><core:CustomData key="key" value="adminComplexity"/></customData>
+                    <TileContent><ImageContent src="sap-icon://measuring-point"/></TileContent>
+                </GenericTile>
+                <GenericTile header="Dropdowns" subheader="Picklist values for all fields"
+                    press="onNav" class="projectTile">
+                    <customData><core:CustomData key="key" value="adminDropdowns"/></customData>
+                    <TileContent><ImageContent src="sap-icon://drop-down-list"/></TileContent>
+                </GenericTile>
+                <GenericTile header="Sheet Config" subheader="Column visibility and labels"
+                    press="onNav" class="projectTile">
+                    <customData><core:CustomData key="key" value="adminSheetConfig"/></customData>
+                    <TileContent><ImageContent src="sap-icon://table-column"/></TileContent>
+                </GenericTile>
+            </FlexBox>
+        </content>
+    </Page>
+</mvc:View>

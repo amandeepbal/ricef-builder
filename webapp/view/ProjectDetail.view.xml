@@ -1,0 +1,183 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
+    controllerName="com.syntax.ricefbuilder.controller.ProjectDetail">
+    <Page id="projectPage" title="{viewModel>/title}" showNavButton="true" navButtonPress="onNavBack">
+        <headerContent>
+            <Button text="Summary" icon="sap-icon://chart-table-view" press="onNavSummary" type="Transparent"/>
+            <Button text="Recalculate All" icon="sap-icon://synchronize" press="onRecalcAll" type="Transparent"/>
+        </headerContent>
+        <content>
+            <IconTabBar id="sheetTabs" select="onTabSelect" selectedKey="RICEF">
+                <!-- Tabs built dynamically from sheet_types -->
+            </IconTabBar>
+
+            <!-- RICEF / BI / MIGRATION Items Table -->
+            <VBox id="itemsPanel" visible="{viewModel>/showItems}">
+                <!-- Per-sheet control section -->
+                <Panel headerText="Control Section (per Week Hours)" expandable="true" expanded="false" class="sapUiSmallMargin">
+                    <Table id="sheetControlTable" fixedLayout="true">
+                        <columns>
+                            <Column width="14rem"><Text text="Setting"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
+                        </columns>
+                    </Table>
+                </Panel>
+
+                <!-- Purple Grid (Staffing Explosion) -->
+                <Panel id="purpleGridPanel" headerText="Staffing Explosion (Purple Grid)" expandable="true" expanded="false"
+                    class="sapUiSmallMargin" visible="{viewModel>/showItems}" expand="onPurpleGridExpand">
+                    <core:HTML id="purpleGridHtml" content="&lt;div id='purpleGridContainer'&gt;&lt;/div&gt;"
+                        afterRendering="onPurpleGridAfterRendering"/>
+                </Panel>
+
+                <Toolbar class="sapUiSmallMarginTop">
+                    <Title text="Items" level="H5"/>
+                    <ToolbarSpacer/>
+                    <SearchField width="20rem" search="onSearch" id="searchField"/>
+                    <Button text="Add Item" icon="sap-icon://add" press="onAddItem" type="Emphasized"/>
+                    <Button text="Delete" icon="sap-icon://delete" press="onDeleteItems" type="Reject"/>
+                </Toolbar>
+
+                <Table id="itemsTable" mode="MultiSelect" growing="true" growingThreshold="200"
+                       items="{ path: 'items>/', factory: '.itemFactory' }">
+                    <columns>
+                        <Column width="8rem"><Text text="RICEF #"/></Column>
+                        <Column width="10rem"><Text text="Type"/></Column>
+                        <Column width="6rem"><Text text="Module"/></Column>
+                        <Column minScreenWidth="Tablet"><Text text="Description"/></Column>
+                        <Column width="7rem"><Text text="Status"/></Column>
+                        <Column width="10rem"><Text text="Classification"/></Column>
+                        <Column width="8rem"><Text text="Complexity"/></Column>
+                        <Column width="6rem" hAlign="End"><Text text="FUNC Hrs"/></Column>
+                        <Column width="6rem" hAlign="End"><Text text="TECH Hrs"/></Column>
+                        <Column width="6rem" hAlign="End"><Text text="Total Hrs"/></Column>
+                    </columns>
+                </Table>
+            </VBox>
+
+            <!-- ANALYTICS Dashboard -->
+            <VBox id="analyticsPanel" visible="{viewModel>/showAnalytics}" class="sapUiSmallMargin">
+                <core:HTML id="analyticsHtml" content="&lt;div id='analyticsContainer'&gt;&lt;/div&gt;"/>
+            </VBox>
+
+            <!-- FUNCTIONAL Scope Items -->
+            <VBox id="functionalPanel" visible="{viewModel>/showFunctional}" class="sapUiSmallMargin">
+                <!-- Distribution / Contingency / Architect — mirrors Excel FUNCTIONAL sheet control section -->
+                <Panel headerText="Distribution &amp; Contingency" expandable="true" expanded="true">
+                    <Table id="funcControlTable" fixedLayout="true">
+                        <columns>
+                            <Column width="16rem"><Text text="Setting"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <Text text="FUNC Scope - Split per Phase %" class="sapUiSmallMarginBegin"/>
+                                <Input value="{ctrl>/funcPhasePct/prep}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/fts}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/design}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/build}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/sit_uat}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/dep}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/hyp}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                            </ColumnListItem>
+                            <ColumnListItem>
+                                <Text text="% Architect" class="sapUiSmallMarginBegin"/>
+                                <Input value="{ctrl>/funcPhasePct/architect_pct}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Text text=""/>
+                                <Text text=""/>
+                                <Text text=""/>
+                                <Text text=""/>
+                                <Text text=""/>
+                                <Text text=""/>
+                            </ColumnListItem>
+                            <ColumnListItem>
+                                <Text text="Contingency (% per Phase)" class="sapUiSmallMarginBegin"/>
+                                <Input value="{ctrl>/contingency/prep}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/fts}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/design}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/build}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/sit_uat}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/dep}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/hyp}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </Panel>
+
+                <!-- Scope Config -->
+                <Panel headerText="Scope Configuration (Baseline Hours)" expandable="true" expanded="false">
+                    <Table id="scopeConfigTable" fixedLayout="true">
+                        <columns>
+                            <Column hAlign="Center"><Text text="Low"/></Column>
+                            <Column hAlign="Center"><Text text="Medium"/></Column>
+                            <Column hAlign="Center"><Text text="High"/></Column>
+                            <Column hAlign="Center"><Text text="KDD"/></Column>
+                            <Column hAlign="Center"><Text text="IP"/></Column>
+                            <Column hAlign="Center"><Text text="Multiplier"/></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <Input value="{scope>/config/low_hours}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
+                                <Input value="{scope>/config/medium_hours}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
+                                <Input value="{scope>/config/high_hours}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
+                                <Input value="{scope>/config/kdd_hours}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
+                                <Input value="{scope>/config/ip_hours}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
+                                <Input value="{scope>/config/complexity_multiplier}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </Panel>
+
+                <!-- Scope Items -->
+                <Panel headerText="Functional Scope Items">
+                    <Toolbar>
+                        <Title text="Scope Items by Role" level="H5"/>
+                        <ToolbarSpacer/>
+                        <Button text="Add Role" icon="sap-icon://add" press="onAddScopeItem" type="Emphasized"/>
+                    </Toolbar>
+                    <Table id="scopeTable" items="{ path: 'scope>/items' }">
+                        <columns>
+                            <Column width="10rem"><Text text="Func Role"/></Column>
+                            <Column width="12rem"><Text text="Line of Business"/></Column>
+                            <Column hAlign="Center" width="5rem"><Text text="Low"/></Column>
+                            <Column hAlign="Center" width="5rem"><Text text="Medium"/></Column>
+                            <Column hAlign="Center" width="5rem"><Text text="High"/></Column>
+                            <Column hAlign="Center" width="6rem"><Text text="V.High Hrs"/></Column>
+                            <Column hAlign="Center" width="6rem"><Text text="Local. Hrs"/></Column>
+                            <Column hAlign="Center" width="5rem"><Text text="KDD"/></Column>
+                            <Column hAlign="Center" width="5rem"><Text text="IP"/></Column>
+                            <Column hAlign="End" width="6rem"><Text text="Total Hrs"/></Column>
+                            <Column width="3rem"/>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <Input value="{scope>func_role}" change="onScopeItemChange"/>
+                                <Input value="{scope>lob}" change="onScopeItemChange"/>
+                                <Input value="{scope>low_count}" type="Number" textAlign="Center" change="onScopeItemChange"/>
+                                <Input value="{scope>medium_count}" type="Number" textAlign="Center" change="onScopeItemChange"/>
+                                <Input value="{scope>high_count}" type="Number" textAlign="Center" change="onScopeItemChange"/>
+                                <Input value="{scope>very_high_hours}" type="Number" textAlign="Center" change="onScopeItemChange"/>
+                                <Input value="{scope>localization_hours}" type="Number" textAlign="Center" change="onScopeItemChange"/>
+                                <Input value="{scope>kdd_count}" type="Number" textAlign="Center" change="onScopeItemChange"/>
+                                <Input value="{scope>ip_count}" type="Number" textAlign="Center" change="onScopeItemChange"/>
+                                <ObjectNumber number="{scope>total_hours}" unit="h" emphasized="true"/>
+                                <Button icon="sap-icon://delete" type="Reject" press="onDeleteScopeItem"/>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </Panel>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

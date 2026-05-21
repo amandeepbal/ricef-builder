@@ -1,0 +1,32 @@
+{
+  "name": "ricef-builder",
+  "version": "1.0.0",
+  "description": "RICEFW Estimator Tool - SAP project estimation",
+  "private": true,
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "npx nodemon --watch server server/index.js",
+    "db:init": "node server/db/migrate.js",
+    "db:reset": "rm -f data/ricef-builder.db && node server/db/migrate.js",
+    "postinstall": "node scripts/generate-ui5-manifests.js"
+  },
+  "dependencies": {
+    "@openui5/sap.f": "^1.148.0",
+    "@openui5/sap.m": "^1.148.0",
+    "@openui5/sap.tnt": "^1.148.0",
+    "@openui5/sap.ui.core": "^1.148.0",
+    "@openui5/sap.ui.layout": "^1.148.0",
+    "@openui5/sap.ui.table": "^1.148.0",
+    "@openui5/sap.ui.unified": "^1.148.0",
+    "@openui5/themelib_sap_horizon": "^1.148.0",
+    "better-sqlite3": "^11.7.0",
+    "express": "^4.21.0",
+    "morgan": "^1.10.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

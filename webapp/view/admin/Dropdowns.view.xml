@@ -1,0 +1,51 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
+    controllerName="com.syntax.ricefbuilder.controller.admin.Dropdowns">
+    <Page title="Dropdown Values" showNavButton="true" navButtonPress="onNavBack">
+        <content>
+            <HBox class="sapUiSmallMargin">
+                <VBox width="20rem" class="sapUiSmallMarginEnd">
+                    <Panel headerText="Categories">
+                        <List id="catList" mode="SingleSelectMaster" selectionChange="onCatSelect"
+                              items="{ path: 'cats>/' }">
+                            <StandardListItem title="{cats>label}" description="{cats>code}" type="Active"/>
+                        </List>
+                    </Panel>
+                </VBox>
+                <VBox width="100%">
+                    <Panel headerText="Values" id="valuesPanel">
+                        <headerToolbar>
+                            <Toolbar>
+                                <Title text="Values"/>
+                                <ToolbarSpacer/>
+                                <Button text="Add Value" icon="sap-icon://add" press="onAddValue" type="Emphasized"/>
+                                <Button text="Add Separator" icon="sap-icon://border-horizontal" press="onAddSeparator"/>
+                            </Toolbar>
+                        </headerToolbar>
+                        <Table id="valuesTable" items="{ path: 'vals>/' }">
+                            <columns>
+                                <Column><Text text="Value"/></Column>
+                                <Column width="5rem" hAlign="Center"><Text text="Order"/></Column>
+                                <Column width="5rem" hAlign="Center"><Text text="Active"/></Column>
+                                <Column width="5rem" hAlign="Center"><Text text="Separator"/></Column>
+                                <Column width="4rem" hAlign="Center"><Text text=""/></Column>
+                            </columns>
+                            <items>
+                                <ColumnListItem highlight="{= ${vals>is_separator} ? 'Information' : 'None' }">
+                                    <Input value="{vals>value}" change="onValueChange"/>
+                                    <Input value="{vals>sort_order}" type="Number" textAlign="Center" change="onValueChange" width="4rem"/>
+                                    <Switch state="{vals>is_active}" change="onValueChange"/>
+                                    <core:Icon src="{= ${vals>is_separator} ? 'sap-icon://accept' : '' }"
+                                        color="{= ${vals>is_separator} ? '#0854a0' : '' }"/>
+                                    <HBox>
+                                        <Button icon="sap-icon://add" tooltip="Insert value below" type="Transparent" press="onInsertBelow"/>
+                                        <Button icon="sap-icon://delete" tooltip="Delete" type="Transparent" press="onDeleteValue"/>
+                                    </HBox>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
+                    </Panel>
+                </VBox>
+            </HBox>
+        </content>
+    </Page>
+</mvc:View>

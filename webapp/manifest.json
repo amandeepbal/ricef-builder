@@ -1,0 +1,56 @@
+{
+  "sap.app": {
+    "id": "com.syntax.ricefbuilder",
+    "type": "application",
+    "title": "RICEFW Estimator",
+    "applicationVersion": { "version": "1.0.0" }
+  },
+  "sap.ui": {
+    "technology": "UI5"
+  },
+  "sap.ui5": {
+    "rootView": {
+      "viewName": "com.syntax.ricefbuilder.view.App",
+      "type": "XML",
+      "id": "app"
+    },
+    "models": {},
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "com.syntax.ricefbuilder.view",
+        "controlId": "appNavContainer",
+        "controlAggregation": "pages",
+        "transition": "slide"
+      },
+      "routes": [
+        { "name": "home",            "pattern": "",                                    "target": "home" },
+        { "name": "project",         "pattern": "project/{projectId}",                 "target": "projectDetail" },
+        { "name": "projectSheet",    "pattern": "project/{projectId}/sheet/{sheetType}","target": "projectDetail" },
+        { "name": "itemDetail",      "pattern": "project/{projectId}/item/{itemId}",   "target": "itemDetail" },
+        { "name": "summary",         "pattern": "project/{projectId}/summary",         "target": "summary" },
+        { "name": "admin",           "pattern": "admin",                               "target": "adminMain" },
+        { "name": "adminRicefTypes", "pattern": "admin/ricef-types",                   "target": "adminRicefTypes" },
+        { "name": "adminGrid",       "pattern": "admin/estimation-grid",               "target": "adminGrid" },
+        { "name": "adminRates",      "pattern": "admin/blended-rates",                 "target": "adminRates" },
+        { "name": "adminComplexity", "pattern": "admin/complexity",                    "target": "adminComplexity" },
+        { "name": "adminDropdowns",  "pattern": "admin/dropdowns",                     "target": "adminDropdowns" },
+        { "name": "adminSheetConfig","pattern": "admin/sheet-config",                  "target": "adminSheetConfig" }
+      ],
+      "targets": {
+        "home":             { "viewName": "Home" },
+        "projectDetail":    { "viewName": "ProjectDetail" },
+        "itemDetail":       { "viewName": "ItemDetail" },
+        "summary":          { "viewName": "Summary" },
+        "adminMain":        { "viewName": "admin.AdminMain" },
+        "adminRicefTypes":  { "viewName": "admin.RicefTypes" },
+        "adminGrid":        { "viewName": "admin.EstimationGrid" },
+        "adminRates":       { "viewName": "admin.BlendedRates" },
+        "adminComplexity":  { "viewName": "admin.ComplexityDefs" },
+        "adminDropdowns":   { "viewName": "admin.Dropdowns" },
+        "adminSheetConfig": { "viewName": "admin.SheetConfig" }
+      }
+    }
+  }
+}
