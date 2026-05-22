@@ -9,11 +9,25 @@ CREATE TABLE projects (
     description     TEXT    NOT NULL,
     currency        TEXT    NOT NULL DEFAULT 'USD',
     delivery_level  INTEGER NOT NULL DEFAULT 1,
+    start_date      TEXT,
+    end_date        TEXT,
+    config_version_id INTEGER,
     is_active       INTEGER NOT NULL DEFAULT 1,
     created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
     updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 CREATE UNIQUE INDEX idx_projects_number ON projects(project_number);
+
+-- Config Versions (time-bound admin configuration sets)
+CREATE TABLE config_versions (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT    NOT NULL,
+    description TEXT,
+    valid_from  TEXT    NOT NULL,
+    valid_to    TEXT,
+    is_active   INTEGER NOT NULL DEFAULT 1,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
 
 -- Sheet Types (RICEF, BI, MIGRATION, etc.)
 CREATE TABLE sheet_types (
@@ -27,7 +41,8 @@ CREATE TABLE sheet_types (
 -- RICEF Types (the 13 configurable object types)
 CREATE TABLE ricef_types (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    code            TEXT    NOT NULL UNIQUE,
+    version_id      INTEGER NOT NULL DEFAULT 1,
+    code            TEXT    NOT NULL,
     label           TEXT    NOT NULL,
     full_label      TEXT    NOT NULL,
     seq_from        INTEGER NOT NULL,
@@ -36,8 +51,10 @@ CREATE TABLE ricef_types (
     icon            TEXT,
     sort_order      INTEGER NOT NULL DEFAULT 0,
     is_active       INTEGER NOT NULL DEFAULT 1,
-    FOREIGN KEY (sheet_type_code) REFERENCES sheet_types(code)
+    FOREIGN KEY (sheet_type_code) REFERENCES sheet_types(code),
+    FOREIGN KEY (version_id) REFERENCES config_versions(id)
 );
+CREATE UNIQUE INDEX idx_ricef_types_ver ON ricef_types(version_id, code);
 
 -- Estimation line items
 CREATE TABLE items (
@@ -87,6 +104,7 @@ CREATE INDEX idx_items_project_seq ON items(project_id, ricef_type_id, seq_numbe
 -- Estimation Grid
 CREATE TABLE estimation_grid (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    version_id      INTEGER NOT NULL DEFAULT 1,
     frice           TEXT    NOT NULL,
     classification  TEXT    NOT NULL,
     complexity      TEXT    NOT NULL,
@@ -108,7 +126,7 @@ CREATE TABLE estimation_grid (
     total_tech      REAL    NOT NULL DEFAULT 0,
     grand_total     REAL    NOT NULL DEFAULT 0
 );
-CREATE UNIQUE INDEX idx_eg_lookup ON estimation_grid(frice, classification, complexity);
+CREATE UNIQUE INDEX idx_eg_lookup ON estimation_grid(version_id, frice, classification, complexity);
 
 -- Estimation Factors (phase-level calculation factors)
 CREATE TABLE estimation_factors (
@@ -121,10 +139,13 @@ CREATE TABLE estimation_factors (
 -- Blended Rate Configurations (per team: D, B, M)
 CREATE TABLE blended_rate_configs (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    team_prefix     TEXT    NOT NULL UNIQUE,
+    version_id      INTEGER NOT NULL DEFAULT 1,
+    team_prefix     TEXT    NOT NULL,
     team_label      TEXT    NOT NULL,
-    is_active       INTEGER NOT NULL DEFAULT 1
+    is_active       INTEGER NOT NULL DEFAULT 1,
+    FOREIGN KEY (version_id) REFERENCES config_versions(id)
 );
+CREATE UNIQUE INDEX idx_brc_ver ON blended_rate_configs(version_id, team_prefix);
 
 -- Effort multiplier by complexity
 CREATE TABLE blended_effort_by_complexity (
@@ -162,6 +183,7 @@ CREATE UNIQUE INDEX idx_br ON blended_rates(level_id, currency);
 -- Complexity Definitions
 CREATE TABLE complexity_definitions (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    version_id          INTEGER NOT NULL DEFAULT 1,
     team                TEXT    NOT NULL,
     classification_group TEXT   NOT NULL,
     subgroup            TEXT    NOT NULL,
@@ -194,10 +216,13 @@ CREATE TABLE complexity_factors (
 -- Dropdown Categories
 CREATE TABLE dropdown_categories (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    code        TEXT    NOT NULL UNIQUE,
+    version_id  INTEGER NOT NULL DEFAULT 1,
+    code        TEXT    NOT NULL,
     label       TEXT    NOT NULL,
-    is_system   INTEGER NOT NULL DEFAULT 0
+    is_system   INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (version_id) REFERENCES config_versions(id)
 );
+CREATE UNIQUE INDEX idx_dc_ver ON dropdown_categories(version_id, code);
 
 -- Dropdown Values
 CREATE TABLE dropdown_values (
@@ -215,6 +240,7 @@ CREATE INDEX idx_dv_cat ON dropdown_values(category_id);
 -- Sheet Column Config
 CREATE TABLE sheet_column_config (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    version_id      INTEGER NOT NULL DEFAULT 1,
     sheet_type_code TEXT    NOT NULL,
     column_key      TEXT    NOT NULL,
     column_label    TEXT    NOT NULL,
@@ -226,7 +252,7 @@ CREATE TABLE sheet_column_config (
     width           TEXT    DEFAULT '10rem',
     FOREIGN KEY (sheet_type_code) REFERENCES sheet_types(code)
 );
-CREATE UNIQUE INDEX idx_scc ON sheet_column_config(sheet_type_code, column_key);
+CREATE UNIQUE INDEX idx_scc ON sheet_column_config(version_id, sheet_type_code, column_key);
 
 -- Project SIT/Contingency Factors
 CREATE TABLE project_factors (
@@ -265,6 +291,13 @@ CREATE TABLE project_func_phase_pct (
     dep         REAL NOT NULL DEFAULT 0.06,
     hyp         REAL NOT NULL DEFAULT 0.10,
     architect_pct REAL NOT NULL DEFAULT 0.10,
+    arch_prep     REAL NOT NULL DEFAULT 0.10,
+    arch_fts      REAL NOT NULL DEFAULT 0.10,
+    arch_design   REAL NOT NULL DEFAULT 0.10,
+    arch_build    REAL NOT NULL DEFAULT 0.10,
+    arch_sit_uat  REAL NOT NULL DEFAULT 0.10,
+    arch_dep      REAL NOT NULL DEFAULT 0.10,
+    arch_hyp      REAL NOT NULL DEFAULT 0.10,
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
 
@@ -358,3 +391,17 @@ CREATE TABLE project_sheet_func_pct (
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX idx_psfp ON project_sheet_func_pct(project_id, sheet_type_code);
+
+-- Project Snapshots (point-in-time captures for comparison)
+CREATE TABLE project_snapshots (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id      INTEGER NOT NULL,
+    phase           TEXT    NOT NULL,
+    label           TEXT,
+    total_items     INTEGER NOT NULL DEFAULT 0,
+    total_hours     REAL    NOT NULL DEFAULT 0,
+    snapshot_json   TEXT    NOT NULL,
+    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_snapshots_project ON project_snapshots(project_id);

@@ -13,6 +13,209 @@ router.get('/:projectId/summary', (req, res) => {
   res.json(summary);
 });
 
+// GET summary as PDF
+router.get('/:projectId/summary-pdf', (req, res) => {
+  const PDFDocument = require('pdfkit');
+  const db = getDb();
+  const pid = req.params.projectId;
+  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(pid);
+  if (!project) return res.status(404).json({ error: 'Project not found' });
+
+  const summary = buildSummary(db, pid);
+  const P = ['prep', 'fts', 'design', 'build', 'sit_uat', 'dep', 'hyp'];
+  const PL = ['PREP', 'FTS', 'DESIGN', 'BUILD', 'SIT/UAT', 'DEP', 'HYP'];
+
+  const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margins: { top: 30, bottom: 30, left: 30, right: 30 }, bufferPages: true });
+  const filename = `${project.project_number}_Summary.pdf`;
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  doc.pipe(res);
+
+  const left = 30;
+  const pageW = doc.page.width - 60;
+  const pageBottom = doc.page.height - 40;
+  const s = (v) => v != null ? String(v) : '';
+  const n = (v) => v != null ? String(Math.round(v * 10) / 10) : '0';
+  const nc = (v) => v != null ? Math.round(v).toLocaleString() : '0';
+
+  function checkPage(y, need) {
+    if (y + need > pageBottom) { doc.addPage(); return 30; }
+    return y;
+  }
+
+  function sectionTitle(y, text) {
+    y = checkPage(y, 25);
+    doc.save();
+    doc.fontSize(10).font('Helvetica-Bold').fillColor('#0854a0');
+    doc.text(text, left, y, { lineBreak: false, height: 14 });
+    doc.moveTo(left, y + 14).lineTo(left + pageW, y + 14).lineWidth(0.5).strokeColor('#0854a0').stroke();
+    doc.restore();
+    return y + 18;
+  }
+
+  function phaseTable(y, rows, opts) {
+    opts = opts || {};
+    const roleLabelW = opts.labelWidth || 150;
+    const totalW = 55;
+    const phaseW = Math.floor((pageW - roleLabelW - totalW) / 7);
+    const hdrH = 13;
+    const rowH = 12;
+
+    y = checkPage(y, hdrH + rowH * rows.length + 4);
+
+    // Header
+    doc.save();
+    doc.rect(left, y, pageW, hdrH).fill('#0854a0');
+    doc.fontSize(6).font('Helvetica-Bold').fillColor('#fff');
+    doc.text(opts.headerLabel || 'Role', left + 3, y + 3, { width: roleLabelW - 6, height: hdrH, lineBreak: false });
+    PL.forEach((p, i) => {
+      doc.text(p, left + roleLabelW + i * phaseW, y + 3, { width: phaseW, align: 'center', height: hdrH, lineBreak: false });
+    });
+    doc.text('TOTAL', left + roleLabelW + 7 * phaseW, y + 3, { width: totalW, align: 'right', height: hdrH, lineBreak: false });
+    doc.restore();
+    y += hdrH;
+
+    // Rows
+    rows.forEach((row, idx) => {
+      y = checkPage(y, rowH);
+      doc.save();
+      const bg = row._highlight ? '#e8f0fe' : idx % 2 === 0 ? '#fff' : '#fafafa';
+      doc.rect(left, y, pageW, rowH).fill(bg);
+      doc.rect(left, y + rowH - 0.5, pageW, 0.5).fill('#e0e0e0');
+
+      const fontName = row._highlight ? 'Helvetica-Bold' : 'Helvetica';
+      doc.fontSize(6.5).font(fontName).fillColor('#333');
+      doc.text(s(row.role), left + 3, y + 2.5, { width: roleLabelW - 6, height: rowH, lineBreak: false });
+      P.forEach((p, i) => {
+        doc.text(n(row[p]), left + roleLabelW + i * phaseW, y + 2.5, { width: phaseW, align: 'center', height: rowH, lineBreak: false });
+      });
+      const tot = row.total != null ? row.total : P.reduce((sum, p) => sum + (row[p] || 0), 0);
+      doc.font('Helvetica-Bold').text(n(tot), left + roleLabelW + 7 * phaseW, y + 2.5, { width: totalW, align: 'right', height: rowH, lineBreak: false });
+      doc.restore();
+      y += rowH;
+    });
+
+    return y + 4;
+  }
+
+  function kvTable(y, items) {
+    y = checkPage(y, 14 * items.length + 4);
+    items.forEach((kv, idx) => {
+      y = checkPage(y, 13);
+      doc.save();
+      const bg = idx % 2 === 0 ? '#fff' : '#fafafa';
+      doc.rect(left, y, pageW, 12).fill(bg);
+      doc.rect(left, y + 11.5, pageW, 0.5).fill('#e0e0e0');
+      doc.fontSize(7).font('Helvetica').fillColor('#555');
+      doc.text(kv.label, left + 3, y + 2.5, { width: 200, height: 12, lineBreak: false });
+      doc.font('Helvetica-Bold').fillColor('#333');
+      doc.text(kv.value, left + 210, y + 2.5, { width: pageW - 213, height: 12, lineBreak: false });
+      doc.restore();
+      y += 12;
+    });
+    return y + 4;
+  }
+
+  // === HEADER ===
+  doc.save();
+  doc.fontSize(16).font('Helvetica-Bold').fillColor('#0854a0');
+  doc.text(`${project.description} — Summary`, left, 30, { lineBreak: false, height: 20 });
+  doc.fontSize(8).font('Helvetica').fillColor('#666');
+  doc.text(`Project ${s(project.project_number)} | ${project.currency} | Level ${project.delivery_level} | ${summary.itemCount} items | ${new Date().toISOString().slice(0, 10)}`, left, 50, { lineBreak: false, height: 12 });
+  doc.restore();
+  let y = 68;
+
+  // === KPI ROW ===
+  y = sectionTitle(y, 'Overview');
+  y = kvTable(y, [
+    { label: 'Total Functional Hours', value: nc(summary.totalFunc) + 'h' },
+    { label: 'Total Technical Hours', value: nc(summary.totalTech) + 'h' },
+    { label: 'Total PGO Hours', value: nc(summary.totalPgo) + 'h' },
+    { label: 'Grand Total', value: nc(summary.totalGrand) + 'h' },
+    { label: 'Item Count', value: String(summary.itemCount) }
+  ]);
+
+  // === FUNCTIONAL SCOPE EFFORT ===
+  if (summary.funcScopeEffort && summary.funcScopeEffort.length > 0) {
+    y = sectionTitle(y, 'Functional Scope — Functional Effort');
+    y = phaseTable(y, summary.funcScopeEffort);
+  }
+
+  // === TECHNICAL SCOPE EFFORT ===
+  if (summary.techScopeEffort && summary.techScopeEffort.length > 0) {
+    y = sectionTitle(y, 'Technical Scope — Functional Effort');
+    y = phaseTable(y, summary.techScopeEffort);
+  }
+
+  // === TOTAL FUNCTIONAL BY ROLE ===
+  if (summary.funcByRole && summary.funcByRole.length > 0) {
+    y = sectionTitle(y, 'Total — Functional Effort');
+    const archRow = summary.funcArchitect || {};
+    archRow._highlight = true;
+    y = phaseTable(y, [archRow, ...summary.funcByRole]);
+  }
+
+  // === TECH DEV ===
+  if (summary.techDev && summary.techDev.length > 0) {
+    y = sectionTitle(y, 'Technical — DEV');
+    y = phaseTable(y, summary.techDev, { labelWidth: 180 });
+  }
+
+  // === TECH BI ===
+  if (summary.techBi && summary.techBi.length > 0) {
+    y = sectionTitle(y, 'Technical — BI');
+    y = phaseTable(y, summary.techBi, { labelWidth: 180 });
+  }
+
+  // === TECH MIGRATION ===
+  if (summary.techMig && summary.techMig.length > 0) {
+    y = sectionTitle(y, 'Technical — Migration');
+    y = phaseTable(y, summary.techMig, { labelWidth: 180 });
+  }
+
+  // === PGO ===
+  if (summary.pgo) {
+    y = sectionTitle(y, 'PGO (Project Governance & Oversight)');
+    const pgo = summary.pgo;
+    pgo.role = 'PGO';
+    pgo._highlight = true;
+    y = phaseTable(y, [pgo]);
+  }
+
+  // === BLENDED RATES ===
+  const blendedSections = [
+    { key: 'devBlended', label: 'Blended Rate — DEV' },
+    { key: 'biBlended', label: 'Blended Rate — BI' },
+    { key: 'migBlended', label: 'Blended Rate — Migration' }
+  ];
+  blendedSections.forEach(sec => {
+    const info = summary[sec.key];
+    if (info) {
+      y = sectionTitle(y, sec.label);
+      y = kvTable(y, [
+        { label: 'Team', value: info.team },
+        { label: 'Delivery Level', value: info.level },
+        { label: 'Billable Rate', value: info.currency + ' ' + nc(info.billable_rate) },
+        { label: 'Effort Multiplier', value: String(info.effort_multiplier) },
+        { label: 'Blended Cost', value: info.currency + ' ' + nc(info.blended_cost) },
+        { label: 'Margin %', value: info.margin_pct + '%' }
+      ]);
+    }
+  });
+
+  // === PAGE NUMBERS ===
+  const pageCount = doc.bufferedPageRange().count;
+  for (let i = 0; i < pageCount; i++) {
+    doc.switchToPage(i);
+    doc.save();
+    doc.fontSize(6).font('Helvetica').fillColor('#999');
+    doc.text(`Page ${i + 1} of ${pageCount}`, left, doc.page.height - 25, { width: pageW, align: 'center', height: 10, lineBreak: false });
+    doc.restore();
+  }
+
+  doc.end();
+});
+
 // GET analytics data for project dashboard
 router.get('/:projectId/analytics', (req, res) => {
   const db = getDb();
@@ -103,10 +306,11 @@ router.get('/:projectId/analytics', (req, res) => {
     }));
 
   // --- Cost Analytics ---
+  const vid = project.config_version_id || 1;
   const teamPrefixMap = { RICEF: '(D)', BI: '(B)', MIGRATION: '(M)' };
   const rates = {};
   for (const prefix of ['(D)', '(B)', '(M)']) {
-    const cfg = db.prepare('SELECT id FROM blended_rate_configs WHERE team_prefix = ?').get(prefix);
+    const cfg = db.prepare('SELECT id FROM blended_rate_configs WHERE version_id = ? AND team_prefix = ?').get(vid, prefix);
     if (!cfg) continue;
     const levels = db.prepare('SELECT * FROM blended_delivery_levels WHERE config_id = ? ORDER BY level_number').all(cfg.id);
     rates[prefix] = {};
@@ -137,8 +341,8 @@ router.get('/:projectId/analytics', (req, res) => {
     const lvlLabel = db.prepare(
       `SELECT bdl.level_label FROM blended_delivery_levels bdl
        JOIN blended_rate_configs brc ON bdl.config_id = brc.id
-       WHERE brc.team_prefix = '(D)' AND bdl.level_number = ?`
-    ).get(lvl);
+       WHERE brc.version_id = ? AND brc.team_prefix = '(D)' AND bdl.level_number = ?`
+    ).get(vid, lvl);
     costComparison.push({
       level: lvl,
       label: lvlLabel ? lvlLabel.level_label : 'Level ' + lvl,
@@ -249,6 +453,32 @@ router.get('/:projectId/analytics', (req, res) => {
   });
 });
 
+// GET Orange Grid data for a specific sheet tab
+router.get('/:projectId/orange-grid/:sheetType', (req, res) => {
+  const db = getDb();
+  const pid = req.params.projectId;
+  const sheet = req.params.sheetType;
+  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(pid);
+  if (!project) return res.status(404).json({ error: 'Project not found' });
+
+  const summary = buildSummary(db, pid);
+  const phases = db.prepare('SELECT * FROM project_phases WHERE project_id = ?').get(pid);
+
+  const techMap = { RICEF: summary.techDev, BI: summary.techBi, MIGRATION: summary.techMig };
+  const funcRows = (summary.sheetFunc && summary.sheetFunc[sheet]) || [];
+  const techRows = techMap[sheet] || [];
+
+  res.json({
+    project: {
+      delivery_level: project.delivery_level,
+      currency: project.currency
+    },
+    phases,
+    funcRows,
+    techRows
+  });
+});
+
 // GET control section data for project settings panel
 router.get('/:projectId/control', (req, res) => {
   const db = getDb();
@@ -299,8 +529,10 @@ router.put('/:projectId/control/func-phase-pct', (req, res) => {
   const pid = req.params.projectId;
   const b = req.body;
   db.prepare(`UPDATE project_func_phase_pct SET prep=?, fts=?, design=?, build=?, sit_uat=?, dep=?, hyp=?,
-    architect_pct=? WHERE project_id=?`)
-    .run(b.prep, b.fts, b.design, b.build, b.sit_uat, b.dep, b.hyp, b.architect_pct, pid);
+    architect_pct=?, arch_prep=?, arch_fts=?, arch_design=?, arch_build=?, arch_sit_uat=?, arch_dep=?, arch_hyp=?
+    WHERE project_id=?`)
+    .run(b.prep, b.fts, b.design, b.build, b.sit_uat, b.dep, b.hyp, b.architect_pct,
+      b.arch_prep, b.arch_fts, b.arch_design, b.arch_build, b.arch_sit_uat, b.arch_dep, b.arch_hyp, pid);
   res.json({ ok: true });
 });
 

@@ -1,8 +1,9 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
-    "sap/m/MessageToast"
-], function (Controller, JSONModel, MessageToast) {
+    "sap/m/MessageToast",
+    "../../model/helpDialog"
+], function (Controller, JSONModel, MessageToast, helpDialog) {
     "use strict";
 
     return Controller.extend("com.syntax.ricefbuilder.controller.admin.SheetConfig", {
@@ -18,10 +19,15 @@ sap.ui.define([
             this._loadColumns();
         },
 
+        _getVersionId: function () {
+            var m = this.getOwnerComponent().getModel("adminCtx");
+            return (m && m.getProperty("/versionId")) || 1;
+        },
+
         _loadColumns: function () {
             var that = this;
             this.getOwnerComponent().api("GET",
-                "/admin/sheet-types/" + this._sheetCode + "/columns"
+                "/admin/sheet-types/" + this._sheetCode + "/columns?version_id=" + this._getVersionId()
             ).then(function (data) {
                 that.getView().getModel("cols").setData(data);
             });
@@ -51,6 +57,10 @@ sap.ui.define([
                 MessageToast.show("Saved");
                 that._loadColumns();
             });
+        },
+
+        onHelp: function () {
+            helpDialog.show("adminSheetConfig");
         },
 
         onNavBack: function () {

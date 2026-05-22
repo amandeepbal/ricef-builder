@@ -11,9 +11,10 @@ sap.ui.define([
     "sap/m/Button",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
-    "../model/formatter"
+    "../model/formatter",
+    "../model/helpDialog"
 ], function (Controller, JSONModel, IconTabFilter, Dialog, Select, Input, Label,
-             Item, SimpleForm, Button, MessageToast, MessageBox, formatter) {
+             Item, SimpleForm, Button, MessageToast, MessageBox, formatter, helpDialog) {
     "use strict";
 
     return Controller.extend("com.syntax.ricefbuilder.controller.ProjectDetail", {
@@ -24,10 +25,14 @@ sap.ui.define([
         _scopeConfigTimer: null,
 
         onInit: function () {
-            this.getView().setModel(new JSONModel({ title: "", showItems: true, showFunctional: false, showAnalytics: false }), "viewModel");
+            this.getView().setModel(new JSONModel({ title: "", showItems: true, showFunctional: false, showAnalytics: false, showSnapshots: false }), "viewModel");
             this.getView().setModel(new JSONModel([]), "items");
             this.getView().setModel(new JSONModel({ items: [], config: {} }), "scope");
             this.getView().setModel(new JSONModel({}), "ctrl");
+            this.getView().setModel(new JSONModel([]), "snapshots");
+            this.getView().setModel(new JSONModel([]), "funcRoles");
+            this.getView().setModel(new JSONModel({ scopeEffort: [], techScopeEffort: [], totalEffort: [] }), "funcEffort");
+            this.getView().setModel(new JSONModel({ funcRows: [], techRows: [] }), "orangeGrid");
             var router = this.getOwnerComponent().getRouter();
             router.getRoute("project").attachPatternMatched(this._onRouteMatched, this);
             router.getRoute("projectSheet").attachPatternMatched(this._onRouteMatched, this);
@@ -45,8 +50,11 @@ sap.ui.define([
         _loadProject: function () {
             var that = this;
             this.getOwnerComponent().api("GET", "/projects/" + this._projectId).then(function (p) {
-                that.getView().getModel("viewModel").setProperty("/title", p.description);
-                that.getView().getModel("viewModel").setProperty("/project", p);
+                var vm = that.getView().getModel("viewModel");
+                vm.setProperty("/title", p.description + (p.is_readonly ? " (Read-Only)" : ""));
+                vm.setProperty("/project", p);
+                vm.setProperty("/editable", !p.is_readonly);
+                vm.setProperty("/readonly", !!p.is_readonly);
             });
         },
 
@@ -62,7 +70,7 @@ sap.ui.define([
                     tabs.addItem(new IconTabFilter({
                         key: t.code,
                         text: t.label,
-                        icon: t.code === "RICEF" ? "sap-icon://developer-scenario" :
+                        icon: t.code === "RICEF" ? "sap-icon://wrench" :
                               t.code === "BI" ? "sap-icon://business-objects-experience" :
                               t.code === "MIGRATION" ? "sap-icon://database" :
                               t.code === "FUNCTIONAL" ? "sap-icon://collaborate" : "sap-icon://document"
@@ -73,6 +81,11 @@ sap.ui.define([
                     text: "Analytics",
                     icon: "sap-icon://bar-chart"
                 }));
+                tabs.addItem(new IconTabFilter({
+                    key: "SNAPSHOTS",
+                    text: "Snapshots",
+                    icon: "sap-icon://camera"
+                }));
                 tabs.setSelectedKey(that._sheetType);
             });
         },
@@ -82,7 +95,11 @@ sap.ui.define([
             vm.setProperty("/showItems", false);
             vm.setProperty("/showFunctional", false);
             vm.setProperty("/showAnalytics", false);
-            if (sheetType === "ANALYTICS") {
+            vm.setProperty("/showSnapshots", false);
+            if (sheetType === "SNAPSHOTS") {
+                vm.setProperty("/showSnapshots", true);
+                this._loadSnapshots();
+            } else if (sheetType === "ANALYTICS") {
                 vm.setProperty("/showAnalytics", true);
                 this._loadAnalytics();
             } else if (sheetType === "FUNCTIONAL") {
@@ -90,10 +107,27 @@ sap.ui.define([
                 this._loadScope();
             } else {
                 vm.setProperty("/showItems", true);
+                this._filtersPopulated = false;
+                this._resetFilters();
                 this._loadItems();
+                this._loadOrangeGrid(sheetType);
                 this._loadSheetControl(sheetType);
                 this._loadPurpleGrid(sheetType);
             }
+        },
+
+        _allItems: [],
+        _filtersPopulated: false,
+
+        _resetFilters: function () {
+            var Item = sap.ui.core.Item;
+            ["filterStatus", "filterComplexity", "filterModule"].forEach(function (id) {
+                var sel = this.byId(id);
+                sel.removeAllItems();
+                sel.addItem(new Item({ key: "", text: "All" }));
+                sel.setSelectedKey("");
+            }.bind(this));
+            this.byId("searchField").setValue("");
         },
 
         _loadItems: function () {
@@ -101,18 +135,66 @@ sap.ui.define([
             this.getOwnerComponent().api("GET",
                 "/projects/" + this._projectId + "/items?sheetType=" + this._sheetType
             ).then(function (data) {
-                // Insert group headers at type boundaries
-                var result = [];
-                var lastType = "";
-                data.forEach(function (item) {
-                    if (item.type_code !== lastType && !item.is_sub_item) {
-                        result.push({ _isHeader: true, _headerText: item.type_label + " (" + item.type_code + ")" });
-                        lastType = item.type_code;
-                    }
-                    result.push(item);
-                });
-                that.getView().getModel("items").setData(result);
+                that._allItems = data;
+                if (!that._filtersPopulated) {
+                    that._populateFilters(data);
+                    that._filtersPopulated = true;
+                }
+                that._applyFilters();
             });
+        },
+
+        _populateFilters: function (data) {
+            var Item = sap.ui.core.Item;
+            var statusSet = {}, complexSet = {}, moduleSet = {};
+            data.forEach(function (r) {
+                if (r.status) statusSet[r.status] = true;
+                if (r.complexity) complexSet[r.complexity] = true;
+                if (r.module) moduleSet[r.module] = true;
+            });
+
+            var statusFilter = this.byId("filterStatus");
+            Object.keys(statusSet).sort().forEach(function (v) {
+                statusFilter.addItem(new Item({ key: v, text: v }));
+            });
+            var complexFilter = this.byId("filterComplexity");
+            Object.keys(complexSet).sort().forEach(function (v) {
+                complexFilter.addItem(new Item({ key: v, text: v }));
+            });
+            var moduleFilter = this.byId("filterModule");
+            Object.keys(moduleSet).sort().forEach(function (v) {
+                moduleFilter.addItem(new Item({ key: v, text: v }));
+            });
+        },
+
+        _applyFilters: function () {
+            var status = this.byId("filterStatus").getSelectedKey();
+            var complexity = this.byId("filterComplexity").getSelectedKey();
+            var mod = this.byId("filterModule").getSelectedKey();
+            var search = (this.byId("searchField").getValue() || "").toLowerCase();
+
+            var filtered = this._allItems.filter(function (item) {
+                if (status && item.status !== status) return false;
+                if (complexity && item.complexity !== complexity) return false;
+                if (mod && item.module !== mod) return false;
+                if (search && !(
+                    (item.ricef_number || "").toLowerCase().indexOf(search) >= 0 ||
+                    (item.description || "").toLowerCase().indexOf(search) >= 0 ||
+                    (item.classification || "").toLowerCase().indexOf(search) >= 0
+                )) return false;
+                return true;
+            });
+
+            var result = [];
+            var lastType = "";
+            filtered.forEach(function (item) {
+                if (item.type_code !== lastType && !item.is_sub_item) {
+                    result.push({ _isHeader: true, _headerText: item.type_label + " (" + item.type_code + ")" });
+                    lastType = item.type_code;
+                }
+                result.push(item);
+            });
+            this.getView().getModel("items").setData(result);
         },
 
         itemFactory: function (sId, oContext) {
@@ -154,9 +236,32 @@ sap.ui.define([
             this.getOwnerComponent().api("GET",
                 "/projects/" + this._projectId + "/control"
             ).then(function (data) {
-                formatter.pctToDisplay(data.funcPhasePct, ["architect_pct"]);
+                formatter.pctToDisplay(data.funcPhasePct, ["architect_pct", "arch_prep", "arch_fts", "arch_design", "arch_build", "arch_sit_uat", "arch_dep", "arch_hyp"]);
                 formatter.pctToDisplay(data.contingency);
                 that.getView().getModel("ctrl").setData(data);
+            });
+            this.getOwnerComponent().api("GET", "/admin/dropdowns/FUNC_ROLE").then(function (cat) {
+                var roles = (cat.values || []).filter(function (v) { return v.is_active && !v.is_separator; });
+                that.getView().getModel("funcRoles").setData(roles);
+            });
+            this._loadFuncEffort();
+        },
+
+        _loadFuncEffort: function () {
+            var that = this;
+            this.getOwnerComponent().api("GET",
+                "/projects/" + this._projectId + "/summary"
+            ).then(function (data) {
+                var archRow = data.funcArchitect || {};
+                archRow._highlight = true;
+                var totalEffort = [archRow];
+                (data.funcByRole || []).forEach(function (r) { totalEffort.push(r); });
+
+                that.getView().getModel("funcEffort").setData({
+                    scopeEffort: data.funcScopeEffort || [],
+                    techScopeEffort: data.techScopeEffort || [],
+                    totalEffort: totalEffort
+                });
             });
         },
 
@@ -530,6 +635,303 @@ sap.ui.define([
             return n != null ? n.toLocaleString() : '0';
         },
 
+        // --- Snapshots ---
+
+        _loadSnapshots: function () {
+            var that = this;
+            this.getOwnerComponent().api("GET",
+                "/projects/" + this._projectId + "/snapshots"
+            ).then(function (data) {
+                that.getView().getModel("snapshots").setData(data);
+                var container = document.getElementById("compareContainer");
+                if (container) container.innerHTML = "";
+            });
+        },
+
+        onTakeSnapshot: function () {
+            var that = this;
+            var oPhaseSelect = new sap.m.Select({
+                items: [
+                    new sap.ui.core.Item({ key: "PREP", text: "PREP" }),
+                    new sap.ui.core.Item({ key: "FTS", text: "FTS" }),
+                    new sap.ui.core.Item({ key: "DESIGN", text: "DESIGN" }),
+                    new sap.ui.core.Item({ key: "BUILD", text: "BUILD" }),
+                    new sap.ui.core.Item({ key: "SIT/UAT", text: "SIT/UAT" }),
+                    new sap.ui.core.Item({ key: "DEP", text: "DEP" }),
+                    new sap.ui.core.Item({ key: "HYP", text: "HYP" }),
+                    new sap.ui.core.Item({ key: "PRESALE", text: "PRESALE" }),
+                    new sap.ui.core.Item({ key: "DISCOVERY", text: "DISCOVERY" })
+                ]
+            });
+            var oLabelInput = new sap.m.Input({ placeholder: "e.g. Before client review" });
+
+            var dialog = new Dialog({
+                title: "Take Snapshot",
+                type: "Message",
+                content: new SimpleForm({
+                    editable: true,
+                    content: [
+                        new Label({ text: "Phase" }), oPhaseSelect,
+                        new Label({ text: "Label (optional)" }), oLabelInput
+                    ]
+                }),
+                beginButton: new Button({
+                    text: "Snapshot", type: "Emphasized",
+                    press: function () {
+                        that.getOwnerComponent().api("POST",
+                            "/projects/" + that._projectId + "/snapshots", {
+                                phase: oPhaseSelect.getSelectedKey(),
+                                label: oLabelInput.getValue().trim()
+                            }
+                        ).then(function () {
+                            MessageToast.show("Snapshot saved");
+                            dialog.close();
+                            if (that._sheetType === "SNAPSHOTS") that._loadSnapshots();
+                        });
+                    }
+                }),
+                endButton: new Button({ text: "Cancel", press: function () { dialog.close(); } }),
+                afterClose: function () { dialog.destroy(); }
+            });
+            dialog.open();
+        },
+
+        onDeleteSnapshot: function (oEvent) {
+            var obj = oEvent.getSource().getBindingContext("snapshots").getObject();
+            var that = this;
+            MessageBox.confirm("Delete snapshot '" + obj.phase + (obj.label ? " - " + obj.label : "") + "'?", {
+                onClose: function (action) {
+                    if (action === MessageBox.Action.OK) {
+                        that.getOwnerComponent().api("DELETE",
+                            "/projects/" + that._projectId + "/snapshots/" + obj.id
+                        ).then(function () {
+                            MessageToast.show("Deleted");
+                            that._loadSnapshots();
+                        });
+                    }
+                }
+            });
+        },
+
+        onCompareSnapshot: function () {
+            var item = this.byId("snapshotTable").getSelectedItem();
+            if (!item) {
+                MessageToast.show("Select a snapshot to compare");
+                return;
+            }
+            var snap = item.getBindingContext("snapshots").getObject();
+            var that = this;
+            this.getOwnerComponent().api("GET",
+                "/projects/" + this._projectId + "/compare/" + snap.id
+            ).then(function (diff) {
+                that._renderCompare(diff);
+            });
+        },
+
+        _renderCompare: function (diff) {
+            var container = document.getElementById("compareContainer");
+            if (!container) return;
+            var that = this;
+            var snap = diff.snapshot;
+            var html = '';
+
+            html += '<div style="margin-top:16px">';
+            html += '<div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#333">Comparison: Current vs Snapshot "' +
+                snap.phase + (snap.label ? ' - ' + snap.label : '') + '" (' + snap.created_at + ')</div>';
+
+            // KPI delta
+            var cm = diff.currentMeta, pm = diff.previousMeta;
+            html += '<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px">';
+            html += that._deltaTile("Total Hours", cm.totalHours, pm.totalHours, "h");
+            html += that._deltaTile("Items", cm.totalItems, pm.totalItems, "");
+            html += that._deltaTile("Func Hours", cm.totalFunc, pm.totalFunc, "h");
+            html += that._deltaTile("Tech Hours", cm.totalTech, pm.totalTech, "h");
+            html += '</div>';
+
+            // Control section changes
+            var cd = diff.controlDiff;
+            var hasControlChanges = cd.factors || cd.phases || cd.funcPhasePct || cd.pgo || cd.contingency || cd.scopeConfig || cd.sheetFuncPct || cd.fixedRoles;
+            if (hasControlChanges) {
+                html += that._sectionTitle("Control Section Changes");
+                html += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px">';
+                html += '<tr style="background:#f2f2f2;font-weight:600">';
+                html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc">Section</td>';
+                html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc">Field</td>';
+                html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc;text-align:right">Current</td>';
+                html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc;text-align:right">Snapshot</td>';
+                html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc;text-align:right">Delta</td></tr>';
+
+                var sections = [
+                    { key: "factors", label: "Item Factors" },
+                    { key: "phases", label: "Phase Weeks" },
+                    { key: "funcPhasePct", label: "FUNC Phase %" },
+                    { key: "pgo", label: "PGO %" },
+                    { key: "contingency", label: "Contingency %" },
+                    { key: "scopeConfig", label: "Scope Config" }
+                ];
+                sections.forEach(function (sec) {
+                    if (!cd[sec.key]) return;
+                    Object.keys(cd[sec.key]).forEach(function (field) {
+                        var c = cd[sec.key][field];
+                        html += that._diffRow(sec.label, field, c.current, c.previous);
+                    });
+                });
+
+                if (cd.sheetFuncPct) {
+                    Object.keys(cd.sheetFuncPct).forEach(function (sheet) {
+                        Object.keys(cd.sheetFuncPct[sheet]).forEach(function (field) {
+                            var c = cd.sheetFuncPct[sheet][field];
+                            html += that._diffRow(sheet + " FUNC %", field, c.current, c.previous);
+                        });
+                    });
+                }
+                if (cd.fixedRoles) {
+                    Object.keys(cd.fixedRoles).forEach(function (key) {
+                        Object.keys(cd.fixedRoles[key]).forEach(function (field) {
+                            var c = cd.fixedRoles[key][field];
+                            html += that._diffRow("Fixed: " + key.split("|")[1], field, c.current, c.previous);
+                        });
+                    });
+                }
+                html += '</table>';
+            }
+
+            // Scope item changes
+            var sd = diff.scopeDiff;
+            if (sd.added.length > 0 || sd.removed.length > 0 || sd.changed.length > 0) {
+                html += that._sectionTitle("Scope Item Changes");
+                if (sd.added.length > 0) {
+                    html += '<div style="margin-bottom:8px;font-size:12px"><span style="color:#1a6e3a;font-weight:600">Added (' + sd.added.length + '):</span> ';
+                    html += sd.added.map(function (s) { return s.func_role + ' / ' + s.lob; }).join(', ');
+                    html += '</div>';
+                }
+                if (sd.removed.length > 0) {
+                    html += '<div style="margin-bottom:8px;font-size:12px"><span style="color:#bb0000;font-weight:600">Removed (' + sd.removed.length + '):</span> ';
+                    html += sd.removed.map(function (s) { return s.func_role + ' / ' + s.lob; }).join(', ');
+                    html += '</div>';
+                }
+                if (sd.changed.length > 0) {
+                    html += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px">';
+                    html += '<tr style="background:#f2f2f2;font-weight:600">';
+                    html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc">Scope Item</td>';
+                    html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc">Field</td>';
+                    html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc;text-align:right">Current</td>';
+                    html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc;text-align:right">Snapshot</td>';
+                    html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc;text-align:right">Delta</td></tr>';
+                    sd.changed.forEach(function (c) {
+                        Object.keys(c.changes).forEach(function (field) {
+                            var ch = c.changes[field];
+                            html += that._diffRow(c.key.replace("|", " / "), field, ch.current, ch.previous);
+                        });
+                    });
+                    html += '</table>';
+                }
+            }
+
+            // Item changes
+            var id = diff.itemDiff;
+            html += that._sectionTitle("Item Changes (" +
+                id.changed.length + " changed, " + id.added.length + " added, " + id.removed.length + " removed)");
+
+            if (id.added.length > 0) {
+                html += '<div style="margin-bottom:8px"><span style="font-size:12px;color:#1a6e3a;font-weight:600">Added Items (' + id.added.length + '):</span></div>';
+                html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;font-size:11px">';
+                id.added.forEach(function (a) {
+                    html += '<span style="background:#e6f4ea;padding:2px 8px;border-radius:3px;border:1px solid #b7e1cd">' + a.ricef_number + '</span>';
+                });
+                html += '</div>';
+            }
+            if (id.removed.length > 0) {
+                html += '<div style="margin-bottom:8px"><span style="font-size:12px;color:#bb0000;font-weight:600">Removed Items (' + id.removed.length + '):</span></div>';
+                html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;font-size:11px">';
+                id.removed.forEach(function (r) {
+                    html += '<span style="background:#fce8e6;padding:2px 8px;border-radius:3px;border:1px solid #f5c6cb">' + r.ricef_number + '</span>';
+                });
+                html += '</div>';
+            }
+
+            if (id.changed.length > 0) {
+                html += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px">';
+                html += '<tr style="background:#f2f2f2;font-weight:600">';
+                html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc">RICEF #</td>';
+                html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc">Description</td>';
+                html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc">Field</td>';
+                html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc;text-align:right">Current</td>';
+                html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc;text-align:right">Snapshot</td>';
+                html += '<td style="padding:5px 8px;border-bottom:2px solid #ccc;text-align:right">Delta</td></tr>';
+                id.changed.forEach(function (item) {
+                    var fields = Object.keys(item.changes);
+                    fields.forEach(function (field, fi) {
+                        var c = item.changes[field];
+                        html += '<tr>';
+                        if (fi === 0) {
+                            html += '<td style="padding:4px 8px;border-bottom:1px solid #eee;font-weight:500" rowspan="' + fields.length + '">' + item.ricef_number + '</td>';
+                            html += '<td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:11px" rowspan="' + fields.length + '">' + (item.description || '').substring(0, 50) + '</td>';
+                        }
+                        var cur = c.current != null ? c.current : '';
+                        var prev = c.previous != null ? c.previous : '';
+                        var delta = '';
+                        if (typeof cur === 'number' && typeof prev === 'number') {
+                            var d = Math.round((cur - prev) * 100) / 100;
+                            delta = d > 0 ? '<span style="color:#1a6e3a">+' + that._fmtNum(d) + '</span>' :
+                                    d < 0 ? '<span style="color:#bb0000">' + that._fmtNum(d) + '</span>' : '0';
+                        }
+                        html += '<td style="padding:4px 8px;border-bottom:1px solid #eee">' + field + '</td>';
+                        html += '<td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:500">' + that._fmtVal(cur) + '</td>';
+                        html += '<td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;color:#888">' + that._fmtVal(prev) + '</td>';
+                        html += '<td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:600">' + delta + '</td>';
+                        html += '</tr>';
+                    });
+                });
+                html += '</table>';
+            }
+
+            if (id.changed.length === 0 && id.added.length === 0 && id.removed.length === 0) {
+                html += '<div style="font-size:12px;color:#888;padding:8px 0">No item changes detected.</div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        },
+
+        _deltaTile: function (title, current, previous, unit) {
+            var delta = current - previous;
+            var deltaStr = delta > 0 ? "+" + this._fmtNum(delta) : delta < 0 ? this._fmtNum(delta) : "0";
+            var color = delta > 0 ? "#e76500" : delta < 0 ? "#1a6e3a" : "#666";
+            var borderColor = delta !== 0 ? color : "#ccc";
+            return '<div style="background:#fff;border-left:4px solid ' + borderColor + ';border-radius:4px;padding:12px 16px;min-width:150px;box-shadow:0 1px 3px rgba(0,0,0,0.12)">' +
+                '<div style="font-size:12px;color:#666;margin-bottom:4px">' + title + '</div>' +
+                '<div style="font-size:20px;font-weight:700;color:#333">' + this._fmtNum(current) + unit + '</div>' +
+                '<div style="font-size:12px;color:' + color + ';font-weight:600;margin-top:2px">' + deltaStr + unit + ' from snapshot</div>' +
+                '<div style="font-size:11px;color:#888">was ' + this._fmtNum(previous) + unit + '</div></div>';
+        },
+
+        _diffRow: function (section, field, current, previous) {
+            var cur = current != null ? current : '';
+            var prev = previous != null ? previous : '';
+            var delta = '';
+            if (typeof cur === 'number' && typeof prev === 'number') {
+                var d = Math.round((cur - prev) * 10000) / 10000;
+                delta = d > 0 ? '<span style="color:#e76500">+' + d + '</span>' :
+                        d < 0 ? '<span style="color:#1a6e3a">' + d + '</span>' : '0';
+            } else {
+                delta = cur !== prev ? '<span style="color:#e76500">changed</span>' : '';
+            }
+            var bg = delta ? 'background:#fffbf0' : '';
+            return '<tr style="' + bg + '">' +
+                '<td style="padding:4px 8px;border-bottom:1px solid #eee;font-weight:500">' + section + '</td>' +
+                '<td style="padding:4px 8px;border-bottom:1px solid #eee">' + field + '</td>' +
+                '<td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:500">' + this._fmtVal(cur) + '</td>' +
+                '<td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;color:#888">' + this._fmtVal(prev) + '</td>' +
+                '<td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:600">' + delta + '</td></tr>';
+        },
+
+        _fmtVal: function (v) {
+            if (v == null || v === '') return '';
+            if (typeof v === 'number') return this._fmtNum(Math.round(v * 10000) / 10000);
+            return String(v);
+        },
+
         // --- Purple Grid (Staffing Explosion) ---
 
         _purpleGridData: null,
@@ -654,6 +1056,22 @@ sap.ui.define([
 
         // --- Sheet control section (RICEF/BI/MIGRATION) ---
 
+        _loadOrangeGrid: function (sheetType) {
+            var that = this;
+            this.getOwnerComponent().api("GET",
+                "/projects/" + this._projectId + "/orange-grid/" + sheetType
+            ).then(function (data) {
+                that.getView().getModel("orangeGrid").setData(data);
+                var ph = data.phases || {};
+                that.byId("ogDeliveryLevel").setText(String(data.project.delivery_level || 1));
+                that.byId("ogPhases").setText(
+                    "PREP " + (ph.prep || 0) + " | FTS " + (ph.fts || 0) + " | DESIGN " + (ph.design || 0) +
+                    " | BUILD " + (ph.build || 0) + " | SIT/UAT " + (ph.sit_uat || 0) +
+                    " | DEP " + (ph.dep || 0) + " | HYP " + (ph.hyp || 0) + " weeks"
+                );
+            });
+        },
+
         _loadSheetControl: function (sheetCode) {
             var that = this;
             this.getOwnerComponent().api("GET",
@@ -680,10 +1098,11 @@ sap.ui.define([
             if (data.funcPct) {
                 var funcRow = new ColumnListItem();
                 funcRow.addCell(new Text({ text: "FUNC  % Explore vs Build" }).addStyleClass("sapUiSmallMarginBegin"));
+                var isEditable = !that.getView().getModel("viewModel").getProperty("/readonly");
                 phases.forEach(function (p) {
                     var inp = new InputCtrl({
                         value: "{sheetCtrl>/funcPct/" + p + "}",
-                        type: "Number", textAlign: "Center",
+                        type: "Number", textAlign: "Center", editable: isEditable,
                         change: function () { that._saveSheetFuncPct(sheetCode); }
                     });
                     funcRow.addCell(inp);
@@ -695,11 +1114,12 @@ sap.ui.define([
             (data.fixedRoles || []).forEach(function (role) {
                 var roleRow = new ColumnListItem();
                 roleRow.addCell(new Text({ text: role.role_name }).addStyleClass("sapUiSmallMarginBegin"));
+                var isEdit = !that.getView().getModel("viewModel").getProperty("/readonly");
                 phases.forEach(function (p) {
                     var idx = data.fixedRoles.indexOf(role);
                     var inp = new InputCtrl({
                         value: "{sheetCtrl>/fixedRoles/" + idx + "/" + p + "}",
-                        type: "Number", textAlign: "Center",
+                        type: "Number", textAlign: "Center", editable: isEdit,
                         change: function () { that._saveFixedRole(role.id, idx); }
                     });
                     roleRow.addCell(inp);
@@ -744,7 +1164,7 @@ sap.ui.define([
                 var data, endpoint;
                 if (section === "func-phase-pct") {
                     data = JSON.parse(JSON.stringify(oModel.getProperty("/funcPhasePct")));
-                    formatter.pctFromDisplay(data, ["architect_pct"]);
+                    formatter.pctFromDisplay(data, ["architect_pct", "arch_prep", "arch_fts", "arch_design", "arch_build", "arch_sit_uat", "arch_dep", "arch_hyp"]);
                     endpoint = "/projects/" + that._projectId + "/control/func-phase-pct";
                 } else if (section === "contingency") {
                     data = JSON.parse(JSON.stringify(oModel.getProperty("/contingency")));
@@ -761,14 +1181,13 @@ sap.ui.define([
 
         // --- Items handlers ---
 
-        onSearch: function (oEvent) {
-            var query = oEvent.getParameter("query") || "";
-            var that = this;
-            var url = "/projects/" + this._projectId + "/items?sheetType=" + this._sheetType;
-            if (query) url += "&search=" + encodeURIComponent(query);
-            this.getOwnerComponent().api("GET", url).then(function (data) {
-                that.getView().getModel("items").setData(data);
-            });
+        onExportPdf: function () {
+            var url = "/api/projects/" + this._projectId + "/items-pdf?sheetType=" + this._sheetType;
+            window.open(url, "_blank");
+        },
+
+        onFilterChange: function () {
+            this._applyFilters();
         },
 
         onItemPress: function (oEvent) {
@@ -872,6 +1291,11 @@ sap.ui.define([
                     that._loadItems();
                 }
             });
+        },
+
+        onHelp: function () {
+            var helpMap = { RICEF: "items", BI: "items", MIGRATION: "items", FUNCTIONAL: "functional", ANALYTICS: "analytics", SNAPSHOTS: "snapshots" };
+            helpDialog.show(helpMap[this._sheetType] || "items");
         },
 
         onNavSummary: function () {

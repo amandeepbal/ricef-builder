@@ -4,9 +4,10 @@ const router = Router();
 
 router.get('/', (req, res) => {
   const db = getDb();
+  const vid = req.query.version_id || 1;
   const { frice, classification, complexity } = req.query;
-  let sql = 'SELECT * FROM estimation_grid WHERE 1=1';
-  const params = [];
+  let sql = 'SELECT * FROM estimation_grid WHERE version_id = ?';
+  const params = [vid];
   if (frice) { sql += ' AND frice = ?'; params.push(frice); }
   if (classification) { sql += ' AND classification = ?'; params.push(classification); }
   if (complexity) { sql += ' AND complexity = ?'; params.push(complexity); }
@@ -25,14 +26,14 @@ router.post('/', (req, res) => {
   const db = getDb();
   const b = req.body;
   const result = db.prepare(`
-    INSERT INTO estimation_grid (frice, classification, complexity, baseline,
+    INSERT INTO estimation_grid (version_id, frice, classification, complexity, baseline,
       fs_bus_req, fs_f_analysis, fs_f_spec,
       dev_t_analysis, dev_t_spec, dev_coding, dev_tt_cases, dev_ut, dev_qa,
       fut_f_tcases, fut_test_data, fut_fut, brk_fix,
       total_func, total_tech, grand_total)
-    VALUES (?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?,?)
+    VALUES (?,?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?,?)
   `).run(
-    b.frice, b.classification, b.complexity, b.baseline,
+    b.version_id || 1, b.frice, b.classification, b.complexity, b.baseline,
     b.fs_bus_req, b.fs_f_analysis, b.fs_f_spec,
     b.dev_t_analysis, b.dev_t_spec, b.dev_coding, b.dev_tt_cases, b.dev_ut, b.dev_qa,
     b.fut_f_tcases, b.fut_test_data, b.fut_fut, b.brk_fix,

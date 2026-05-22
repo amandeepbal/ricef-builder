@@ -12,9 +12,10 @@ sap.ui.define([
     "sap/m/ToolbarSpacer",
     "sap/m/ObjectNumber",
     "sap/m/MessageToast",
-    "sap/ui/layout/form/SimpleForm"
+    "sap/ui/layout/form/SimpleForm",
+    "../../model/helpDialog"
 ], function (Controller, JSONModel, Item, Dialog, Button, Label, StepInput,
-             Text, Title, Toolbar, ToolbarSpacer, ObjectNumber, MessageToast, SimpleForm) {
+             Text, Title, Toolbar, ToolbarSpacer, ObjectNumber, MessageToast, SimpleForm, helpDialog) {
     "use strict";
 
     return Controller.extend("com.syntax.ricefbuilder.controller.admin.EstimationGrid", {
@@ -26,9 +27,14 @@ sap.ui.define([
                 .attachPatternMatched(this._load, this);
         },
 
+        _getVersionId: function () {
+            var m = this.getOwnerComponent().getModel("adminCtx");
+            return (m && m.getProperty("/versionId")) || 1;
+        },
+
         _load: function () {
             var that = this;
-            this.getOwnerComponent().api("GET", "/admin/estimation-grid").then(function (data) {
+            this.getOwnerComponent().api("GET", "/admin/estimation-grid?version_id=" + this._getVersionId()).then(function (data) {
                 that._allData = data;
                 that.getView().getModel("grid").setData(data);
                 var filter = that.byId("friceFilter");
@@ -172,6 +178,10 @@ sap.ui.define([
             model.setProperty("/total_func", Math.round(funcTotal * 10) / 10);
             model.setProperty("/total_tech", Math.round(techTotal * 10) / 10);
             model.setProperty("/grand_total", Math.round(grand * 10) / 10);
+        },
+
+        onHelp: function () {
+            helpDialog.show("adminGrid");
         },
 
         onNavBack: function () {

@@ -1,0 +1,311 @@
+{
+  "home": {
+    "title": "Projects",
+    "sections": [
+      {
+        "heading": "Overview",
+        "content": "The home page lists all active estimation projects. Each project is an independent estimation workspace with its own items, control settings, and summary calculations."
+      },
+      {
+        "heading": "Project Dates & Read-Only",
+        "content": "Each project has a Start Date and End Date. If today's date falls outside this range, the project becomes read-only — no items, settings, or calculations can be modified. Projects without dates are always editable."
+      },
+      {
+        "heading": "Config Version",
+        "content": "Each project is linked to a Config Version, which determines which set of admin data (estimation grid, blended rates, dropdowns, etc.) is used for calculations. The version is auto-resolved from the project's start date, or can be set manually via Edit."
+      },
+      {
+        "heading": "Copy as Template",
+        "content": "Creates a full deep copy of the project including all items, control sections, scope items, fixed roles, and staffing profiles. Useful for creating a new phase estimate from an existing one."
+      }
+    ]
+  },
+  "admin": {
+    "title": "Administration",
+    "sections": [
+      {
+        "heading": "Config Versions",
+        "content": "All admin data is versioned by date range. Only one version can be active for any given date. Projects auto-resolve to the version matching their start date."
+      },
+      {
+        "heading": "Clone Version",
+        "content": "Creates a complete copy of all admin tables (RICEF types, estimation grid, blended rates, complexity definitions, dropdowns, sheet config) under a new version with its own date range. Use this when rates or grid values change for a new year/period."
+      },
+      {
+        "heading": "Date Overlap",
+        "content": "Two versions cannot have overlapping date ranges. To create a new version, first close the existing version's end date, then create the new one starting after that date."
+      }
+    ]
+  },
+  "adminRicefTypes": {
+    "title": "RICEF Types",
+    "sections": [
+      {
+        "heading": "What it is",
+        "content": "Defines the 13+ object types available for estimation: Report, Interface, Enhancement, Form, Workflow, BI Report, Migration, etc. Each type has a code (R, I, E, F, W, B, M...), a sequence range for auto-numbering, and a sheet assignment."
+      },
+      {
+        "heading": "What it drives",
+        "content": "• Auto-generated RICEF numbers (e.g. FI-I-4001) use the type's sequence range\n• Sheet assignment (RICEF/BI/MIGRATION) determines which tab the item appears on\n• Sort order controls display sequence in the items table"
+      }
+    ]
+  },
+  "adminGrid": {
+    "title": "Estimation Grid",
+    "sections": [
+      {
+        "heading": "What it is",
+        "content": "The core lookup table for baseline effort hours. Each row maps a FRICE type + Classification + Complexity to a set of activity hours (FS, Dev, Testing) and totals (total_func, total_tech, grand_total)."
+      },
+      {
+        "heading": "What it drives",
+        "content": "When an item's classification and complexity are set, the estimation engine looks up the matching grid row. The total_func and total_tech values become the baseline that gets multiplied by effort adjustments, blended multiplier, and contingency to produce the item's calculated hours."
+      },
+      {
+        "heading": "Calculation chain",
+        "content": "BUILD_FUNC = ROUND(func_effort_adj × grid.total_func × (1 + cont_func%))\nBUILD_TECH = ROUND(tech_effort_adj × blended_multiplier × grid.total_tech × (1 + cont_tech%))\nSIT_FUNC = BUILD_FUNC × sit_func%\nSIT_TECH = BUILD_TECH × sit_tech%"
+      },
+      {
+        "heading": "Grid lookup",
+        "content": "The lookup splits the item's classification at ' / ' — left side is the FRICE type (e.g. 'CPI'), right side is the classification (e.g. 'Mapping'). Both are matched case-insensitively against the grid."
+      }
+    ]
+  },
+  "adminRates": {
+    "title": "Blended Rates",
+    "sections": [
+      {
+        "heading": "What it is",
+        "content": "Rate tables for three teams: DEV (D), BI (B), and Migration (M). Each team has 3 delivery levels with rates per currency (USD, CAD, EUR)."
+      },
+      {
+        "heading": "Delivery Levels",
+        "content": "• Level 1 (Minimal Adaptation): Lowest rate, standard SAP implementation\n• Level 2 (Balanced Delivery): Mid-range rate, moderate customization\n• Level 3 (Expertise Driven): Highest rate, complex landscape"
+      },
+      {
+        "heading": "What it drives",
+        "content": "• Billable Rate: Client-facing hourly rate\n• Effort Multiplier: Applied to tech hours via blended_effort_by_complexity\n• Blended Cost: Internal cost per hour\n• Margin %: (Billable - Cost) / Billable\n\nThe delivery level is selected on the Summary page and determines which rate tier is used for cost calculations in Analytics."
+      },
+      {
+        "heading": "Effort by Complexity",
+        "content": "Each team has multipliers per complexity level (e.g. Very High = 1.02). This multiplier is applied to tech hours during item calculation: BUILD_TECH = tech_adj × multiplier × grid.total_tech × (1 + cont_tech%)."
+      }
+    ]
+  },
+  "adminComplexity": {
+    "title": "Complexity Definitions",
+    "sections": [
+      {
+        "heading": "What it is",
+        "content": "Reference definitions that describe what each complexity level means for different classification types. Each definition has functional and technical hour ranges across 5 complexity levels (Very Low through Very High)."
+      },
+      {
+        "heading": "Teams",
+        "content": "Definitions are grouped by team: DEV, BI, and Migration. Each team has its own set of classifications with different hour ranges."
+      },
+      {
+        "heading": "What it drives",
+        "content": "These are reference data used by estimators to determine the appropriate complexity level for an item. They don't directly feed into calculations — the Estimation Grid holds the actual baseline hours."
+      }
+    ]
+  },
+  "adminDropdowns": {
+    "title": "Dropdown Values",
+    "sections": [
+      {
+        "heading": "What it is",
+        "content": "Picklist values used throughout the application: Status, Module, Functional Roles, Technical Roles, Classifications (per team: DEV, BI, Migration), and Location."
+      },
+      {
+        "heading": "Categories",
+        "content": "• STATUS: Item lifecycle (New, In Progress, Complete, Cancelled, On Hold)\n• MODULE: Business area (FI, SD, PP, MM, etc.)\n• FUNC_ROLE / TECH_ROLE: Resource assignments\n• CLASSIFICATION_DEV/BI/MIG: Item classification dropdowns per sheet\n• LOCATION: Geographic location values"
+      },
+      {
+        "heading": "Separators",
+        "content": "Group headers (marked with blue highlight) organize values into logical sections. They appear as non-selectable headers in dropdown menus."
+      },
+      {
+        "heading": "Sort Order & Insert",
+        "content": "Values display in sort order sequence. Use the + button on any row to insert a new value directly below it — sort orders are auto-adjusted."
+      }
+    ]
+  },
+  "adminSheetConfig": {
+    "title": "Sheet Column Config",
+    "sections": [
+      {
+        "heading": "What it is",
+        "content": "Controls which columns are visible on each sheet type (RICEF, BI, MIGRATION) and their labels, widths, and sort order."
+      },
+      {
+        "heading": "What it drives",
+        "content": "Column visibility and ordering in the items table for each tab. Hiding a column removes it from the display but the data is still stored."
+      }
+    ]
+  },
+  "items": {
+    "title": "Items (RICEF / BI / Migration)",
+    "sections": [
+      {
+        "heading": "Overview",
+        "content": "The items table is the main working area. Each row is an estimation line item with a unique RICEF number, classification, complexity, and calculated effort hours."
+      },
+      {
+        "heading": "Item Types",
+        "content": "Items are grouped by RICEF type (Report, Interface, Enhancement, etc.). Types B, H, D, M use the sub-items calculation path — their hours go to SUB Items columns instead of BUILD columns."
+      },
+      {
+        "heading": "Sub-Items (seq_number = 0)",
+        "content": "Items with sequence number 0 are sub-items (shown with ↳ prefix). They represent detailed breakdowns under a parent RICEF number. TOTAL rows aggregate all sub-items."
+      },
+      {
+        "heading": "Calculation",
+        "content": "Setting classification + complexity triggers automatic calculation:\n1. Grid lookup: classification → baseline hours\n2. Apply effort adjustments (func_adj, tech_adj)\n3. Apply blended multiplier (from complexity)\n4. Apply contingency % (FUNC: 0%, TECH: 15% default)\n5. Calculate SIT hours (FUNC: 10%, TECH: 12% of build)\n6. Sum totals"
+      },
+      {
+        "heading": "Control Section",
+        "content": "Each sheet tab has a collapsible control section with:\n• FUNC % Explore vs Build: How functional hours split across DESIGN and BUILD phases\n• Fixed Roles: Architect and Tech Lead hours per phase (hours/week for absolute values, percentages for DEP/HYP)"
+      },
+      {
+        "heading": "Orange Grid",
+        "content": "Per-sheet calculated summary showing:\n• FUNC — Functional Effort: How this sheet's item functional hours are distributed across phases per role\n• TECH — Technical Effort: Fixed roles (Architect, Tech Lead) + developer role hours per phase\n\nThese are read-only computed values that feed into the project Summary. The Orange Grid also shows the current delivery level and phase weeks (maintained in Summary)."
+      },
+      {
+        "heading": "Staffing Explosion (Purple Grid)",
+        "content": "Distributes technical hours across resource types (Onsite/Offshore/DC) per week. Uses staffing profiles to split developer hours and fixed role hours across the phase timeline."
+      },
+      {
+        "heading": "Filters",
+        "content": "Use the toolbar dropdowns to filter items by Status, Complexity, or Module. Filters are client-side for instant response. The search field filters across RICEF#, description, and classification. All filters combine and reset when switching tabs."
+      },
+      {
+        "heading": "Export PDF",
+        "content": "Generates a PDF of the current sheet's items with group headers, totals, and color-coded complexity. Cancelled items are shown with strikethrough."
+      },
+      {
+        "heading": "Recalculate All",
+        "content": "Re-runs the estimation engine on every item in the project. Use this after changing Item Factors (contingency %, SIT %) or if calculated values seem stale. Non-TOTAL items are recalculated first, then TOTAL rows."
+      }
+    ]
+  },
+  "functional": {
+    "title": "Functional Tab",
+    "sections": [
+      {
+        "heading": "Overview",
+        "content": "The Functional tab manages scope-level estimation separate from the RICEF items. It estimates functional consultant hours based on scope item counts × baseline hours per complexity level."
+      },
+      {
+        "heading": "Distribution & Contingency",
+        "content": "• FUNC Scope Split per Phase %: How functional scope hours distribute across PREP through DEP (should sum to 100%)\n• Extra % for Phase (HYP): Applied on top of the 100% distribution — not part of the base split\n• % Architect (per phase): Percentage of total functional hours allocated to the architect role, configurable per phase\n• Contingency per Phase: Additional buffer percentage applied per phase"
+      },
+      {
+        "heading": "Scope Configuration",
+        "content": "Baseline hours per complexity: Low (24h), Medium (48h), High (72h). KDD adds hours, IP subtracts hours. Complexity Multiplier scales all scope hours."
+      },
+      {
+        "heading": "Scope Items",
+        "content": "Each row represents a functional role + line of business. Enter counts per complexity level. Total Hours = (Low×24 + Med×48 + High×72 + VeryHigh + Localization + KDD×40 + IP×(-40)) × Multiplier."
+      },
+      {
+        "heading": "Functional Scope — Functional Effort (calculated)",
+        "content": "Read-only table showing scope item hours distributed across phases per role. Each role's total scope hours are split using the Distribution Split per Phase %, with HYP applied as an extra percentage on top."
+      },
+      {
+        "heading": "Technical Scope — Functional Effort (calculated)",
+        "content": "Read-only table showing functional hours from RICEF/BI/Migration items (not scope items) distributed across phases per role. These come from item build_func + sub_items_func values, distributed using each sheet's explore/build percentages."
+      },
+      {
+        "heading": "Total — Functional Effort (calculated)",
+        "content": "Sum of Functional Scope + Technical Scope + contingency per phase per role. Includes the Chief/Solution Architect row (highlighted). Shows Lead/Consultant split columns (typically 23%/80%). This feeds directly into the Summary page's functional section."
+      },
+      {
+        "heading": "Impact on Summary",
+        "content": "Scope item totals feed into the Summary's FUNCTIONAL section, which is then distributed across phases using the distribution percentages, with contingency applied per phase."
+      }
+    ]
+  },
+  "summary": {
+    "title": "Project Summary",
+    "sections": [
+      {
+        "heading": "Overview",
+        "content": "The Summary aggregates all item hours and distributes them across project phases by role. It mirrors the Excel SUMMARY sheet and is the primary output for project cost estimation."
+      },
+      {
+        "heading": "Delivery Level",
+        "content": "Controls which blended rate tier is used. Toggle between levels to see the cost impact. This is the Orange Grid from the Excel. Changing the level updates the billable rate, blended cost, and margin displayed."
+      },
+      {
+        "heading": "# of Weeks",
+        "content": "Number of weeks per phase (PREP, FTS, DESIGN, BUILD, SIT/UAT, DEP, HYP). Drives: fixed role weekly hours calculation, Purple Grid weekly distribution, and staffing explosion."
+      },
+      {
+        "heading": "PGO % (Project Governance & Oversight)",
+        "content": "Percentage of total project hours allocated to governance per phase. Lead Split and Consultant Split control how PGO hours are divided between lead and consultant roles."
+      },
+      {
+        "heading": "Contingency %",
+        "content": "Buffer percentage added per phase to the functional scope hours. Applied after phase distribution: Phase_Hours × (1 + Contingency%). HYP typically has 0% contingency."
+      },
+      {
+        "heading": "FUNC Phase %",
+        "content": "How functional hours from scope items are distributed across phases. Must sum to ~100%. Architect % is the portion of total functional hours allocated to the architect role."
+      },
+      {
+        "heading": "Item Factors (triggers recalc)",
+        "content": "Per-item calculation factors stored at the project level:\n• FUNC Contingency: Added to functional hours (default 0%)\n• TECH Contingency: Added to technical hours (default 15%)\n• SIT FUNC %: SIT hours as percentage of build func (default 10%)\n• SIT TECH %: SIT hours as percentage of build tech (default 12%)\n\nChanging these triggers a full recalculation of all items."
+      },
+      {
+        "heading": "Calculation Flow",
+        "content": "1. FUNCTIONAL scope items → distribute by phase % → apply contingency\n2. Per-sheet FUNC (RICEF/BI/MIG) → distribute by sheet's explore/build % → apply DEP/HYP %\n3. Architect = SUM(func_by_role) × architect% × (1 + phase_contingency)\n4. TECH sections: aggregate item tech hours per role → add fixed roles → distribute across phases\n5. PGO = total hours × PGO% per phase\n6. Grand Total = FUNC + TECH + PGO"
+      }
+    ]
+  },
+  "analytics": {
+    "title": "Analytics",
+    "sections": [
+      {
+        "heading": "Overview",
+        "content": "Project-level analytics dashboard providing visual breakdowns of effort, cost, complexity, and risk. All data is computed from current item values — no separate data entry needed."
+      },
+      {
+        "heading": "KPI Tiles",
+        "content": "• Total Hours: Grand total across all items (Func + Tech)\n• Est. Revenue: Total hours × billable rate at current delivery level\n• Items: Count excluding sub-items\n• TBD Items: Items with complexity '0-TBD' — these use placeholder hours and represent estimation risk"
+      },
+      {
+        "heading": "Cost Analytics",
+        "content": "Uses blended rates from the project's config version:\n• Cost by Sheet: Hours × billable rate and blended cost per RICEF/BI/Migration\n• Revenue by Delivery Level: Side-by-side comparison showing how Level 1/2/3 affects total revenue"
+      },
+      {
+        "heading": "Effort Concentration (Pareto)",
+        "content": "Shows whether a small number of items drive most of the effort. The highlighted row marks where 80% of hours are concentrated. A steep curve means risk is concentrated in fewer items."
+      },
+      {
+        "heading": "Complexity Heatmap",
+        "content": "Matrix of item counts at each Object Type × Complexity intersection. Darker cells indicate higher concentration. Useful for spotting which types have the most unestimated (TBD) items."
+      }
+    ]
+  },
+  "snapshots": {
+    "title": "Snapshots",
+    "sections": [
+      {
+        "heading": "Overview",
+        "content": "Snapshots capture the entire project state at a point in time — all items, control settings, scope items, fixed roles, and staffing profiles. Use them to track how estimates evolve across project phases."
+      },
+      {
+        "heading": "Taking a Snapshot",
+        "content": "Click 'Take Snapshot' in the project header. Select a phase label (PREP, FTS, DESIGN, etc. or PRESALE/DISCOVERY) and optionally add a description. The snapshot stores the current state as a JSON blob."
+      },
+      {
+        "heading": "Comparing",
+        "content": "Select a snapshot and click 'Compare with Current'. The comparison shows:\n• KPI deltas: hours, items, func/tech totals with +/- indicators\n• Control section changes: field-by-field diff of all settings\n• Scope item changes: added, removed, or modified scope items\n• Item changes: added/removed items (as chips) and changed items with per-field current vs snapshot values and delta"
+      },
+      {
+        "heading": "Matching Logic",
+        "content": "Items are matched by their database ID (stable across time). Control sections match by table + field. Scope items match by role + LOB combination. Fixed roles match by team + role name."
+      }
+    ]
+  }
+}

@@ -2,6 +2,7 @@
     controllerName="com.syntax.ricefbuilder.controller.Home">
     <Page title="Projects" id="homePage">
         <headerContent>
+            <Button icon="sap-icon://sys-help" tooltip="Help" press="onHelp" type="Transparent"/>
             <Button text="New Project" icon="sap-icon://add" press="onCreateProject" type="Emphasized"/>
         </headerContent>
         <content>
@@ -12,20 +13,24 @@
                     <Column width="8rem"><Text text="Project #"/></Column>
                     <Column><Text text="Description"/></Column>
                     <Column width="6rem" hAlign="Center"><Text text="Currency"/></Column>
-                    <Column width="5rem" hAlign="Center"><Text text="Level"/></Column>
+                    <Column width="8rem"><Text text="Start"/></Column>
+                    <Column width="8rem"><Text text="End"/></Column>
                     <Column width="5rem" hAlign="Center"><Text text="Items"/></Column>
-                    <Column width="10rem"><Text text="Created"/></Column>
-                    <Column width="6rem" hAlign="Center"><Text text="Actions"/></Column>
+                    <Column width="8rem" hAlign="Center"><Text text="Actions"/></Column>
                 </columns>
                 <items>
                     <ColumnListItem type="Navigation" press="onProjectPress">
                         <Text text="{projects>project_number}"/>
-                        <Text text="{projects>description}"/>
-                        <Text text="{projects>currency}"/>
-                        <Text text="{projects>delivery_level}"/>
-                        <ObjectNumber number="{projects>item_count}" emphasized="false"/>
-                        <Text text="{projects>created_at}"/>
                         <HBox>
+                            <Text text="{projects>description}"/>
+                            <ObjectStatus text="Read-Only" state="Warning" visible="{projects>is_readonly}" class="sapUiTinyMarginBegin"/>
+                        </HBox>
+                        <Text text="{projects>currency}"/>
+                        <Text text="{projects>start_date}"/>
+                        <Text text="{projects>end_date}"/>
+                        <ObjectNumber number="{projects>item_count}" emphasized="false"/>
+                        <HBox>
+                            <Button icon="sap-icon://edit" tooltip="Edit" type="Transparent" press="onEditProject"/>
                             <Button icon="sap-icon://copy" tooltip="Copy as Template" type="Transparent" press="onCopyProject"/>
                             <Button icon="sap-icon://delete" tooltip="Delete" type="Transparent" press="onDeleteProject"/>
                         </HBox>

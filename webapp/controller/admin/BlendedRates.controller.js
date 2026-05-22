@@ -2,8 +2,9 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
     "sap/m/IconTabFilter",
-    "sap/m/MessageToast"
-], function (Controller, JSONModel, IconTabFilter, MessageToast) {
+    "sap/m/MessageToast",
+    "../../model/helpDialog"
+], function (Controller, JSONModel, IconTabFilter, MessageToast, helpDialog) {
     "use strict";
 
     return Controller.extend("com.syntax.ricefbuilder.controller.admin.BlendedRates", {
@@ -16,9 +17,14 @@ sap.ui.define([
                 .attachPatternMatched(this._load, this);
         },
 
+        _getVersionId: function () {
+            var m = this.getOwnerComponent().getModel("adminCtx");
+            return (m && m.getProperty("/versionId")) || 1;
+        },
+
         _load: function () {
             var that = this;
-            this.getOwnerComponent().api("GET", "/admin/blended-rates").then(function (data) {
+            this.getOwnerComponent().api("GET", "/admin/blended-rates?version_id=" + this._getVersionId()).then(function (data) {
                 that._configs = data;
                 var tabs = that.byId("teamTabs");
                 tabs.removeAllItems();
@@ -97,6 +103,10 @@ sap.ui.define([
                 MessageToast.show("Blended rates saved");
                 that._load();
             });
+        },
+
+        onHelp: function () {
+            helpDialog.show("adminRates");
         },
 
         onNavBack: function () {

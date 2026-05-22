@@ -1,6 +1,9 @@
 <mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m"
     controllerName="com.syntax.ricefbuilder.controller.admin.EstimationGrid">
     <Page title="Estimation Grid" showNavButton="true" navButtonPress="onNavBack">
+        <headerContent>
+            <Button icon="sap-icon://sys-help" tooltip="Help" press="onHelp" type="Transparent"/>
+        </headerContent>
         <subHeader>
             <Toolbar>
                 <SearchField width="15rem" search="onSearch" id="gridSearch"/>

@@ -2,10 +2,14 @@
     controllerName="com.syntax.ricefbuilder.controller.ProjectDetail">
     <Page id="projectPage" title="{viewModel>/title}" showNavButton="true" navButtonPress="onNavBack">
         <headerContent>
+            <Button icon="sap-icon://sys-help" tooltip="Help" press="onHelp" type="Transparent"/>
             <Button text="Summary" icon="sap-icon://chart-table-view" press="onNavSummary" type="Transparent"/>
-            <Button text="Recalculate All" icon="sap-icon://synchronize" press="onRecalcAll" type="Transparent"/>
+            <Button text="Recalculate All" icon="sap-icon://synchronize" press="onRecalcAll" type="Transparent" visible="{viewModel>/editable}"/>
+            <Button text="Take Snapshot" icon="sap-icon://camera" press="onTakeSnapshot" type="Transparent"/>
         </headerContent>
         <content>
+            <MessageStrip text="This project is outside its active date range and is read-only." type="Warning"
+                showIcon="true" visible="{viewModel>/readonly}" class="sapUiSmallMargin"/>
             <IconTabBar id="sheetTabs" select="onTabSelect" selectedKey="RICEF">
                 <!-- Tabs built dynamically from sheet_types -->
             </IconTabBar>
@@ -28,6 +32,75 @@
                     </Table>
                 </Panel>
 
+                <!-- Orange Grid -->
+                <Panel id="orangeGridPanel" headerText="Orange Grid" expandable="true" expanded="false" class="sapUiSmallMargin">
+                    <VBox class="sapUiTinyMargin">
+                        <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                            <Label text="Delivery Level:" class="sapUiSmallMarginEnd"/>
+                            <Text id="ogDeliveryLevel" text=""/>
+                            <Text text="  |  " class="sapUiSmallMarginBeginEnd"/>
+                            <Label text="Phases:" class="sapUiSmallMarginEnd"/>
+                            <Text id="ogPhases" text=""/>
+                        </HBox>
+                    </VBox>
+                    <Panel headerText="FUNC — Functional Effort" expandable="true" expanded="true">
+                        <Table id="ogFuncTable" items="{ path: 'orangeGrid>/funcRows' }" fixedLayout="true">
+                            <columns>
+                                <Column width="14rem"><Text text="Role"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
+                                <Column hAlign="End" width="6rem"><Text text="TOTAL"/></Column>
+                            </columns>
+                            <items>
+                                <ColumnListItem>
+                                    <Text text="{orangeGrid>role}"/>
+                                    <ObjectNumber number="{orangeGrid>prep}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>fts}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>design}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>build}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>sit_uat}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>dep}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>hyp}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>total}" emphasized="true"/>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
+                    </Panel>
+                    <Panel headerText="TECH — Technical Effort" expandable="true" expanded="true">
+                        <Table id="ogTechTable" items="{ path: 'orangeGrid>/techRows' }" fixedLayout="true">
+                            <columns>
+                                <Column width="14rem"><Text text="Role"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
+                                <Column hAlign="End" width="6rem"><Text text="TOTAL"/></Column>
+                            </columns>
+                            <items>
+                                <ColumnListItem highlight="{= ${orangeGrid>_highlight} ? 'Information' : 'None' }">
+                                    <Text text="{orangeGrid>role}"/>
+                                    <ObjectNumber number="{orangeGrid>prep}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>fts}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>design}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>build}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>sit_uat}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>dep}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>hyp}" emphasized="false"/>
+                                    <ObjectNumber number="{orangeGrid>total}" emphasized="true"/>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
+                    </Panel>
+                </Panel>
+
                 <!-- Purple Grid (Staffing Explosion) -->
                 <Panel id="purpleGridPanel" headerText="Staffing Explosion (Purple Grid)" expandable="true" expanded="false"
                     class="sapUiSmallMargin" visible="{viewModel>/showItems}" expand="onPurpleGridExpand">
@@ -35,15 +108,28 @@
                         afterRendering="onPurpleGridAfterRendering"/>
                 </Panel>
 
-                <Toolbar class="sapUiSmallMarginTop">
+                <OverflowToolbar class="sapUiSmallMarginTop">
                     <Title text="Items" level="H5"/>
                     <ToolbarSpacer/>
-                    <SearchField width="20rem" search="onSearch" id="searchField"/>
-                    <Button text="Add Item" icon="sap-icon://add" press="onAddItem" type="Emphasized"/>
-                    <Button text="Delete" icon="sap-icon://delete" press="onDeleteItems" type="Reject"/>
-                </Toolbar>
+                    <Label text="Status:"/>
+                    <Select id="filterStatus" change="onFilterChange" width="8rem">
+                        <core:Item key="" text="All"/>
+                    </Select>
+                    <Label text="Complexity:"/>
+                    <Select id="filterComplexity" change="onFilterChange" width="9rem">
+                        <core:Item key="" text="All"/>
+                    </Select>
+                    <Label text="Module:"/>
+                    <Select id="filterModule" change="onFilterChange" width="7rem">
+                        <core:Item key="" text="All"/>
+                    </Select>
+                    <SearchField width="14rem" search="onFilterChange" id="searchField"/>
+                    <Button text="Export PDF" icon="sap-icon://pdf-attachment" press="onExportPdf" type="Transparent"/>
+                    <Button text="Add Item" icon="sap-icon://add" press="onAddItem" type="Emphasized" visible="{viewModel>/editable}"/>
+                    <Button text="Delete" icon="sap-icon://delete" press="onDeleteItems" type="Reject" visible="{viewModel>/editable}"/>
+                </OverflowToolbar>
 
-                <Table id="itemsTable" mode="MultiSelect" growing="true" growingThreshold="200"
+                <Table id="itemsTable" mode="{= ${viewModel>/editable} ? 'MultiSelect' : 'None' }" growing="true" growingThreshold="200"
                        items="{ path: 'items>/', factory: '.itemFactory' }">
                     <columns>
                         <Column width="8rem"><Text text="RICEF #"/></Column>
@@ -65,6 +151,42 @@
                 <core:HTML id="analyticsHtml" content="&lt;div id='analyticsContainer'&gt;&lt;/div&gt;"/>
             </VBox>
 
+            <!-- SNAPSHOTS -->
+            <VBox id="snapshotsPanel" visible="{viewModel>/showSnapshots}" class="sapUiSmallMargin">
+                <Panel headerText="Snapshots">
+                    <headerToolbar>
+                        <Toolbar>
+                            <Title text="Saved Snapshots"/>
+                            <ToolbarSpacer/>
+                            <Button text="Compare with Current" icon="sap-icon://compare" press="onCompareSnapshot" id="compareBtn" type="Emphasized"/>
+                        </Toolbar>
+                    </headerToolbar>
+                    <Table id="snapshotTable" items="{ path: 'snapshots>/' }" mode="SingleSelectMaster">
+                        <columns>
+                            <Column width="8rem"><Text text="Phase"/></Column>
+                            <Column><Text text="Label"/></Column>
+                            <Column width="6rem" hAlign="Center"><Text text="Items"/></Column>
+                            <Column width="8rem" hAlign="End"><Text text="Total Hours"/></Column>
+                            <Column width="12rem"><Text text="Created"/></Column>
+                            <Column width="4rem"/>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <Text text="{snapshots>phase}"/>
+                                <Text text="{snapshots>label}"/>
+                                <ObjectNumber number="{snapshots>total_items}" emphasized="false"/>
+                                <ObjectNumber number="{snapshots>total_hours}" unit="h" emphasized="true"/>
+                                <Text text="{snapshots>created_at}"/>
+                                <Button icon="sap-icon://delete" type="Transparent" press="onDeleteSnapshot"/>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </Panel>
+
+                <!-- Compare results rendered here -->
+                <core:HTML id="compareHtml" content="&lt;div id='compareContainer'&gt;&lt;/div&gt;"/>
+            </VBox>
+
             <!-- FUNCTIONAL Scope Items -->
             <VBox id="functionalPanel" visible="{viewModel>/showFunctional}" class="sapUiSmallMargin">
                 <!-- Distribution / Contingency / Architect — mirrors Excel FUNCTIONAL sheet control section -->
@@ -81,35 +203,43 @@
                             <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
                         </columns>
                         <items>
+                            <!-- Distribution Split per Phase (PREP-DEP = 100%, HYP excluded) -->
                             <ColumnListItem>
                                 <Text text="FUNC Scope - Split per Phase %" class="sapUiSmallMarginBegin"/>
-                                <Input value="{ctrl>/funcPhasePct/prep}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
-                                <Input value="{ctrl>/funcPhasePct/fts}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
-                                <Input value="{ctrl>/funcPhasePct/design}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
-                                <Input value="{ctrl>/funcPhasePct/build}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
-                                <Input value="{ctrl>/funcPhasePct/sit_uat}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
-                                <Input value="{ctrl>/funcPhasePct/dep}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
-                                <Input value="{ctrl>/funcPhasePct/hyp}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/prep}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/fts}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/design}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/build}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/sit_uat}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/dep}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Text text=""/>
                             </ColumnListItem>
+                            <!-- Extra % for Phase (HYP only — applied on top of 100% distribution) -->
+                            <ColumnListItem>
+                                <Text text="Extra % for Phase (HYP)" class="sapUiSmallMarginBegin"/>
+                                <Text text=""/><Text text=""/><Text text=""/><Text text=""/><Text text=""/><Text text=""/>
+                                <Input value="{ctrl>/funcPhasePct/hyp}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                            </ColumnListItem>
+                            <!-- % Architect per phase — applied to total functional hours -->
                             <ColumnListItem>
                                 <Text text="% Architect" class="sapUiSmallMarginBegin"/>
-                                <Input value="{ctrl>/funcPhasePct/architect_pct}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
-                                <Text text=""/>
-                                <Text text=""/>
-                                <Text text=""/>
-                                <Text text=""/>
-                                <Text text=""/>
-                                <Text text=""/>
+                                <Input value="{ctrl>/funcPhasePct/arch_prep}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/arch_fts}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/arch_design}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/arch_build}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/arch_sit_uat}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/arch_dep}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
+                                <Input value="{ctrl>/funcPhasePct/arch_hyp}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="func-phase-pct"/></customData></Input>
                             </ColumnListItem>
                             <ColumnListItem>
                                 <Text text="Contingency (% per Phase)" class="sapUiSmallMarginBegin"/>
-                                <Input value="{ctrl>/contingency/prep}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
-                                <Input value="{ctrl>/contingency/fts}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
-                                <Input value="{ctrl>/contingency/design}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
-                                <Input value="{ctrl>/contingency/build}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
-                                <Input value="{ctrl>/contingency/sit_uat}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
-                                <Input value="{ctrl>/contingency/dep}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
-                                <Input value="{ctrl>/contingency/hyp}" type="Number" textAlign="Center" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/prep}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/fts}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/design}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/build}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/sit_uat}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/dep}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
+                                <Input value="{ctrl>/contingency/hyp}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onFuncCtrlChange"><customData><core:CustomData key="s" value="contingency"/></customData></Input>
                             </ColumnListItem>
                         </items>
                     </Table>
@@ -128,27 +258,29 @@
                         </columns>
                         <items>
                             <ColumnListItem>
-                                <Input value="{scope>/config/low_hours}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
-                                <Input value="{scope>/config/medium_hours}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
-                                <Input value="{scope>/config/high_hours}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
-                                <Input value="{scope>/config/kdd_hours}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
-                                <Input value="{scope>/config/ip_hours}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
-                                <Input value="{scope>/config/complexity_multiplier}" type="Number" textAlign="Center" change="onScopeConfigChange"/>
+                                <Input value="{scope>/config/low_hours}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeConfigChange"/>
+                                <Input value="{scope>/config/medium_hours}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeConfigChange"/>
+                                <Input value="{scope>/config/high_hours}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeConfigChange"/>
+                                <Input value="{scope>/config/kdd_hours}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeConfigChange"/>
+                                <Input value="{scope>/config/ip_hours}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeConfigChange"/>
+                                <Input value="{scope>/config/complexity_multiplier}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeConfigChange"/>
                             </ColumnListItem>
                         </items>
                     </Table>
                 </Panel>
 
                 <!-- Scope Items -->
-                <Panel headerText="Functional Scope Items">
-                    <Toolbar>
-                        <Title text="Scope Items by Role" level="H5"/>
-                        <ToolbarSpacer/>
-                        <Button text="Add Role" icon="sap-icon://add" press="onAddScopeItem" type="Emphasized"/>
-                    </Toolbar>
+                <Panel headerText="Functional Scope Items" expandable="true" expanded="true">
+                    <headerToolbar>
+                        <Toolbar>
+                            <Title text="Scope Items by Role" level="H5"/>
+                            <ToolbarSpacer/>
+                            <Button text="Add Role" icon="sap-icon://add" press="onAddScopeItem" type="Emphasized" visible="{viewModel>/editable}"/>
+                        </Toolbar>
+                    </headerToolbar>
                     <Table id="scopeTable" items="{ path: 'scope>/items' }">
                         <columns>
-                            <Column width="10rem"><Text text="Func Role"/></Column>
+                            <Column width="12rem"><Text text="Func Role"/></Column>
                             <Column width="12rem"><Text text="Line of Business"/></Column>
                             <Column hAlign="Center" width="5rem"><Text text="Low"/></Column>
                             <Column hAlign="Center" width="5rem"><Text text="Medium"/></Column>
@@ -162,17 +294,113 @@
                         </columns>
                         <items>
                             <ColumnListItem>
-                                <Input value="{scope>func_role}" change="onScopeItemChange"/>
-                                <Input value="{scope>lob}" change="onScopeItemChange"/>
-                                <Input value="{scope>low_count}" type="Number" textAlign="Center" change="onScopeItemChange"/>
-                                <Input value="{scope>medium_count}" type="Number" textAlign="Center" change="onScopeItemChange"/>
-                                <Input value="{scope>high_count}" type="Number" textAlign="Center" change="onScopeItemChange"/>
-                                <Input value="{scope>very_high_hours}" type="Number" textAlign="Center" change="onScopeItemChange"/>
-                                <Input value="{scope>localization_hours}" type="Number" textAlign="Center" change="onScopeItemChange"/>
-                                <Input value="{scope>kdd_count}" type="Number" textAlign="Center" change="onScopeItemChange"/>
-                                <Input value="{scope>ip_count}" type="Number" textAlign="Center" change="onScopeItemChange"/>
+                                <Select selectedKey="{scope>func_role}" items="{ path: 'funcRoles>/' }" enabled="{viewModel>/editable}" change="onScopeItemChange" width="100%">
+                                    <core:Item key="{funcRoles>value}" text="{funcRoles>value}"/>
+                                </Select>
+                                <Input value="{scope>lob}" editable="{viewModel>/editable}" change="onScopeItemChange"/>
+                                <Input value="{scope>low_count}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeItemChange"/>
+                                <Input value="{scope>medium_count}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeItemChange"/>
+                                <Input value="{scope>high_count}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeItemChange"/>
+                                <Input value="{scope>very_high_hours}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeItemChange"/>
+                                <Input value="{scope>localization_hours}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeItemChange"/>
+                                <Input value="{scope>kdd_count}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeItemChange"/>
+                                <Input value="{scope>ip_count}" type="Number" textAlign="Center" editable="{viewModel>/editable}" change="onScopeItemChange"/>
                                 <ObjectNumber number="{scope>total_hours}" unit="h" emphasized="true"/>
-                                <Button icon="sap-icon://delete" type="Reject" press="onDeleteScopeItem"/>
+                                <Button icon="sap-icon://delete" type="Reject" press="onDeleteScopeItem" visible="{viewModel>/editable}"/>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </Panel>
+
+                <!-- Calculated Output: Functional Scope Effort -->
+                <Panel headerText="Functional Scope — Functional Effort" expandable="true" expanded="true">
+                    <Table items="{ path: 'funcEffort>/scopeEffort' }" fixedLayout="true">
+                        <columns>
+                            <Column width="14rem"><Text text="Role"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
+                            <Column hAlign="End" width="6rem"><Text text="TOTAL"/></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <Text text="{funcEffort>role}"/>
+                                <ObjectNumber number="{funcEffort>prep}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>fts}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>design}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>build}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>sit_uat}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>dep}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>hyp}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>total}" emphasized="true"/>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </Panel>
+
+                <!-- Calculated Output: Technical Scope Effort -->
+                <Panel headerText="Technical Scope — Functional Effort" expandable="true" expanded="true">
+                    <Table items="{ path: 'funcEffort>/techScopeEffort' }" fixedLayout="true">
+                        <columns>
+                            <Column width="14rem"><Text text="Role"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
+                            <Column hAlign="End" width="6rem"><Text text="TOTAL"/></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <Text text="{funcEffort>role}"/>
+                                <ObjectNumber number="{funcEffort>prep}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>fts}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>design}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>build}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>sit_uat}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>dep}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>hyp}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>total}" emphasized="true"/>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </Panel>
+
+                <!-- Calculated Output: Total Functional Effort -->
+                <Panel headerText="Total — Functional Effort" expandable="true" expanded="true">
+                    <Table items="{ path: 'funcEffort>/totalEffort' }" fixedLayout="true">
+                        <columns>
+                            <Column width="14rem"><Text text="Role"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
+                            <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
+                            <Column hAlign="End" width="6rem"><Text text="TOTAL"/></Column>
+                            <Column hAlign="End" width="5rem"><Text text="Lead"/></Column>
+                            <Column hAlign="End" width="5.5rem"><Text text="Consultant"/></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem highlight="{= ${funcEffort>_highlight} ? 'Information' : 'None' }">
+                                <Text text="{funcEffort>role}"/>
+                                <ObjectNumber number="{funcEffort>prep}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>fts}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>design}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>build}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>sit_uat}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>dep}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>hyp}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>total}" emphasized="true"/>
+                                <ObjectNumber number="{funcEffort>lead}" emphasized="false"/>
+                                <ObjectNumber number="{funcEffort>consultant}" emphasized="false"/>
                             </ColumnListItem>
                         </items>
                     </Table>

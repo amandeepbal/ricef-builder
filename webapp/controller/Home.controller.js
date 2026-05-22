@@ -9,8 +9,9 @@ sap.ui.define([
     "sap/ui/layout/form/SimpleForm",
     "sap/m/Button",
     "sap/m/MessageToast",
-    "sap/m/MessageBox"
-], function (Controller, JSONModel, Dialog, Input, Label, Select, Item, SimpleForm, Button, MessageToast, MessageBox) {
+    "sap/m/MessageBox",
+    "../model/helpDialog"
+], function (Controller, JSONModel, Dialog, Input, Label, Select, Item, SimpleForm, Button, MessageToast, MessageBox, helpDialog) {
     "use strict";
 
     return Controller.extend("com.syntax.ricefbuilder.controller.Home", {
@@ -40,9 +41,84 @@ sap.ui.define([
             this._openCopyDialog(project);
         },
 
+        onEditProject: function (oEvent) {
+            var project = oEvent.getSource().getBindingContext("projects").getObject();
+            this._openEditDialog(project);
+        },
+
         onDeleteProject: function (oEvent) {
             var project = oEvent.getSource().getBindingContext("projects").getObject();
             this._deleteProject(project);
+        },
+
+        _openEditDialog: function (project) {
+            var that = this;
+            var oNumInput = new Input({ value: project.project_number });
+            var oDescInput = new Input({ value: project.description });
+            var oCurrSelect = new Select({
+                selectedKey: project.currency || "USD",
+                items: [
+                    new Item({ key: "USD", text: "USD" }),
+                    new Item({ key: "CAD", text: "CAD" }),
+                    new Item({ key: "EUR", text: "EUR" })
+                ]
+            });
+            var oStartDate = new sap.m.DatePicker({
+                value: project.start_date || "",
+                valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy"
+            });
+            var oEndDate = new sap.m.DatePicker({
+                value: project.end_date || "",
+                valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy"
+            });
+            var oVersionSelect = new Select({ selectedKey: String(project.config_version_id || 1) });
+
+            that.getOwnerComponent().api("GET", "/admin/config-versions").then(function (versions) {
+                versions.forEach(function (v) {
+                    oVersionSelect.addItem(new Item({
+                        key: String(v.id),
+                        text: v.name + " (" + v.valid_from + (v.valid_to ? " — " + v.valid_to : " — open") + ")"
+                    }));
+                });
+                oVersionSelect.setSelectedKey(String(project.config_version_id || 1));
+            });
+
+            var dialog = new Dialog({
+                title: "Edit Project: " + project.description,
+                type: "Message",
+                content: new SimpleForm({
+                    editable: true,
+                    content: [
+                        new Label({ text: "Project Number" }), oNumInput,
+                        new Label({ text: "Description" }), oDescInput,
+                        new Label({ text: "Start Date" }), oStartDate,
+                        new Label({ text: "End Date" }), oEndDate,
+                        new Label({ text: "Currency" }), oCurrSelect,
+                        new Label({ text: "Config Version" }), oVersionSelect
+                    ]
+                }),
+                beginButton: new Button({
+                    text: "Save", type: "Emphasized",
+                    press: function () {
+                        that.getOwnerComponent().api("PUT", "/projects/" + project.id, {
+                            project_number: oNumInput.getValue(),
+                            description: oDescInput.getValue(),
+                            start_date: oStartDate.getValue() || null,
+                            end_date: oEndDate.getValue() || null,
+                            currency: oCurrSelect.getSelectedKey(),
+                            delivery_level: project.delivery_level,
+                            config_version_id: parseInt(oVersionSelect.getSelectedKey())
+                        }).then(function () {
+                            MessageToast.show("Project updated");
+                            dialog.close();
+                            that._loadProjects();
+                        });
+                    }
+                }),
+                endButton: new Button({ text: "Cancel", press: function () { dialog.close(); } }),
+                afterClose: function () { dialog.destroy(); }
+            });
+            dialog.open();
         },
 
         _openCopyDialog: function (sourceProject) {
@@ -105,6 +181,8 @@ sap.ui.define([
             });
         },
 
+        onHelp: function () { helpDialog.show("home"); },
+
         onCreateProject: function () {
             var that = this;
             var oNumInput = new Input({ placeholder: "e.g. 1" });
@@ -134,6 +212,9 @@ sap.ui.define([
                 }
             });
 
+            var oStartDate = new sap.m.DatePicker({ placeholder: "Project start", valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy" });
+            var oEndDate = new sap.m.DatePicker({ placeholder: "Project end", valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy" });
+
             var dialog = new Dialog({
                 title: "New Project",
                 type: "Message",
@@ -144,6 +225,9 @@ sap.ui.define([
                         new sap.m.Text({ text: "Unique identifier for the project (e.g., PRJ-001)" }).addStyleClass("sapUiTinyMarginBottom sapThemeMetaText"),
                         new Label({ text: "Description" }), oDescInput,
                         new sap.m.Text({ text: "Client name and project phase (e.g., Client ABC - Discovery Phase 1)" }).addStyleClass("sapUiTinyMarginBottom sapThemeMetaText"),
+                        new Label({ text: "Start Date" }), oStartDate,
+                        new Label({ text: "End Date" }), oEndDate,
+                        new sap.m.Text({ text: "Config version is auto-resolved from start date" }).addStyleClass("sapUiTinyMarginBottom sapThemeMetaText"),
                         new Label({ text: "Currency" }), oCurrSelect,
                         new sap.m.Text({ text: "Determines blended rate currency for cost calculations" }).addStyleClass("sapUiTinyMarginBottom sapThemeMetaText"),
                         new Label({ text: "Delivery Level" }), oLevelSelect,
@@ -157,6 +241,8 @@ sap.ui.define([
                         that.getOwnerComponent().api("POST", "/projects", {
                             project_number: oNumInput.getValue(),
                             description: oDescInput.getValue(),
+                            start_date: oStartDate.getValue() || null,
+                            end_date: oEndDate.getValue() || null,
                             currency: oCurrSelect.getSelectedKey(),
                             delivery_level: parseInt(oLevelSelect.getSelectedKey())
                         }).then(function () {

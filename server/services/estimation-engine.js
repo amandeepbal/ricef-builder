@@ -2,6 +2,9 @@ function calculateItem(db, itemId) {
   const item = db.prepare('SELECT * FROM items WHERE id = ?').get(itemId);
   if (!item) return null;
 
+  const project = db.prepare('SELECT config_version_id FROM projects WHERE id = ?').get(item.project_id);
+  const vid = (project && project.config_version_id) || 1;
+
   const zeroOut = () => {
     db.prepare(`
       UPDATE items SET blended_multiplier=0, sub_items_func=0, sub_items_tech=0,
@@ -34,8 +37,8 @@ function calculateItem(db, itemId) {
   }
 
   const grid = db.prepare(
-    'SELECT * FROM estimation_grid WHERE UPPER(frice) = UPPER(?) AND UPPER(classification) = UPPER(?) AND complexity = ?'
-  ).get(frice, classif, item.complexity);
+    'SELECT * FROM estimation_grid WHERE version_id = ? AND UPPER(frice) = UPPER(?) AND UPPER(classification) = UPPER(?) AND complexity = ?'
+  ).get(vid, frice, classif, item.complexity);
 
   if (!grid) return zeroOut();
 
@@ -46,8 +49,8 @@ function calculateItem(db, itemId) {
   }
 
   const config = db.prepare(
-    'SELECT id FROM blended_rate_configs WHERE team_prefix = ?'
-  ).get(teamPrefix);
+    'SELECT id FROM blended_rate_configs WHERE version_id = ? AND team_prefix = ?'
+  ).get(vid, teamPrefix);
 
   let multiplier = 1.0;
   if (config) {

@@ -1,8 +1,9 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
-    "sap/m/MessageToast"
-], function (Controller, JSONModel, MessageToast) {
+    "sap/m/MessageToast",
+    "../../model/helpDialog"
+], function (Controller, JSONModel, MessageToast, helpDialog) {
     "use strict";
 
     var TEAM_TO_CAT = { DEV: "CLASSIFICATION_DEV", BI: "CLASSIFICATION_BI", MIGRATION: "CLASSIFICATION_MIG" };
@@ -24,9 +25,14 @@ sap.ui.define([
             this._loadAll();
         },
 
+        _getVersionId: function () {
+            var m = this.getOwnerComponent().getModel("adminCtx");
+            return (m && m.getProperty("/versionId")) || 1;
+        },
+
         _loadAll: function () {
             var that = this;
-            this.getOwnerComponent().api("GET", "/admin/complexity-definitions").then(function (data) {
+            this.getOwnerComponent().api("GET", "/admin/complexity-definitions?version_id=" + this._getVersionId()).then(function (data) {
                 that._allDefs = data;
                 that._applyFilter();
             });
@@ -37,7 +43,7 @@ sap.ui.define([
             var catCode = TEAM_TO_CAT[this._team];
 
             // Fetch classification dropdown values for this team
-            this.getOwnerComponent().api("GET", "/admin/dropdowns/" + catCode).then(function (cat) {
+            this.getOwnerComponent().api("GET", "/admin/dropdowns/" + catCode + "?version_id=" + this._getVersionId()).then(function (cat) {
                 var classifValues = (cat.values || []).filter(function (v) {
                     return v.is_active && !v.is_separator && v.value !== "TOTAL";
                 });
@@ -92,6 +98,7 @@ sap.ui.define([
         onAdd: function () {
             var that = this;
             this.getOwnerComponent().api("POST", "/admin/complexity-definitions", {
+                version_id: this._getVersionId(),
                 team: this._team, classification_group: "New", subgroup: "New",
                 func_very_low: 0, func_low: 0, func_medium: 0, func_high: 0, func_very_high: 0,
                 tech_very_low: 0, tech_low: 0, tech_medium: 0, tech_high: 0, tech_very_high: 0
@@ -109,6 +116,10 @@ sap.ui.define([
                     that._loadAll();
                     MessageToast.show("Deleted");
                 });
+        },
+
+        onHelp: function () {
+            helpDialog.show("adminComplexity");
         },
 
         onNavBack: function () {

@@ -1,6 +1,12 @@
 .ricefAppShell {
     height: 100%;
 }
+.sapTntToolPageMain {
+    padding-right: 0.5rem;
+}
+.sapTntToolHeader {
+    padding-right: 0.5rem !important;
+}
 .projectTile {
     margin: 0.5rem;
 }

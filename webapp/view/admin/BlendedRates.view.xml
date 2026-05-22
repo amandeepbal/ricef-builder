@@ -2,6 +2,7 @@
     controllerName="com.syntax.ricefbuilder.controller.admin.BlendedRates">
     <Page title="Blended Rates" showNavButton="true" navButtonPress="onNavBack">
         <headerContent>
+            <Button icon="sap-icon://sys-help" tooltip="Help" press="onHelp" type="Transparent"/>
             <Button text="Save All" icon="sap-icon://save" press="onSaveAll" type="Emphasized"/>
         </headerContent>
         <content>

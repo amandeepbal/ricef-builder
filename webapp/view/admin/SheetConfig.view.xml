@@ -2,6 +2,7 @@
     controllerName="com.syntax.ricefbuilder.controller.admin.SheetConfig">
     <Page title="Sheet Column Configuration" showNavButton="true" navButtonPress="onNavBack">
         <headerContent>
+            <Button icon="sap-icon://sys-help" tooltip="Help" press="onHelp" type="Transparent"/>
             <Button text="Save" icon="sap-icon://save" press="onSave" type="Emphasized"/>
         </headerContent>
         <subHeader>

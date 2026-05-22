@@ -3,8 +3,9 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/m/Dialog", "sap/m/Input", "sap/m/Label", "sap/m/Select",
     "sap/ui/core/Item", "sap/ui/layout/form/SimpleForm",
-    "sap/m/Button", "sap/m/MessageToast"
-], function (Controller, JSONModel, Dialog, Input, Label, Select, Item, SimpleForm, Button, MessageToast) {
+    "sap/m/Button", "sap/m/MessageToast",
+    "../../model/helpDialog"
+], function (Controller, JSONModel, Dialog, Input, Label, Select, Item, SimpleForm, Button, MessageToast, helpDialog) {
     "use strict";
 
     return Controller.extend("com.syntax.ricefbuilder.controller.admin.RicefTypes", {
@@ -14,9 +15,14 @@ sap.ui.define([
                 .attachPatternMatched(this._load, this);
         },
 
+        _getVersionId: function () {
+            var m = this.getOwnerComponent().getModel("adminCtx");
+            return (m && m.getProperty("/versionId")) || 1;
+        },
+
         _load: function () {
             var that = this;
-            this.getOwnerComponent().api("GET", "/admin/ricef-types").then(function (data) {
+            this.getOwnerComponent().api("GET", "/admin/ricef-types?version_id=" + this._getVersionId()).then(function (data) {
                 that.getView().getModel("types").setData(data);
             });
         },
@@ -68,6 +74,7 @@ sap.ui.define([
                     text: "Save", type: "Emphasized",
                     press: function () {
                         var payload = {
+                            version_id: that._getVersionId(),
                             code: oCode.getValue(),
                             label: oLabel.getValue(),
                             full_label: oCode.getValue() + " - " + oLabel.getValue(),
@@ -90,6 +97,10 @@ sap.ui.define([
                 afterClose: function () { dialog.destroy(); }
             });
             dialog.open();
+        },
+
+        onHelp: function () {
+            helpDialog.show("adminRicefTypes");
         },
 
         onNavBack: function () {

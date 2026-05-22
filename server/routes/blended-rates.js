@@ -4,7 +4,8 @@ const router = Router();
 
 router.get('/', (req, res) => {
   const db = getDb();
-  const configs = db.prepare('SELECT * FROM blended_rate_configs ORDER BY id').all();
+  const vid = req.query.version_id || 1;
+  const configs = db.prepare('SELECT * FROM blended_rate_configs WHERE version_id = ? ORDER BY id').all(vid);
   for (const config of configs) {
     config.effort_by_complexity = db.prepare(
       'SELECT * FROM blended_effort_by_complexity WHERE config_id = ? ORDER BY complexity'

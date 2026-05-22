@@ -2,6 +2,7 @@
     controllerName="com.syntax.ricefbuilder.controller.admin.RicefTypes">
     <Page title="RICEF Types" showNavButton="true" navButtonPress="onNavBack">
         <headerContent>
+            <Button icon="sap-icon://sys-help" tooltip="Help" press="onHelp" type="Transparent"/>
             <Button text="Add" icon="sap-icon://add" press="onAdd" type="Emphasized"/>
         </headerContent>
         <content>

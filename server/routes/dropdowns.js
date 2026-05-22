@@ -4,12 +4,14 @@ const router = Router();
 
 router.get('/', (req, res) => {
   const db = getDb();
-  res.json(db.prepare('SELECT * FROM dropdown_categories ORDER BY id').all());
+  const vid = req.query.version_id || 1;
+  res.json(db.prepare('SELECT * FROM dropdown_categories WHERE version_id = ? ORDER BY id').all(vid));
 });
 
 router.get('/:code', (req, res) => {
   const db = getDb();
-  const cat = db.prepare('SELECT * FROM dropdown_categories WHERE code = ?').get(req.params.code);
+  const vid = req.query.version_id || 1;
+  const cat = db.prepare('SELECT * FROM dropdown_categories WHERE code = ? AND version_id = ?').get(req.params.code, vid);
   if (!cat) return res.status(404).json({ error: 'Category not found' });
 
   cat.values = db.prepare(

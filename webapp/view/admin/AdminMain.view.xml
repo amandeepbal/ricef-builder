@@ -1,8 +1,27 @@
 <mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
     controllerName="com.syntax.ricefbuilder.controller.admin.AdminMain">
     <Page title="Administration" showNavButton="true" navButtonPress="onNavBack">
+        <headerContent>
+            <Button icon="sap-icon://sys-help" tooltip="Help" press="onHelp" type="Transparent"/>
+        </headerContent>
         <content>
-            <FlexBox wrap="Wrap" justifyContent="Center" class="sapUiMediumMargin">
+            <Panel class="sapUiSmallMargin">
+                <headerToolbar>
+                    <Toolbar>
+                        <Label text="Config Version:" class="sapUiSmallMarginEnd"/>
+                        <Select id="versionSelect" items="{ path: 'versions>/' }" change="onVersionChange"
+                            selectedKey="{adminCtx>/versionId}">
+                            <core:Item key="{versions>id}" text="{versions>name} ({versions>valid_from} — {versions>valid_to})"/>
+                        </Select>
+                        <ToolbarSpacer/>
+                        <Button text="Edit Version" icon="sap-icon://edit" press="onEditVersion" type="Transparent"/>
+                        <Button text="New Version" icon="sap-icon://add" press="onCreateVersion" type="Transparent"/>
+                        <Button text="Clone Version" icon="sap-icon://copy" press="onCloneVersion" type="Transparent"/>
+                    </Toolbar>
+                </headerToolbar>
+            </Panel>
+
+            <FlexBox wrap="Wrap" justifyContent="Start" class="sapUiMediumMargin">
                 <GenericTile header="RICEF Types" subheader="Manage object types and sequence ranges"
                     press="onNav" class="projectTile">
                     <customData><core:CustomData key="key" value="adminRicefTypes"/></customData>

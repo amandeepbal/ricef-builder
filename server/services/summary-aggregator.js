@@ -162,6 +162,38 @@ function buildSummary(db, projectId) {
   const orderedRoles = roleOrder.filter(r => allFuncRoles.has(r));
   allFuncRoles.forEach(r => { if (!orderedRoles.includes(r)) orderedRoles.push(r); });
 
+  // Build intermediate tables for FUNCTIONAL sheet display
+  const funcScopeEffort = [];
+  const techScopeEffort = [];
+
+  for (const role of orderedRoles) {
+    // FUNCTIONAL SCOPE effort (from scope items only)
+    const scopeHrs = funcScopeByRole[role] || 0;
+    if (scopeHrs > 0) {
+      const sRow = { role };
+      P.forEach(p => {
+        sRow[p] = r(p === 'hyp' ? scopeHrs * (funcPhasePct.hyp || 0.10) : scopeHrs * (funcPhasePct[p] || 0));
+      });
+      sRow.total = r(P.reduce((s, p) => s + (sRow[p] || 0), 0));
+      funcScopeEffort.push(sRow);
+    }
+
+    // TECHNICAL SCOPE effort (from RICEF/BI/MIG items functional hours)
+    const ricef = ricefFunc[role] || {};
+    const bi = biFunc[role] || {};
+    const mig = migFunc[role] || {};
+    const hasTech = P.some(p => (ricef[p] || 0) + (bi[p] || 0) + (mig[p] || 0) > 0);
+    if (hasTech) {
+      const tRow = { role };
+      P.forEach(p => {
+        tRow[p] = r((ricef[p] || 0) + (bi[p] || 0) + (mig[p] || 0));
+      });
+      tRow.total = r(P.reduce((s, p) => s + (tRow[p] || 0), 0));
+      techScopeEffort.push(tRow);
+    }
+  }
+
+  // TOTAL FUNCTIONAL EFFORT = scope + tech scope + contingency
   const funcByRole = [];
   let totalFuncHours = 0;
 
@@ -170,18 +202,14 @@ function buildSummary(db, projectId) {
     let rowTotal = 0;
 
     P.forEach(p => {
-      // FUNCTIONAL scope: base × phase %
       const scopeHrs = funcScopeByRole[role] || 0;
       const scopePhase = p === 'hyp' ? scopeHrs * (funcPhasePct.hyp || 0.10) : scopeHrs * (funcPhasePct[p] || 0);
 
-      // Per-sheet FUNC contributions
       const ricefPhase = (ricefFunc[role] || {})[p] || 0;
       const biPhase = (biFunc[role] || {})[p] || 0;
       const migPhase = (migFunc[role] || {})[p] || 0;
 
       const preContingency = scopePhase + ricefPhase + biPhase + migPhase;
-
-      // Apply SUMMARY contingency per phase
       const withCont = preContingency * (1 + (cont[p] || 0));
       row[p] = r(withCont);
       rowTotal += withCont;
@@ -194,12 +222,21 @@ function buildSummary(db, projectId) {
     if (rowTotal !== 0) funcByRole.push(row);
   }
 
-  // Chief/Solution ARCHITECT = architect_pct × total functional per phase × (1 + contingency)
+  // Chief/Solution ARCHITECT = per-phase architect % × total functional per phase × (1 + contingency)
+  const archPctMap = {
+    prep: funcPhasePct.arch_prep != null ? funcPhasePct.arch_prep : (funcPhasePct.architect_pct || 0.10),
+    fts: funcPhasePct.arch_fts != null ? funcPhasePct.arch_fts : (funcPhasePct.architect_pct || 0.10),
+    design: funcPhasePct.arch_design != null ? funcPhasePct.arch_design : (funcPhasePct.architect_pct || 0.10),
+    build: funcPhasePct.arch_build != null ? funcPhasePct.arch_build : (funcPhasePct.architect_pct || 0.10),
+    sit_uat: funcPhasePct.arch_sit_uat != null ? funcPhasePct.arch_sit_uat : (funcPhasePct.architect_pct || 0.10),
+    dep: funcPhasePct.arch_dep != null ? funcPhasePct.arch_dep : (funcPhasePct.architect_pct || 0.10),
+    hyp: funcPhasePct.arch_hyp != null ? funcPhasePct.arch_hyp : (funcPhasePct.architect_pct || 0.10)
+  };
   const archRow = { role: 'Chief/Solution ARCHITECT' };
   let archTotal = 0;
   P.forEach(p => {
     const phaseFunc = funcByRole.reduce((s, fr) => s + (fr[p] || 0), 0);
-    const v = phaseFunc * (funcPhasePct.architect_pct || 0.10) * (1 + (cont[p] || 0));
+    const v = phaseFunc * (archPctMap[p] || 0.10) * (1 + (cont[p] || 0));
     archRow[p] = r(v);
     archTotal += v;
   });
@@ -231,6 +268,25 @@ function buildSummary(db, projectId) {
   });
   pgoRow.total = r(pgoTotal);
 
+  function objToRows(obj, roles) {
+    const rows = [];
+    for (const role of roles) {
+      if (obj[role]) {
+        const row = Object.assign({ role }, obj[role]);
+        row.total = r(P.reduce((s, p) => s + (row[p] || 0), 0));
+        rows.push(row);
+      }
+    }
+    Object.keys(obj).forEach(role => {
+      if (!roles.includes(role)) {
+        const row = Object.assign({ role }, obj[role]);
+        row.total = r(P.reduce((s, p) => s + (row[p] || 0), 0));
+        rows.push(row);
+      }
+    });
+    return rows;
+  }
+
   // ============================================================
   // 6. Phase summary (Orange Grid)
   // ============================================================
@@ -256,8 +312,15 @@ function buildSummary(db, projectId) {
     totalPgo: r(pgoTotal),
     totalGrand: grandRow.total,
     pgo: pgoRow,
+    funcScopeEffort,
+    techScopeEffort,
     funcArchitect: archRow,
     funcByRole,
+    sheetFunc: {
+      RICEF: objToRows(ricefFunc, orderedRoles),
+      BI: objToRows(biFunc, orderedRoles),
+      MIGRATION: objToRows(migFunc, orderedRoles)
+    },
     techDev: devSection,
     techBi: biSection,
     techMig: migSection,
@@ -347,7 +410,8 @@ function sumPhase(section, phase) {
 }
 
 function getBlendedInfo(db, teamPrefix, project) {
-  const config = db.prepare('SELECT * FROM blended_rate_configs WHERE team_prefix = ?').get(teamPrefix);
+  const vid = project.config_version_id || 1;
+  const config = db.prepare('SELECT * FROM blended_rate_configs WHERE version_id = ? AND team_prefix = ?').get(vid, teamPrefix);
   if (!config) return null;
   const level = db.prepare('SELECT * FROM blended_delivery_levels WHERE config_id = ? AND level_number = ?')
     .get(config.id, project.delivery_level || 1);

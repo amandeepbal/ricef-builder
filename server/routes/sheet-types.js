@@ -9,9 +9,10 @@ router.get('/', (req, res) => {
 
 router.get('/:code/columns', (req, res) => {
   const db = getDb();
+  const vid = req.query.version_id || 1;
   const rows = db.prepare(
-    'SELECT * FROM sheet_column_config WHERE sheet_type_code = ? ORDER BY sort_order'
-  ).all(req.params.code);
+    'SELECT * FROM sheet_column_config WHERE sheet_type_code = ? AND version_id = ? ORDER BY sort_order'
+  ).all(req.params.code, vid);
   rows.forEach(r => {
     r.is_visible = !!r.is_visible;
     r.is_editable = !!r.is_editable;

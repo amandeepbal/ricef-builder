@@ -2,7 +2,31 @@
     xmlns:f="sap.ui.layout.form" xmlns:l="sap.ui.layout"
     controllerName="com.syntax.ricefbuilder.controller.Summary">
     <Page id="summaryPage" title="Project Summary" showNavButton="true" navButtonPress="onNavBack">
+        <headerContent>
+            <Button icon="sap-icon://sys-help" tooltip="Help" press="onHelp" type="Transparent"/>
+            <Button text="Export PDF" icon="sap-icon://pdf-attachment" press="onExportPdf" type="Transparent"/>
+        </headerContent>
         <content>
+            <!-- Delivery Level (Orange Grid) -->
+            <Panel class="sapUiSmallMargin">
+                <HBox alignItems="Center" class="sapUiSmallMargin">
+                    <Label text="Delivery Level:" class="sapUiSmallMarginEnd"/>
+                    <Select id="deliveryLevelSelect" change="onDeliveryLevelChange" width="16rem"
+                        items="{ path: 'ctrl>/deliveryLevels' }">
+                        <core:Item key="{ctrl>level_number}" text="{ctrl>level_label}"/>
+                    </Select>
+                    <Text text="  |  " class="sapUiSmallMarginBeginEnd"/>
+                    <Label text="Billable Rate:" class="sapUiSmallMarginEnd"/>
+                    <ObjectNumber id="rateDisplay" number="{ctrl>/blendedRate}" unit="{ctrl>/project/currency}" emphasized="true"/>
+                    <Text text="  |  " class="sapUiSmallMarginBeginEnd"/>
+                    <Label text="Blended Cost:" class="sapUiSmallMarginEnd"/>
+                    <ObjectNumber id="costDisplay" number="{ctrl>/blendedCost}" unit="{ctrl>/project/currency}"/>
+                    <Text text="  |  " class="sapUiSmallMarginBeginEnd"/>
+                    <Label text="Margin:" class="sapUiSmallMarginEnd"/>
+                    <ObjectNumber id="marginDisplay" number="{ctrl>/marginPct}" unit="%"/>
+                </HBox>
+            </Panel>
+
             <!-- Project Settings (Editable Control Section) -->
             <Panel id="settingsPanel" headerText="Project Settings" expandable="true" expanded="false"
                 class="sapUiSmallMargin">

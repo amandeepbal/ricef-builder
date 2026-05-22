@@ -4,18 +4,19 @@ const router = Router();
 
 router.get('/', (req, res) => {
   const db = getDb();
-  const rows = db.prepare('SELECT * FROM ricef_types ORDER BY sort_order').all();
+  const vid = req.query.version_id || 1;
+  const rows = db.prepare('SELECT * FROM ricef_types WHERE version_id = ? ORDER BY sort_order').all(vid);
   rows.forEach(r => { r.is_active = !!r.is_active; });
   res.json(rows);
 });
 
 router.post('/', (req, res) => {
   const db = getDb();
-  const { code, label, full_label, seq_from, seq_to, sheet_type_code, sort_order } = req.body;
+  const { code, label, full_label, seq_from, seq_to, sheet_type_code, sort_order, version_id } = req.body;
   const result = db.prepare(
-    `INSERT INTO ricef_types (code, label, full_label, seq_from, seq_to, sheet_type_code, sort_order)
-     VALUES (?,?,?,?,?,?,?)`
-  ).run(code, label, full_label, seq_from, seq_to, sheet_type_code || 'RICEF', sort_order || 0);
+    `INSERT INTO ricef_types (version_id, code, label, full_label, seq_from, seq_to, sheet_type_code, sort_order)
+     VALUES (?,?,?,?,?,?,?,?)`
+  ).run(version_id || 1, code, label, full_label, seq_from, seq_to, sheet_type_code || 'RICEF', sort_order || 0);
   res.status(201).json({ id: result.lastInsertRowid });
 });
 

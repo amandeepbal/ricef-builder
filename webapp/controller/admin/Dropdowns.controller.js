@@ -3,8 +3,9 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/m/Dialog", "sap/m/Input", "sap/m/Label",
     "sap/ui/layout/form/SimpleForm",
-    "sap/m/Button", "sap/m/MessageToast"
-], function (Controller, JSONModel, Dialog, Input, Label, SimpleForm, Button, MessageToast) {
+    "sap/m/Button", "sap/m/MessageToast",
+    "../../model/helpDialog"
+], function (Controller, JSONModel, Dialog, Input, Label, SimpleForm, Button, MessageToast, helpDialog) {
     "use strict";
 
     return Controller.extend("com.syntax.ricefbuilder.controller.admin.Dropdowns", {
@@ -17,9 +18,14 @@ sap.ui.define([
                 .attachPatternMatched(this._load, this);
         },
 
+        _getVersionId: function () {
+            var m = this.getOwnerComponent().getModel("adminCtx");
+            return (m && m.getProperty("/versionId")) || 1;
+        },
+
         _load: function () {
             var that = this;
-            this.getOwnerComponent().api("GET", "/admin/dropdowns").then(function (data) {
+            this.getOwnerComponent().api("GET", "/admin/dropdowns?version_id=" + this._getVersionId()).then(function (data) {
                 that.getView().getModel("cats").setData(data);
             });
         },
@@ -32,7 +38,7 @@ sap.ui.define([
 
         _loadValues: function () {
             var that = this;
-            this.getOwnerComponent().api("GET", "/admin/dropdowns/" + this._selectedCode)
+            this.getOwnerComponent().api("GET", "/admin/dropdowns/" + this._selectedCode + "?version_id=" + this._getVersionId())
                 .then(function (data) {
                     that.getView().getModel("vals").setData(data.values || []);
                 });
@@ -167,6 +173,10 @@ sap.ui.define([
                 MessageToast.show("Deleted");
                 that._loadValues();
             });
+        },
+
+        onHelp: function () {
+            helpDialog.show("adminDropdowns");
         },
 
         onNavBack: function () {

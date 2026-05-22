@@ -74,6 +74,8 @@ app.use('/resources', (req, res, next) => {
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/projects', require('./routes/items'));
 app.use('/api/projects', require('./routes/summary'));
+app.use('/api/projects', require('./routes/snapshots'));
+app.use('/api/admin/config-versions', require('./routes/config-versions'));
 app.use('/api/admin/ricef-types', require('./routes/ricef-types'));
 app.use('/api/admin/estimation-grid', require('./routes/estimation-grid'));
 app.use('/api/admin/blended-rates', require('./routes/blended-rates'));
