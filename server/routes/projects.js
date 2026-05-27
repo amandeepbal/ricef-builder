@@ -16,7 +16,8 @@ router.get('/', (req, res) => {
   const db = getDb();
   const rows = db.prepare(
     `SELECT p.*,
-       (SELECT COUNT(*) FROM items WHERE project_id = p.id) AS item_count
+       (SELECT COUNT(*) FROM items WHERE project_id = p.id) AS item_count,
+       (SELECT name FROM config_versions WHERE id = p.config_version_id) AS config_version_name
      FROM projects p WHERE p.is_active = 1 ORDER BY p.id DESC`
   ).all();
   rows.forEach(computeReadonly);
@@ -32,15 +33,7 @@ router.post('/', (req, res) => {
   }
 
   const create = db.transaction(() => {
-    // Resolve config version: explicit > date-based > default
-    let verionId = config_version_id;
-    if (!verionId && start_date) {
-      const ver = db.prepare(
-        `SELECT id FROM config_versions WHERE is_active = 1 AND valid_from <= ? AND (valid_to IS NULL OR valid_to >= ?) ORDER BY valid_from DESC LIMIT 1`
-      ).get(start_date, start_date);
-      verionId = ver ? ver.id : 1;
-    }
-    verionId = verionId || 1;
+    const verionId = config_version_id || 1;
 
     const result = db.prepare(
       `INSERT INTO projects (project_number, description, currency, delivery_level, start_date, end_date, config_version_id)

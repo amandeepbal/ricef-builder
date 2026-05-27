@@ -6,7 +6,6 @@
                 <Button icon="sap-icon://menu2" press="onToggleSideNav" type="Transparent"/>
                 <Title text="RICEFW Estimator" level="H4"/>
                 <ToolbarSpacer/>
-                <Button text="Admin" icon="sap-icon://settings" press="onNavToAdmin" type="Transparent"/>
             </tnt:ToolHeader>
         </tnt:header>
         <tnt:sideContent>

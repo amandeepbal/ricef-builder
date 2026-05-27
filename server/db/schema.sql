@@ -23,7 +23,7 @@ CREATE TABLE config_versions (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT    NOT NULL,
     description TEXT,
-    valid_from  TEXT    NOT NULL,
+    valid_from  TEXT,
     valid_to    TEXT,
     is_active   INTEGER NOT NULL DEFAULT 1,
     created_at  TEXT    NOT NULL DEFAULT (datetime('now'))

@@ -4,12 +4,13 @@ sap.ui.define([
     "sap/m/Dialog",
     "sap/m/Input",
     "sap/m/Label",
-    "sap/m/DatePicker",
+    "sap/m/List",
+    "sap/m/StandardListItem",
     "sap/ui/layout/form/SimpleForm",
     "sap/m/Button",
     "sap/m/MessageToast",
     "../../model/helpDialog"
-], function (Controller, JSONModel, Dialog, Input, Label, DatePicker, SimpleForm, Button, MessageToast, helpDialog) {
+], function (Controller, JSONModel, Dialog, Input, Label, List, StandardListItem, SimpleForm, Button, MessageToast, helpDialog) {
     "use strict";
 
     return Controller.extend("com.syntax.ricefbuilder.controller.admin.AdminMain", {
@@ -33,13 +34,13 @@ sap.ui.define([
             var that = this;
             this.getOwnerComponent().api("GET", "/admin/config-versions").then(function (data) {
                 that.getView().getModel("versions").setData(data);
-
-                var today = new Date().toISOString().slice(0, 10);
-                var current = data.find(function (v) {
-                    return v.is_active && v.valid_from <= today && (!v.valid_to || v.valid_to >= today);
-                });
-                if (current) {
-                    that.getOwnerComponent().getModel("adminCtx").setProperty("/versionId", current.id);
+                if (data.length > 0) {
+                    var ctx = that.getOwnerComponent().getModel("adminCtx");
+                    var currentId = ctx.getProperty("/versionId");
+                    var exists = data.some(function (v) { return v.id === currentId; });
+                    if (!exists) {
+                        ctx.setProperty("/versionId", data[0].id);
+                    }
                 }
             });
         },
@@ -49,39 +50,84 @@ sap.ui.define([
             this.getOwnerComponent().getModel("adminCtx").setProperty("/versionId", parseInt(key));
         },
 
+        _buildProjectList: function (allProjects, allVersions, currentVersionId) {
+            var versionMap = {};
+            allVersions.forEach(function (v) { versionMap[v.id] = v.name; });
+
+            var oList = new List({ mode: "MultiSelect", noDataText: "No projects" });
+            allProjects.forEach(function (p) {
+                var isOnThisVersion = p.config_version_id === currentVersionId;
+                var otherVersionName = !isOnThisVersion && p.config_version_id ? versionMap[p.config_version_id] : null;
+                var desc = otherVersionName ? "Currently on: " + otherVersionName : "";
+                var item = new StandardListItem({
+                    title: p.project_number + " — " + p.description,
+                    description: desc,
+                    selected: isOnThisVersion
+                });
+                item.data("projectId", p.id);
+                oList.addItem(item);
+            });
+            return oList;
+        },
+
         onEditVersion: function () {
             var that = this;
             var vid = this.getOwnerComponent().getModel("adminCtx").getProperty("/versionId");
-            this.getOwnerComponent().api("GET", "/admin/config-versions/" + vid).then(function (ver) {
+
+            Promise.all([
+                this.getOwnerComponent().api("GET", "/admin/config-versions/" + vid),
+                this.getOwnerComponent().api("GET", "/projects"),
+                this.getOwnerComponent().api("GET", "/admin/config-versions")
+            ]).then(function (results) {
+                var ver = results[0];
+                var allProjects = results[1];
+                var allVersions = results[2];
+
                 var oName = new Input({ value: ver.name });
-                var oFrom = new DatePicker({ value: ver.valid_from, valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy" });
-                var oTo = new DatePicker({ value: ver.valid_to || "", valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy", placeholder: "Open-ended if empty" });
+                var isTemplate = vid === 1;
+                var formContent = [new Label({ text: "Name" }), oName];
+
+                if (isTemplate) {
+                    formContent.push(new sap.m.MessageStrip({
+                        text: "Template is a baseline config — projects cannot be assigned to it. Clone this version to create a project-specific config.",
+                        type: "Warning", showIcon: true
+                    }));
+                } else {
+                    var oProjectList = that._buildProjectList(allProjects, allVersions, vid);
+                    formContent.push(new Label({ text: "Assigned Projects" }), oProjectList);
+                }
 
                 var dialog = new Dialog({
                     title: "Edit Config Version",
                     type: "Message",
+                    contentWidth: "32rem",
                     content: new SimpleForm({
                         editable: true,
-                        content: [
-                            new Label({ text: "Name" }), oName,
-                            new Label({ text: "Valid From" }), oFrom,
-                            new Label({ text: "Valid To" }), oTo
-                        ]
+                        content: formContent
                     }),
                     beginButton: new Button({
                         text: "Save", type: "Emphasized",
                         press: function () {
-                            if (!oName.getValue().trim() || !oFrom.getValue()) {
-                                MessageToast.show("Name and Valid From are required");
+                            if (!oName.getValue().trim()) {
+                                MessageToast.show("Name is required");
                                 return;
                             }
-                            that.getOwnerComponent().api("PUT", "/admin/config-versions/" + vid, {
-                                name: oName.getValue().trim(),
-                                description: ver.description,
-                                valid_from: oFrom.getValue(),
-                                valid_to: oTo.getValue() || null,
-                                is_active: ver.is_active
-                            }).then(function () {
+                            var calls = [
+                                that.getOwnerComponent().api("PUT", "/admin/config-versions/" + vid, {
+                                    name: oName.getValue().trim(),
+                                    description: ver.description,
+                                    is_active: ver.is_active
+                                })
+                            ];
+                            if (!isTemplate) {
+                                var selectedIds = oProjectList.getSelectedItems().map(function (item) {
+                                    return item.data("projectId");
+                                });
+                                calls.push(that.getOwnerComponent().api("PUT", "/admin/config-versions/" + vid + "/projects", {
+                                    project_ids: selectedIds
+                                }));
+                            }
+                            Promise.all(calls).then(function () {
                                 MessageToast.show("Version updated");
                                 dialog.close();
                                 that._loadVersions();
@@ -99,90 +145,121 @@ sap.ui.define([
 
         onCreateVersion: function () {
             var that = this;
-            var oName = new Input({ placeholder: "e.g. 2026 Rates" });
-            var oFrom = new DatePicker({ valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy", placeholder: "Valid from" });
-            var oTo = new DatePicker({ valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy", placeholder: "Valid to (optional)" });
+            var oName = new Input({ placeholder: "e.g. 2026 Rate Card" });
 
-            var dialog = new Dialog({
-                title: "New Config Version",
-                type: "Message",
-                content: new SimpleForm({
-                    editable: true,
-                    content: [
-                        new Label({ text: "Name" }), oName,
-                        new Label({ text: "Valid From" }), oFrom,
-                        new Label({ text: "Valid To" }), oTo
-                    ]
-                }),
-                beginButton: new Button({
-                    text: "Create Empty", type: "Emphasized",
-                    press: function () {
-                        if (!oName.getValue().trim() || !oFrom.getValue()) {
-                            MessageToast.show("Name and Valid From are required");
-                            return;
+            Promise.all([
+                this.getOwnerComponent().api("GET", "/projects"),
+                this.getOwnerComponent().api("GET", "/admin/config-versions")
+            ]).then(function (results) {
+                var allProjects = results[0];
+                var allVersions = results[1];
+                var oProjectList = that._buildProjectList(allProjects, allVersions, null);
+
+                var dialog = new Dialog({
+                    title: "New Config Version",
+                    type: "Message",
+                    contentWidth: "32rem",
+                    content: new SimpleForm({
+                        editable: true,
+                        content: [
+                            new Label({ text: "Name" }), oName,
+                            new Label({ text: "Assign Projects" }), oProjectList
+                        ]
+                    }),
+                    beginButton: new Button({
+                        text: "Create Empty", type: "Emphasized",
+                        press: function () {
+                            if (!oName.getValue().trim()) {
+                                MessageToast.show("Name is required");
+                                return;
+                            }
+                            that.getOwnerComponent().api("POST", "/admin/config-versions", {
+                                name: oName.getValue().trim()
+                            }).then(function (data) {
+                                var selectedIds = oProjectList.getSelectedItems().map(function (item) {
+                                    return item.data("projectId");
+                                });
+                                if (selectedIds.length > 0) {
+                                    return that.getOwnerComponent().api("PUT", "/admin/config-versions/" + data.id + "/projects", {
+                                        project_ids: selectedIds
+                                    }).then(function () { return data; });
+                                }
+                                return data;
+                            }).then(function (data) {
+                                MessageToast.show("Version created");
+                                dialog.close();
+                                that._loadVersions();
+                                that.getOwnerComponent().getModel("adminCtx").setProperty("/versionId", data.id);
+                            }).catch(function (err) {
+                                MessageToast.show(err.message || "Failed to create version");
+                            });
                         }
-                        that.getOwnerComponent().api("POST", "/admin/config-versions", {
-                            name: oName.getValue().trim(),
-                            valid_from: oFrom.getValue(),
-                            valid_to: oTo.getValue() || null
-                        }).then(function () {
-                            MessageToast.show("Version created");
-                            dialog.close();
-                            that._loadVersions();
-                        }).catch(function (err) {
-                            MessageToast.show(err.message || "Failed to create version");
-                        });
-                    }
-                }),
-                endButton: new Button({ text: "Cancel", press: function () { dialog.close(); } }),
-                afterClose: function () { dialog.destroy(); }
+                    }),
+                    endButton: new Button({ text: "Cancel", press: function () { dialog.close(); } }),
+                    afterClose: function () { dialog.destroy(); }
+                });
+                dialog.open();
             });
-            dialog.open();
         },
 
         onCloneVersion: function () {
             var that = this;
             var srcId = this.getOwnerComponent().getModel("adminCtx").getProperty("/versionId");
-            var oName = new Input({ placeholder: "e.g. 2026 Rates" });
-            var oFrom = new DatePicker({ valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy", placeholder: "Valid from" });
-            var oTo = new DatePicker({ valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy", placeholder: "Valid to (optional)" });
+            var oName = new Input({ placeholder: "e.g. 2027 Rate Card" });
 
-            var dialog = new Dialog({
-                title: "Clone Current Version",
-                type: "Message",
-                content: new SimpleForm({
-                    editable: true,
-                    content: [
-                        new Label({ text: "New Name" }), oName,
-                        new Label({ text: "Valid From" }), oFrom,
-                        new Label({ text: "Valid To" }), oTo
-                    ]
-                }),
-                beginButton: new Button({
-                    text: "Clone", type: "Emphasized",
-                    press: function () {
-                        if (!oName.getValue().trim() || !oFrom.getValue()) {
-                            MessageToast.show("Name and Valid From are required");
-                            return;
+            Promise.all([
+                this.getOwnerComponent().api("GET", "/projects"),
+                this.getOwnerComponent().api("GET", "/admin/config-versions")
+            ]).then(function (results) {
+                var allProjects = results[0];
+                var allVersions = results[1];
+                var oProjectList = that._buildProjectList(allProjects, allVersions, null);
+
+                var dialog = new Dialog({
+                    title: "Clone Current Version",
+                    type: "Message",
+                    contentWidth: "32rem",
+                    content: new SimpleForm({
+                        editable: true,
+                        content: [
+                            new Label({ text: "New Name" }), oName,
+                            new Label({ text: "Assign Projects" }), oProjectList
+                        ]
+                    }),
+                    beginButton: new Button({
+                        text: "Clone", type: "Emphasized",
+                        press: function () {
+                            if (!oName.getValue().trim()) {
+                                MessageToast.show("Name is required");
+                                return;
+                            }
+                            that.getOwnerComponent().api("POST", "/admin/config-versions/" + srcId + "/clone", {
+                                name: oName.getValue().trim()
+                            }).then(function (data) {
+                                var selectedIds = oProjectList.getSelectedItems().map(function (item) {
+                                    return item.data("projectId");
+                                });
+                                if (selectedIds.length > 0) {
+                                    return that.getOwnerComponent().api("PUT", "/admin/config-versions/" + data.id + "/projects", {
+                                        project_ids: selectedIds
+                                    }).then(function () { return data; });
+                                }
+                                return data;
+                            }).then(function (data) {
+                                MessageToast.show("Version cloned");
+                                dialog.close();
+                                that._loadVersions();
+                                that.getOwnerComponent().getModel("adminCtx").setProperty("/versionId", data.id);
+                            }).catch(function (err) {
+                                MessageToast.show(err.message || "Failed to clone version");
+                            });
                         }
-                        that.getOwnerComponent().api("POST", "/admin/config-versions/" + srcId + "/clone", {
-                            name: oName.getValue().trim(),
-                            valid_from: oFrom.getValue(),
-                            valid_to: oTo.getValue() || null
-                        }).then(function (data) {
-                            MessageToast.show("Version cloned");
-                            dialog.close();
-                            that._loadVersions();
-                            that.getOwnerComponent().getModel("adminCtx").setProperty("/versionId", data.id);
-                        }).catch(function (err) {
-                            MessageToast.show(err.message || "Failed to clone version");
-                        });
-                    }
-                }),
-                endButton: new Button({ text: "Cancel", press: function () { dialog.close(); } }),
-                afterClose: function () { dialog.destroy(); }
+                    }),
+                    endButton: new Button({ text: "Cancel", press: function () { dialog.close(); } }),
+                    afterClose: function () { dialog.destroy(); }
+                });
+                dialog.open();
             });
-            dialog.open();
         },
 
         onHelp: function () { helpDialog.show("admin"); },

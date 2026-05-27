@@ -53,8 +53,16 @@ sap.ui.define([
                 var vm = that.getView().getModel("viewModel");
                 vm.setProperty("/title", p.description + (p.is_readonly ? " (Read-Only)" : ""));
                 vm.setProperty("/project", p);
+                vm.setProperty("/projectNumber", p.project_number || "Project");
                 vm.setProperty("/editable", !p.is_readonly);
                 vm.setProperty("/readonly", !!p.is_readonly);
+
+                var page = that.byId("projectPage");
+                if (p.is_readonly) {
+                    page.addStyleClass("readOnlyProject");
+                } else {
+                    page.removeStyleClass("readOnlyProject");
+                }
             });
         },
 
@@ -91,6 +99,9 @@ sap.ui.define([
         },
 
         _switchTab: function (sheetType) {
+            var strip = this.byId("actionConfirmStrip");
+            if (strip) strip.setVisible(false);
+
             var vm = this.getView().getModel("viewModel");
             vm.setProperty("/showItems", false);
             vm.setProperty("/showFunctional", false);
@@ -130,6 +141,9 @@ sap.ui.define([
             this.byId("searchField").setValue("");
         },
 
+        _pendingTypeFilter: null,
+        _pendingComplexityFilter: null,
+
         _loadItems: function () {
             var that = this;
             this.getOwnerComponent().api("GET",
@@ -140,7 +154,17 @@ sap.ui.define([
                     that._populateFilters(data);
                     that._filtersPopulated = true;
                 }
+                if (that._pendingComplexityFilter) {
+                    that.byId("filterComplexity").setSelectedKey(that._pendingComplexityFilter);
+                }
                 that._applyFilters();
+                if (that._pendingTypeFilter) {
+                    var msg = "Filtered: " + that._pendingTypeFilter;
+                    if (that._pendingComplexityFilter) msg += " / " + that._pendingComplexityFilter.replace(/^\d-/, '');
+                    MessageToast.show(msg);
+                }
+                that._pendingTypeFilter = null;
+                that._pendingComplexityFilter = null;
             });
         },
 
@@ -172,11 +196,13 @@ sap.ui.define([
             var complexity = this.byId("filterComplexity").getSelectedKey();
             var mod = this.byId("filterModule").getSelectedKey();
             var search = (this.byId("searchField").getValue() || "").toLowerCase();
+            var typeFilter = this._pendingTypeFilter || null;
 
             var filtered = this._allItems.filter(function (item) {
                 if (status && item.status !== status) return false;
                 if (complexity && item.complexity !== complexity) return false;
                 if (mod && item.module !== mod) return false;
+                if (typeFilter && item.type_label !== typeFilter) return false;
                 if (search && !(
                     (item.ricef_number || "").toLowerCase().indexOf(search) >= 0 ||
                     (item.description || "").toLowerCase().indexOf(search) >= 0 ||
@@ -340,6 +366,15 @@ sap.ui.define([
             var that = this;
             var k = data.kpi;
             var curr = data.project ? data.project.currency : '';
+
+            if (!k || k.totalItems === 0) {
+                container.innerHTML = '<div class="analyticsEmpty">' +
+                    '<span style="font-size:3rem;color:#bbb;margin-bottom:1rem">&#x1f4ca;</span>' +
+                    '<div style="font-size:16px;font-weight:600;color:#666;margin-bottom:0.5rem">No Items to Analyze</div>' +
+                    '<div style="font-size:13px;color:#888">Add items to the RICEF, BI, or Migration tabs to see analytics here.</div></div>';
+                return;
+            }
+
             var html = '';
 
             // ====== KPI TILES ======
@@ -560,6 +595,7 @@ sap.ui.define([
 
             // ====== ROW 7: Complexity Heatmap ======
             if (data.heatmapData && data.heatmapData.complexities.length > 0 && data.heatmapData.types.length > 0) {
+                var tsMap = data.heatmapData.typeToSheet || {};
                 html += '<div style="margin-bottom:20px">';
                 html += that._sectionTitle("Complexity vs Object Type (Item Count)");
                 html += '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:12px;width:100%">';
@@ -570,6 +606,7 @@ sap.ui.define([
                 html += '<th style="padding:5px 8px;border:1px solid #ddd;text-align:center;font-weight:700">Total</th></tr>';
                 data.heatmapData.types.forEach(function (t, idx) {
                     var bg = idx % 2 === 0 ? '#fff' : '#fafafa';
+                    var sheet = tsMap[t] || 'RICEF';
                     html += '<tr style="background:' + bg + '"><td style="padding:4px 8px;border:1px solid #eee;font-weight:500">' + t + '</td>';
                     var rowTotal = 0;
                     data.heatmapData.complexities.forEach(function (c) {
@@ -577,9 +614,11 @@ sap.ui.define([
                         var val = cell ? cell.count : 0;
                         rowTotal += val;
                         var intensity = val === 0 ? '' : val <= 2 ? 'background:#e8f0fe' : val <= 5 ? 'background:#c6dbef' : val <= 10 ? 'background:#9ecae1' : 'background:#6baed6;color:#fff';
-                        html += '<td style="padding:4px 8px;border:1px solid #eee;text-align:center;' + intensity + '">' + (val || '') + '</td>';
+                        var clickAttr = val > 0 ? ' data-hm-click="1" data-hm-type="' + t + '" data-hm-complexity="' + c + '" data-hm-sheet="' + sheet + '" title="Click to view ' + t + ' — ' + c.replace(/^\d-/, '') + '" style="padding:4px 8px;border:1px solid #eee;text-align:center;cursor:pointer;' + intensity + '"' : ' style="padding:4px 8px;border:1px solid #eee;text-align:center;' + intensity + '"';
+                        html += '<td' + clickAttr + '>' + (val || '') + '</td>';
                     });
-                    html += '<td style="padding:4px 8px;border:1px solid #eee;text-align:center;font-weight:700">' + rowTotal + '</td></tr>';
+                    var totalClick = rowTotal > 0 ? ' data-hm-click="1" data-hm-type="' + t + '" data-hm-complexity="" data-hm-sheet="' + sheet + '" title="Click to view all ' + t + ' items" style="padding:4px 8px;border:1px solid #eee;text-align:center;font-weight:700;cursor:pointer"' : ' style="padding:4px 8px;border:1px solid #eee;text-align:center;font-weight:700"';
+                    html += '<td' + totalClick + '>' + rowTotal + '</td></tr>';
                 });
                 html += '</table></div></div>';
             }
@@ -608,6 +647,22 @@ sap.ui.define([
             html += '</table></div>';
 
             container.innerHTML = html;
+
+            var that2 = that;
+            container.querySelectorAll('[data-hm-click]').forEach(function (el) {
+                el.addEventListener('click', function () {
+                    that2._onHeatmapCellClick(el.dataset.hmType, el.dataset.hmComplexity, el.dataset.hmSheet);
+                });
+            });
+        },
+
+        _onHeatmapCellClick: function (typeLabel, complexity, sheetCode) {
+            this._pendingTypeFilter = typeLabel;
+            this._pendingComplexityFilter = complexity || "";
+            var tabs = this.byId("sheetTabs");
+            tabs.setSelectedKey(sheetCode);
+            this._sheetType = sheetCode;
+            this._switchTab(sheetCode);
         },
 
         _sectionTitle: function (text) {
@@ -684,7 +739,7 @@ sap.ui.define([
                                 label: oLabelInput.getValue().trim()
                             }
                         ).then(function () {
-                            MessageToast.show("Snapshot saved");
+                            that._showConfirmStrip("Snapshot saved — " + oPhaseSelect.getSelectedKey() + (oLabelInput.getValue().trim() ? " (" + oLabelInput.getValue().trim() + ")" : ""), "Success");
                             dialog.close();
                             if (that._sheetType === "SNAPSHOTS") that._loadSnapshots();
                         });
@@ -705,7 +760,7 @@ sap.ui.define([
                         that.getOwnerComponent().api("DELETE",
                             "/projects/" + that._projectId + "/snapshots/" + obj.id
                         ).then(function () {
-                            MessageToast.show("Deleted");
+                            that._showConfirmStrip("Snapshot deleted", "Warning");
                             that._loadSnapshots();
                         });
                     }
@@ -1056,20 +1111,113 @@ sap.ui.define([
 
         // --- Sheet control section (RICEF/BI/MIGRATION) ---
 
+        _orangeGridData: null,
+
         _loadOrangeGrid: function (sheetType) {
             var that = this;
             this.getOwnerComponent().api("GET",
                 "/projects/" + this._projectId + "/orange-grid/" + sheetType
             ).then(function (data) {
-                that.getView().getModel("orangeGrid").setData(data);
-                var ph = data.phases || {};
-                that.byId("ogDeliveryLevel").setText(String(data.project.delivery_level || 1));
-                that.byId("ogPhases").setText(
-                    "PREP " + (ph.prep || 0) + " | FTS " + (ph.fts || 0) + " | DESIGN " + (ph.design || 0) +
-                    " | BUILD " + (ph.build || 0) + " | SIT/UAT " + (ph.sit_uat || 0) +
-                    " | DEP " + (ph.dep || 0) + " | HYP " + (ph.hyp || 0) + " weeks"
-                );
+                that._orangeGridData = data;
+                if (that.byId("orangeGridPanel").getExpanded()) {
+                    that._renderOrangeGrid();
+                }
             });
+        },
+
+        onOrangeGridExpand: function (oEvent) {
+            var that = this;
+            if (oEvent.getParameter("expand") && this._orangeGridData) {
+                setTimeout(function () { that._renderOrangeGrid(); }, 50);
+            }
+        },
+
+        onOrangeGridAfterRendering: function () {
+            if (this._orangeGridData && this.byId("orangeGridPanel").getExpanded()) {
+                this._renderOrangeGrid();
+            }
+        },
+
+        _renderOrangeGrid: function () {
+            var container = document.getElementById("orangeGridContainer");
+            if (!container || !this._orangeGridData) return;
+            var data = this._orangeGridData;
+            var phases = ["prep", "fts", "design", "build", "sit_uat", "dep", "hyp"];
+            var phaseLabels = ["PREP", "FTS", "DESIGN", "BUILD", "SIT/UAT", "DEP", "HYP"];
+            var ph = data.phases || {};
+            var dl = data.project ? data.project.delivery_level : 1;
+
+            var hdrBg = "#e76500";
+            var hdrFg = "#fff";
+            var subHdrBg = "#fdf0e2";
+            var sectionBg = "#f5a623";
+            var borderClr = "#d4a574";
+            var highlightBg = "#fff3cd";
+            var cellBorder = "1px solid " + borderClr;
+
+            var html = '<div style="overflow-x:auto;max-width:100%">';
+            html += '<table style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
+
+            // Row 1: Header bar
+            html += '<tr><th colspan="9" style="background:' + hdrBg + ';color:' + hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
+            html += 'ORANGE GRID &nbsp;&nbsp;|&nbsp;&nbsp; Delivery Level: ' + dl;
+            html += ' &nbsp;&nbsp;|&nbsp;&nbsp; Phases: ';
+            phaseLabels.forEach(function (lbl, i) {
+                var key = phases[i];
+                html += lbl + ' ' + (ph[key] || 0) + (i < 6 ? ' | ' : '');
+            });
+            html += ' weeks</th></tr>';
+
+            // FUNC section
+            html += '<tr><td colspan="9" style="background:' + sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + cellBorder + '">FUNC — Functional Effort</td></tr>';
+            html += '<tr style="background:' + subHdrBg + '">';
+            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:left;min-width:180px">Role</th>';
+            phaseLabels.forEach(function (lbl) {
+                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:center;min-width:60px">' + lbl + '</th>';
+            });
+            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;min-width:70px;font-weight:bold">TOTAL</th></tr>';
+
+            (data.funcRows || []).forEach(function (r, idx) {
+                var bg = idx % 2 === 0 ? '#fff' : '#fef8f0';
+                html += '<tr style="background:' + bg + '">';
+                html += '<td style="padding:3px 8px;border:' + cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
+                var rowTotal = 0;
+                phases.forEach(function (p) {
+                    var v = r[p] || 0;
+                    rowTotal += v;
+                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
+                });
+                html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
+                html += '</tr>';
+            });
+
+            // TECH section
+            html += '<tr><td colspan="9" style="background:' + sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + cellBorder + '">TECH — Technical Effort</td></tr>';
+            html += '<tr style="background:' + subHdrBg + '">';
+            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:left">Role</th>';
+            phaseLabels.forEach(function (lbl) {
+                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:center">' + lbl + '</th>';
+            });
+            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">TOTAL</th></tr>';
+
+            (data.techRows || []).forEach(function (r, idx) {
+                var isHighlight = r._highlight;
+                var bg = isHighlight ? highlightBg : (idx % 2 === 0 ? '#fff' : '#fef8f0');
+                var fw = isHighlight ? 'font-weight:bold' : '';
+                html += '<tr style="background:' + bg + ';' + fw + '">';
+                html += '<td style="padding:3px 8px;border:' + cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
+                var rowTotal = 0;
+                phases.forEach(function (p) {
+                    var v = r[p] || 0;
+                    rowTotal += v;
+                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
+                });
+                html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
+                html += '</tr>';
+            });
+
+            html += '</table></div>';
+            container.innerHTML = html;
         },
 
         _loadSheetControl: function (sheetCode) {
@@ -1097,7 +1245,11 @@ sap.ui.define([
             // Row 1: FUNC % Explore vs Build
             if (data.funcPct) {
                 var funcRow = new ColumnListItem();
-                funcRow.addCell(new Text({ text: "FUNC  % Explore vs Build" }).addStyleClass("sapUiSmallMarginBegin"));
+                var funcLabel = new sap.m.HBox({ alignItems: "Center" });
+                funcLabel.addItem(new Text({ text: "FUNC  % Explore vs Build" }));
+                funcLabel.addItem(new sap.ui.core.Icon({ src: "sap-icon://hint", color: "#0854a0", tooltip: "How functional item hours split across DESIGN (Explore) and BUILD phases for this sheet.\nPREP-DEP should total ~100%. HYP is additive." }).addStyleClass("inlineHint"));
+                funcLabel.addStyleClass("sapUiSmallMarginBegin");
+                funcRow.addCell(funcLabel);
                 var isEditable = !that.getView().getModel("viewModel").getProperty("/readonly");
                 phases.forEach(function (p) {
                     var inp = new InputCtrl({
@@ -1113,7 +1265,11 @@ sap.ui.define([
             // Fixed role rows
             (data.fixedRoles || []).forEach(function (role) {
                 var roleRow = new ColumnListItem();
-                roleRow.addCell(new Text({ text: role.role_name }).addStyleClass("sapUiSmallMarginBegin"));
+                var roleLabel = new sap.m.HBox({ alignItems: "Center" });
+                roleLabel.addItem(new Text({ text: role.role_name }));
+                roleLabel.addItem(new sap.ui.core.Icon({ src: "sap-icon://hint", color: "#0854a0", tooltip: "Fixed role hours per phase (hours/week).\nFed into the Orange Grid TECH section and Summary." }).addStyleClass("inlineHint"));
+                roleLabel.addStyleClass("sapUiSmallMarginBegin");
+                roleRow.addCell(roleLabel);
                 var isEdit = !that.getView().getModel("viewModel").getProperty("/readonly");
                 phases.forEach(function (p) {
                     var idx = data.fixedRoles.indexOf(role);
@@ -1254,6 +1410,13 @@ sap.ui.define([
             dialog.open();
         },
 
+        _showConfirmStrip: function (msg, type) {
+            var strip = this.byId("actionConfirmStrip");
+            strip.setText(msg);
+            strip.setType(type || "Success");
+            strip.setVisible(true);
+        },
+
         onDeleteItems: function () {
             var that = this;
             var table = this.byId("itemsTable");
@@ -1271,7 +1434,7 @@ sap.ui.define([
                                 "/projects/" + that._projectId + "/items/" + id);
                         });
                         Promise.all(promises).then(function () {
-                            MessageToast.show("Deleted");
+                            that._showConfirmStrip(selected.length + " item(s) deleted", "Warning");
                             that._loadItems();
                         });
                     }
@@ -1284,7 +1447,7 @@ sap.ui.define([
             this.getOwnerComponent().api("POST",
                 "/projects/" + this._projectId + "/recalculate-all"
             ).then(function (r) {
-                MessageToast.show(r.recalculated + " items recalculated");
+                that._showConfirmStrip(r.recalculated + " items recalculated successfully", "Success");
                 if (that._sheetType === "FUNCTIONAL") {
                     that._loadScope();
                 } else {

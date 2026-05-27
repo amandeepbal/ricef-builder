@@ -11,7 +11,7 @@
                         <Label text="Config Version:" class="sapUiSmallMarginEnd"/>
                         <Select id="versionSelect" items="{ path: 'versions>/' }" change="onVersionChange"
                             selectedKey="{adminCtx>/versionId}">
-                            <core:Item key="{versions>id}" text="{versions>name} ({versions>valid_from} — {versions>valid_to})"/>
+                            <core:Item key="{versions>id}" text="{versions>name}"/>
                         </Select>
                         <ToolbarSpacer/>
                         <Button text="Edit Version" icon="sap-icon://edit" press="onEditVersion" type="Transparent"/>

@@ -71,13 +71,22 @@ sap.ui.define([
                 value: project.end_date || "",
                 valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy"
             });
-            var oVersionSelect = new Select({ selectedKey: String(project.config_version_id || 1) });
+            var oEditTemplateWarning = new sap.m.MessageStrip({
+                text: "Template is a baseline config — not recommended for projects. Clone it in Admin to create a project-specific version.",
+                type: "Warning", showIcon: true, visible: (project.config_version_id || 1) === 1
+            }).addStyleClass("sapUiTinyMarginBottom");
+            var oVersionSelect = new Select({
+                selectedKey: String(project.config_version_id || 1),
+                change: function () {
+                    oEditTemplateWarning.setVisible(oVersionSelect.getSelectedKey() === "1");
+                }
+            });
 
             that.getOwnerComponent().api("GET", "/admin/config-versions").then(function (versions) {
                 versions.forEach(function (v) {
                     oVersionSelect.addItem(new Item({
                         key: String(v.id),
-                        text: v.name + " (" + v.valid_from + (v.valid_to ? " — " + v.valid_to : " — open") + ")"
+                        text: v.name
                     }));
                 });
                 oVersionSelect.setSelectedKey(String(project.config_version_id || 1));
@@ -91,10 +100,15 @@ sap.ui.define([
                     content: [
                         new Label({ text: "Project Number" }), oNumInput,
                         new Label({ text: "Description" }), oDescInput,
-                        new Label({ text: "Start Date" }), oStartDate,
-                        new Label({ text: "End Date" }), oEndDate,
+                        new Label({ text: "Validity Period" }),
+                        new sap.m.HBox({ alignItems: "Center", items: [
+                            oStartDate,
+                            new sap.m.Text({ text: "to" }).addStyleClass("sapUiSmallMarginBeginEnd"),
+                            oEndDate
+                        ]}),
                         new Label({ text: "Currency" }), oCurrSelect,
-                        new Label({ text: "Config Version" }), oVersionSelect
+                        new Label({ text: "Config Version" }), oVersionSelect,
+                        oEditTemplateWarning
                     ]
                 }),
                 beginButton: new Button({
@@ -212,8 +226,31 @@ sap.ui.define([
                 }
             });
 
-            var oStartDate = new sap.m.DatePicker({ placeholder: "Project start", valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy" });
-            var oEndDate = new sap.m.DatePicker({ placeholder: "Project end", valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy" });
+            var oStartDate = new sap.m.DatePicker({ placeholder: "Project start", valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy", width: "100%" });
+            var oEndDate = new sap.m.DatePicker({ placeholder: "Project end", valueFormat: "yyyy-MM-dd", displayFormat: "MMM dd, yyyy", width: "100%" });
+            var oTemplateWarning = new sap.m.MessageStrip({
+                text: "Template is a baseline config — not recommended for projects. Clone it in Admin to create a project-specific version.",
+                type: "Warning", showIcon: true, visible: true
+            }).addStyleClass("sapUiTinyMarginBottom");
+            var oVersionSelect = new Select({
+                selectedKey: "1",
+                change: function () {
+                    oTemplateWarning.setVisible(oVersionSelect.getSelectedKey() === "1");
+                }
+            });
+
+            that.getOwnerComponent().api("GET", "/admin/config-versions").then(function (versions) {
+                versions.forEach(function (v) {
+                    oVersionSelect.addItem(new Item({ key: String(v.id), text: v.name }));
+                });
+                if (versions.length > 1) {
+                    var nonTemplate = versions.find(function (v) { return v.id !== 1; });
+                    if (nonTemplate) {
+                        oVersionSelect.setSelectedKey(String(nonTemplate.id));
+                        oTemplateWarning.setVisible(false);
+                    }
+                }
+            });
 
             var dialog = new Dialog({
                 title: "New Project",
@@ -225,9 +262,16 @@ sap.ui.define([
                         new sap.m.Text({ text: "Unique identifier for the project (e.g., PRJ-001)" }).addStyleClass("sapUiTinyMarginBottom sapThemeMetaText"),
                         new Label({ text: "Description" }), oDescInput,
                         new sap.m.Text({ text: "Client name and project phase (e.g., Client ABC - Discovery Phase 1)" }).addStyleClass("sapUiTinyMarginBottom sapThemeMetaText"),
-                        new Label({ text: "Start Date" }), oStartDate,
-                        new Label({ text: "End Date" }), oEndDate,
-                        new sap.m.Text({ text: "Config version is auto-resolved from start date" }).addStyleClass("sapUiTinyMarginBottom sapThemeMetaText"),
+                        new Label({ text: "Validity Period" }),
+                        new sap.m.HBox({ alignItems: "Center", items: [
+                            oStartDate,
+                            new sap.m.Text({ text: "to" }).addStyleClass("sapUiSmallMarginBeginEnd"),
+                            oEndDate
+                        ]}),
+                        new sap.m.Text({ text: "Project becomes read-only if today is outside this date range. Leave empty to keep it always editable." }).addStyleClass("sapUiTinyMarginBottom sapThemeMetaText"),
+                        new Label({ text: "Config Version" }), oVersionSelect,
+                        oTemplateWarning,
+                        new sap.m.Text({ text: "Determines estimation grid, blended rates, and dropdown values. Clone the Template version in Admin to create a new one." }).addStyleClass("sapUiTinyMarginBottom sapThemeMetaText"),
                         new Label({ text: "Currency" }), oCurrSelect,
                         new sap.m.Text({ text: "Determines blended rate currency for cost calculations" }).addStyleClass("sapUiTinyMarginBottom sapThemeMetaText"),
                         new Label({ text: "Delivery Level" }), oLevelSelect,
@@ -244,7 +288,8 @@ sap.ui.define([
                             start_date: oStartDate.getValue() || null,
                             end_date: oEndDate.getValue() || null,
                             currency: oCurrSelect.getSelectedKey(),
-                            delivery_level: parseInt(oLevelSelect.getSelectedKey())
+                            delivery_level: parseInt(oLevelSelect.getSelectedKey()),
+                            config_version_id: parseInt(oVersionSelect.getSelectedKey())
                         }).then(function () {
                             MessageToast.show("Project created");
                             dialog.close();

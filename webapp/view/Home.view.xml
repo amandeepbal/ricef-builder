@@ -8,7 +8,7 @@
         <content>
             <Table id="projectTable" items="{ path: 'projects>/' }"
                 noDataText="No projects yet. Create your first estimation project to get started."
-                growing="true" growingThreshold="50">
+                growing="true" growingThreshold="50" sticky="ColumnHeaders">
                 <columns>
                     <Column width="8rem"><Text text="Project #"/></Column>
                     <Column><Text text="Description"/></Column>
@@ -16,6 +16,7 @@
                     <Column width="8rem"><Text text="Start"/></Column>
                     <Column width="8rem"><Text text="End"/></Column>
                     <Column width="5rem" hAlign="Center"><Text text="Items"/></Column>
+                    <Column width="9rem"><Text text="Config Version"/></Column>
                     <Column width="8rem" hAlign="Center"><Text text="Actions"/></Column>
                 </columns>
                 <items>
@@ -29,6 +30,7 @@
                         <Text text="{projects>start_date}"/>
                         <Text text="{projects>end_date}"/>
                         <ObjectNumber number="{projects>item_count}" emphasized="false"/>
+                        <Text text="{projects>config_version_name}"/>
                         <HBox>
                             <Button icon="sap-icon://edit" tooltip="Edit" type="Transparent" press="onEditProject"/>
                             <Button icon="sap-icon://copy" tooltip="Copy as Template" type="Transparent" press="onCopyProject"/>

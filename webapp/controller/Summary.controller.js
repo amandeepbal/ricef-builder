@@ -226,6 +226,10 @@ sap.ui.define([
 
         onNavBack: function () {
             this.getOwnerComponent().getRouter().navTo("project", { projectId: this._projectId });
+        },
+
+        onNavHome: function () {
+            this.getOwnerComponent().getRouter().navTo("home");
         }
     });
 });

@@ -2,6 +2,10 @@
 -- RICEFW Estimator - Seed Data (from Excel workbook)
 -- ============================================================
 
+-- Config Version (Template — clone this for new projects)
+INSERT INTO config_versions (name, description) VALUES
+('Template', 'Default configuration template with all seed data. Clone this for new rate cards.');
+
 -- Sheet Types
 INSERT INTO sheet_types (code, label, sort_order) VALUES
 ('RICEF',      'RICEF - Development',  1),

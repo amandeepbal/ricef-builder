@@ -385,10 +385,13 @@ router.get('/:projectId/analytics', (req, res) => {
     heatmap[c][t].count++;
     heatmap[c][t].hours += i.grand_total_hours || 0;
   });
+  const typeToSheet = {};
+  items.forEach(i => { typeToSheet[i.type_label] = i.sheet_type_code; });
   const heatmapData = {
     complexities: complexOrder.filter(c => heatmap[c]),
     types: [...heatTypes].sort(),
-    cells: heatmap
+    cells: heatmap,
+    typeToSheet
   };
 
   // --- Team Workload (by role) ---

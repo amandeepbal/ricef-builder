@@ -4,7 +4,7 @@ const router = Router();
 
 router.get('/', (req, res) => {
   const db = getDb();
-  res.json(db.prepare('SELECT * FROM config_versions ORDER BY valid_from DESC').all());
+  res.json(db.prepare('SELECT * FROM config_versions WHERE is_active = 1 ORDER BY id DESC').all());
 });
 
 router.get('/:id', (req, res) => {
@@ -14,38 +14,14 @@ router.get('/:id', (req, res) => {
   res.json(ver);
 });
 
-function checkDateOverlap(db, validFrom, validTo, excludeId) {
-  const existing = db.prepare(
-    'SELECT id, name, valid_from, valid_to FROM config_versions WHERE is_active = 1' +
-    (excludeId ? ' AND id != ?' : '')
-  ).all(...(excludeId ? [excludeId] : []));
-
-  for (const v of existing) {
-    const vFrom = v.valid_from;
-    const vTo = v.valid_to || '9999-12-31';
-    const newTo = validTo || '9999-12-31';
-    if (validFrom <= vTo && newTo >= vFrom) {
-      return v;
-    }
-  }
-  return null;
-}
-
 router.post('/', (req, res) => {
   const db = getDb();
   const { name, description, valid_from, valid_to } = req.body;
-  if (!name || !valid_from) return res.status(400).json({ error: 'name and valid_from are required' });
-
-  const overlap = checkDateOverlap(db, valid_from, valid_to);
-  if (overlap) {
-    return res.status(409).json({
-      error: 'Date range overlaps with version "' + overlap.name + '" (' + overlap.valid_from + ' — ' + (overlap.valid_to || 'open') + ')'
-    });
-  }
+  if (!name) return res.status(400).json({ error: 'name is required' });
 
   const r = db.prepare(
     'INSERT INTO config_versions (name, description, valid_from, valid_to) VALUES (?,?,?,?)'
-  ).run(name, description || null, valid_from, valid_to || null);
+  ).run(name, description || null, valid_from || null, valid_to || null);
   res.status(201).json({ id: r.lastInsertRowid });
 });
 
@@ -53,18 +29,9 @@ router.put('/:id', (req, res) => {
   const db = getDb();
   const { name, description, valid_from, valid_to, is_active } = req.body;
 
-  if (valid_from) {
-    const overlap = checkDateOverlap(db, valid_from, valid_to, Number(req.params.id));
-    if (overlap) {
-      return res.status(409).json({
-        error: 'Date range overlaps with version "' + overlap.name + '" (' + overlap.valid_from + ' — ' + (overlap.valid_to || 'open') + ')'
-      });
-    }
-  }
-
   db.prepare(
     'UPDATE config_versions SET name=?, description=?, valid_from=?, valid_to=?, is_active=? WHERE id=?'
-  ).run(name, description, valid_from, valid_to || null, is_active != null ? is_active : 1, req.params.id);
+  ).run(name, description, valid_from || null, valid_to || null, is_active != null ? is_active : 1, req.params.id);
   res.json({ ok: true });
 });
 
@@ -75,6 +42,41 @@ router.delete('/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// Get projects assigned to this version
+router.get('/:id/projects', (req, res) => {
+  const db = getDb();
+  const projects = db.prepare(
+    'SELECT id, project_number, description FROM projects WHERE config_version_id = ? AND is_active = 1 ORDER BY project_number'
+  ).all(req.params.id);
+  res.json(projects);
+});
+
+// Bulk-assign projects to this version
+router.put('/:id/projects', (req, res) => {
+  const db = getDb();
+  const versionId = Number(req.params.id);
+  if (versionId === 1) return res.status(400).json({ error: 'Cannot assign projects to the Template version. Clone it first.' });
+  const ver = db.prepare('SELECT id FROM config_versions WHERE id = ?').get(versionId);
+  if (!ver) return res.status(404).json({ error: 'Version not found' });
+
+  const { project_ids } = req.body;
+  if (!Array.isArray(project_ids)) return res.status(400).json({ error: 'project_ids must be an array' });
+
+  const update = db.transaction(() => {
+    // Unassign projects currently on this version that are NOT in the new list
+    db.prepare(
+      'UPDATE projects SET config_version_id = 1 WHERE config_version_id = ? AND is_active = 1'
+    ).run(versionId);
+    // Assign the selected projects
+    const stmt = db.prepare('UPDATE projects SET config_version_id = ? WHERE id = ? AND is_active = 1');
+    for (const pid of project_ids) {
+      stmt.run(versionId, pid);
+    }
+  });
+  update();
+  res.json({ ok: true, assigned: project_ids.length });
+});
+
 router.post('/:id/clone', (req, res) => {
   const db = getDb();
   const srcId = Number(req.params.id);
@@ -82,19 +84,12 @@ router.post('/:id/clone', (req, res) => {
   if (!src) return res.status(404).json({ error: 'Source version not found' });
 
   const { name, valid_from, valid_to } = req.body;
-  if (!name || !valid_from) return res.status(400).json({ error: 'name and valid_from are required' });
-
-  const overlap = checkDateOverlap(db, valid_from, valid_to);
-  if (overlap) {
-    return res.status(409).json({
-      error: 'Date range overlaps with version "' + overlap.name + '" (' + overlap.valid_from + ' — ' + (overlap.valid_to || 'open') + ')'
-    });
-  }
+  if (!name) return res.status(400).json({ error: 'name is required' });
 
   const clone = db.transaction(() => {
     const r = db.prepare(
       'INSERT INTO config_versions (name, description, valid_from, valid_to) VALUES (?,?,?,?)'
-    ).run(name, 'Cloned from ' + src.name, valid_from, valid_to || null);
+    ).run(name, 'Cloned from ' + src.name, valid_from || null, valid_to || null);
     const newId = r.lastInsertRowid;
 
     const copySimple = (table) => {
@@ -187,16 +182,6 @@ router.post('/:id/clone', (req, res) => {
 
   const newId = clone();
   res.status(201).json({ id: newId });
-});
-
-// Resolve version for a given date
-router.get('/resolve/:date', (req, res) => {
-  const db = getDb();
-  const d = req.params.date;
-  const ver = db.prepare(
-    `SELECT * FROM config_versions WHERE is_active = 1 AND valid_from <= ? AND (valid_to IS NULL OR valid_to >= ?) ORDER BY valid_from DESC LIMIT 1`
-  ).get(d, d);
-  res.json(ver || null);
 });
 
 module.exports = router;
