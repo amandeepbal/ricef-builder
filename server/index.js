@@ -76,6 +76,17 @@ if (!IS_BTP) {
   });
 }
 
+app.get('/api/user-info', (req, res) => {
+  res.json({
+    id: req.user.id,
+    name: req.user.name,
+    email: req.user.id !== 'local' ? req.user.id : '',
+    isAdmin: req.user.isAdmin,
+    isUser: req.user.isUser,
+    environment: process.env.VCAP_SERVICES ? 'BTP' : 'Local'
+  });
+});
+
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/projects', require('./routes/items'));
 app.use('/api/projects', require('./routes/summary'));

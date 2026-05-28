@@ -74,3 +74,29 @@ td[data-hm-click]:hover {
     outline: 2px solid #0854a0;
     outline-offset: -2px;
 }
+
+/* Launchpad */
+.launchpadPage {
+    background: var(--sapBackgroundColor, #f7f7f7);
+}
+.launchpadTiles {
+    gap: 1rem;
+}
+.launchpadTile {
+    margin: 0.5rem;
+}
+.launchpadTile .sapMGTHdrTxt {
+    font-size: 1.125rem;
+}
+
+/* Shell layout */
+#shellPage {
+    display: flex;
+    flex-direction: column;
+}
+#shellPage .sapMPageEnableScrolling {
+    overflow: hidden;
+}
+.sapFShellBar {
+    z-index: 10;
+}

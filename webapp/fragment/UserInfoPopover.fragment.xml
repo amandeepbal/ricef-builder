@@ -1,0 +1,43 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.f">
+    <ResponsivePopover id="userInfoPopover" title="User Information" placement="Bottom" contentWidth="22rem">
+        <content>
+            <VBox class="sapUiSmallMargin">
+                <HBox class="sapUiTinyMarginBottom">
+                    <core:Icon src="sap-icon://person-placeholder" size="2.5rem" class="sapUiSmallMarginEnd"/>
+                    <VBox>
+                        <Title text="{userInfo>/name}" level="H5"/>
+                        <Label text="{userInfo>/email}" class="sapThemeHighlight-asColor"/>
+                    </VBox>
+                </HBox>
+
+                <ObjectStatus text="ID: {userInfo>/id}" class="sapUiTinyMarginTop"/>
+
+                <Title text="Roles" level="H6" class="sapUiSmallMarginTop"/>
+                <FlexBox wrap="Wrap">
+                    <ObjectStatus text="User" icon="sap-icon://accept"
+                        state="{= ${userInfo>/isUser} ? 'Success' : 'None'}"
+                        inverted="true" class="sapUiTinyMarginEnd"/>
+                    <ObjectStatus text="Admin" icon="{= ${userInfo>/isAdmin} ? 'sap-icon://accept' : 'sap-icon://decline'}"
+                        state="{= ${userInfo>/isAdmin} ? 'Success' : 'Error'}"
+                        inverted="true"/>
+                </FlexBox>
+
+                <Title text="Theme" level="H6" class="sapUiSmallMarginTop"/>
+                <SegmentedButton id="themeSwitch" selectionChange="onThemeChange" selectedKey="{userInfo>/theme}">
+                    <items>
+                        <SegmentedButtonItem key="sap_horizon" text="Light" icon="sap-icon://light-mode"/>
+                        <SegmentedButtonItem key="sap_horizon_dark" text="Dark" icon="sap-icon://dark-mode"/>
+                        <SegmentedButtonItem key="sap_horizon_hcb" text="HC Black" icon="sap-icon://contrast"/>
+                    </items>
+                </SegmentedButton>
+
+                <Title text="About" level="H6" class="sapUiSmallMarginTop"/>
+                <ObjectAttribute title="Version" text="{userInfo>/appVersion}"/>
+                <ObjectAttribute title="Environment" text="{userInfo>/environment}"/>
+            </VBox>
+        </content>
+        <beginButton>
+            <Button text="Close" press="onCloseUserInfo" type="Transparent"/>
+        </beginButton>
+    </ResponsivePopover>
+</core:FragmentDefinition>

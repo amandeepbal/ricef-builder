@@ -1,0 +1,28 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
+    controllerName="com.syntax.ricefbuilder.controller.Launchpad">
+    <Page showHeader="false" class="launchpadPage">
+        <content>
+            <VBox alignItems="Center" class="sapUiLargeMarginTop">
+                <Title text="RICEFW Estimator" level="H1" class="sapUiMediumMarginBottom"/>
+                <Text text="SAP Project Estimation Tool" class="sapUiSmallMarginBottom sapThemeHighlight-asColor"/>
+                <FlexBox wrap="Wrap" justifyContent="Center" class="sapUiLargeMarginTop launchpadTiles">
+                    <GenericTile header="Projects" subheader="Estimation workbench"
+                        press="onTilePress" class="launchpadTile">
+                        <customData><core:CustomData key="target" value="home"/></customData>
+                        <TileContent>
+                            <ImageContent src="sap-icon://project-definition-triangle-2"/>
+                        </TileContent>
+                    </GenericTile>
+                    <GenericTile id="adminTile" header="Administration" subheader="Configuration and rates"
+                        press="onTilePress" class="launchpadTile"
+                        visible="{userInfo>/isAdmin}">
+                        <customData><core:CustomData key="target" value="admin"/></customData>
+                        <TileContent>
+                            <ImageContent src="sap-icon://settings"/>
+                        </TileContent>
+                    </GenericTile>
+                </FlexBox>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>
