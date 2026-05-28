@@ -22,6 +22,46 @@ sap.ui.define([
         _projectId: null,
         _sheetType: "RICEF",
         _scopeSaveTimer: null,
+
+        _isDark: function () {
+            var t = sap.ui.getCore().getConfiguration().getTheme();
+            return t.indexOf("dark") >= 0 || t.indexOf("hcb") >= 0;
+        },
+        _gc: function (grid) {
+            var dk = this._isDark();
+            var schemes = {
+                orange: {
+                    hdrBg: "#e76500", hdrFg: "#fff", sectionBg: "#f5a623",
+                    subHdrBg: dk ? "#3d2e1a" : "#fdf0e2",
+                    borderClr: dk ? "#6b5030" : "#d4a574",
+                    highlightBg: dk ? "#3d3520" : "#fff3cd",
+                    rowBg1: dk ? "#1e1e1e" : "#fff",
+                    rowBg2: dk ? "#2a2518" : "#fef8f0",
+                    textClr: dk ? "#e0e0e0" : "inherit"
+                },
+                blue: {
+                    hdrBg: "#0854a0", hdrFg: "#fff", sectionBg: "#2b7cd0",
+                    subHdrBg: dk ? "#1a2a3d" : "#e0ecf8",
+                    borderClr: dk ? "#305878" : "#7baed4",
+                    highlightBg: dk ? "#1a3050" : "#d6eaf8",
+                    rowBg1: dk ? "#1e1e1e" : "#fff",
+                    rowBg2: dk ? "#1a2530" : "#f0f6fc",
+                    textClr: dk ? "#e0e0e0" : "inherit"
+                },
+                purple: {
+                    hdrBg: "#7b2d8e", hdrFg: "#fff", sectionBg: "#9b59b6",
+                    subHdrBg: dk ? "#2d1a33" : "#f8f0fc",
+                    borderClr: dk ? "#5a3068" : "#ccc",
+                    highlightBg: dk ? "#3d2045" : "#f8f0fc",
+                    rowBg1: dk ? "#1e1e1e" : "#fff",
+                    rowBg2: dk ? "#2a1e30" : "#fafafa",
+                    textClr: dk ? "#e0e0e0" : "inherit"
+                }
+            };
+            var c = schemes[grid] || schemes.orange;
+            c.cellBorder = "1px solid " + c.borderClr;
+            return c;
+        },
         _scopeConfigTimer: null,
 
         onInit: function () {
@@ -309,61 +349,55 @@ sap.ui.define([
             var phases = ["prep", "fts", "design", "build", "sit_uat", "dep", "hyp"];
             var phaseLabels = ["PREP", "FTS", "DESIGN", "BUILD", "SIT/UAT", "DEP", "HYP"];
 
-            var hdrBg = "#e76500";
-            var hdrFg = "#fff";
-            var subHdrBg = "#fdf0e2";
-            var sectionBg = "#f5a623";
-            var borderClr = "#d4a574";
-            var highlightBg = "#fff3cd";
-            var cellBorder = "1px solid " + borderClr;
+            var c = this._gc("orange");
 
             var html = '<div style="overflow-x:auto;max-width:100%">';
-            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
+            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%;color:' + c.textClr + '">';
 
             var totalCols = 11;
-            html += '<tr><th colspan="' + totalCols + '" style="background:' + hdrBg + ';color:' + hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
+            html += '<tr><th colspan="' + totalCols + '" style="background:' + c.hdrBg + ';color:' + c.hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
             html += 'FUNCTIONAL — ORANGE GRID</th></tr>';
 
             function renderSection(title, rows, hasLeadCols) {
-                html += '<tr><td colspan="' + totalCols + '" style="background:' + sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + cellBorder + '">' + title + '</td></tr>';
-                html += '<tr style="background:' + subHdrBg + '">';
-                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:left;min-width:180px">Role</th>';
+                html += '<tr><td colspan="' + totalCols + '" style="background:' + c.sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + c.cellBorder + '">' + title + '</td></tr>';
+                html += '<tr style="background:' + c.subHdrBg + '">';
+                html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:left;min-width:180px">Role</th>';
                 phaseLabels.forEach(function (lbl) {
-                    html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:center;min-width:60px">' + lbl + '</th>';
+                    html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:center;min-width:60px">' + lbl + '</th>';
                 });
-                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;min-width:70px;font-weight:bold">TOTAL</th>';
+                html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:right;min-width:70px;font-weight:bold">TOTAL</th>';
                 if (hasLeadCols) {
-                    html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;min-width:55px">Lead</th>';
-                    html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;min-width:70px">Consultant</th>';
+                    html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:right;min-width:55px">Lead</th>';
+                    html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:right;min-width:70px">Consultant</th>';
                 } else {
-                    html += '<th style="border:' + cellBorder + '"></th><th style="border:' + cellBorder + '"></th>';
+                    html += '<th style="border:' + c.cellBorder + '"></th><th style="border:' + c.cellBorder + '"></th>';
                 }
                 html += '</tr>';
 
                 if (!rows || rows.length === 0) {
-                    html += '<tr><td colspan="' + totalCols + '" style="padding:6px 8px;border:' + cellBorder + ';color:#888;text-align:center;font-style:italic">No data</td></tr>';
+                    html += '<tr><td colspan="' + totalCols + '" style="padding:6px 8px;border:' + c.cellBorder + ';color:#888;text-align:center;font-style:italic">No data</td></tr>';
                     return;
                 }
 
                 rows.forEach(function (r, idx) {
                     var isHL = r._highlight;
-                    var bg = isHL ? highlightBg : (idx % 2 === 0 ? '#fff' : '#fef8f0');
+                    var bg = isHL ? c.highlightBg : (idx % 2 === 0 ? c.rowBg1 : c.rowBg2);
                     var fw = isHL ? 'font-weight:bold' : '';
                     html += '<tr style="background:' + bg + ';' + fw + '">';
-                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
+                    html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
                     var rowTotal = 0;
                     phases.forEach(function (p) {
                         var v = r[p] || 0;
                         rowTotal += v;
-                        html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
+                        html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
                     });
                     var total = r.total || rowTotal;
-                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">' + (total ? Math.round(total) : '') + '</td>';
+                    html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:right;font-weight:bold">' + (total ? Math.round(total) : '') + '</td>';
                     if (hasLeadCols) {
-                        html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right">' + (r.lead ? Math.round(r.lead) : '') + '</td>';
-                        html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right">' + (r.consultant ? Math.round(r.consultant) : '') + '</td>';
+                        html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:right">' + (r.lead ? Math.round(r.lead) : '') + '</td>';
+                        html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:right">' + (r.consultant ? Math.round(r.consultant) : '') + '</td>';
                     } else {
-                        html += '<td style="border:' + cellBorder + '"></td><td style="border:' + cellBorder + '"></td>';
+                        html += '<td style="border:' + c.cellBorder + '"></td><td style="border:' + c.cellBorder + '"></td>';
                     }
                     html += '</tr>';
                 });
@@ -1272,9 +1306,16 @@ sap.ui.define([
                 return;
             }
 
-            var phaseColors = { PREP: "#e8d0f0", FTS: "#d4b8e8", DESIGN: "#c8a8e0", BUILD: "#b890d8", "SIT/UAT": "#a878d0", DEP: "#9860c8", HYP: "#8848c0" };
+            var c = this._gc("purple");
+            var dk = this._isDark();
+            var phaseColors = dk
+                ? { PREP: "#3d2050", FTS: "#352048", DESIGN: "#2d1a40", BUILD: "#281838", "SIT/UAT": "#221530", DEP: "#1d1228", HYP: "#180f20" }
+                : { PREP: "#e8d0f0", FTS: "#d4b8e8", DESIGN: "#c8a8e0", BUILD: "#b890d8", "SIT/UAT": "#a878d0", DEP: "#9860c8", HYP: "#8848c0" };
+            var bdr = "1px solid " + c.borderClr;
+            var fixedRowBg = dk ? "#1a2a3a" : "#e0f0ff";
+            var fixedCellBg = dk ? "#1e3040" : "#e8f4fd";
+            var devCellBg = dk ? "#2a1e35" : "#f0e8f8";
 
-            // Build phase groups for merged header
             var phaseGroups = [];
             var curPhase = null;
             data.weekCols.forEach(function (wc) {
@@ -1287,61 +1328,57 @@ sap.ui.define([
             });
 
             var html = '<div style="overflow-x:auto;max-width:100%">';
-            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap">';
+            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap;color:' + c.textClr + '">';
 
-            // Row 1: Phase headers (merged)
             html += '<tr>';
-            html += '<th colspan="5" style="background:#7b2d8e;color:#fff;padding:4px 8px;text-align:center">STAFFING</th>';
+            html += '<th colspan="5" style="background:' + c.hdrBg + ';color:#fff;padding:4px 8px;text-align:center">STAFFING</th>';
             phaseGroups.forEach(function (pg) {
-                var bg = phaseColors[pg.phase] || "#ccc";
-                html += '<th colspan="' + pg.count + '" style="background:' + bg + ';padding:4px;text-align:center;border:1px solid #9a6bb5;font-weight:bold">' + pg.phase + '</th>';
+                var bg = phaseColors[pg.phase] || c.borderClr;
+                html += '<th colspan="' + pg.count + '" style="background:' + bg + ';padding:4px;text-align:center;border:' + bdr + ';font-weight:bold;color:' + (dk ? '#e0e0e0' : 'inherit') + '">' + pg.phase + '</th>';
             });
             html += '</tr>';
 
-            // Row 2: Column headers + week numbers
-            html += '<tr style="background:#f0e0f8">';
-            html += '<th style="padding:3px 6px;border:1px solid #ccc;min-width:30px">Type</th>';
-            html += '<th style="padding:3px 6px;border:1px solid #ccc;min-width:40px;text-align:right">%</th>';
-            html += '<th style="padding:3px 6px;border:1px solid #ccc;min-width:160px">Description</th>';
-            html += '<th style="padding:3px 6px;border:1px solid #ccc;min-width:30px;text-align:center">Req</th>';
-            html += '<th style="padding:3px 6px;border:1px solid #ccc;min-width:100px">Function</th>';
+            html += '<tr style="background:' + c.subHdrBg + '">';
+            html += '<th style="padding:3px 6px;border:' + bdr + ';min-width:30px">Type</th>';
+            html += '<th style="padding:3px 6px;border:' + bdr + ';min-width:40px;text-align:right">%</th>';
+            html += '<th style="padding:3px 6px;border:' + bdr + ';min-width:160px">Description</th>';
+            html += '<th style="padding:3px 6px;border:' + bdr + ';min-width:30px;text-align:center">Req</th>';
+            html += '<th style="padding:3px 6px;border:' + bdr + ';min-width:100px">Function</th>';
             data.weekCols.forEach(function (wc) {
-                html += '<th style="padding:3px 4px;border:1px solid #ccc;text-align:center;min-width:28px;background:#f8f0fc">' + wc.phaseWeek + '</th>';
+                html += '<th style="padding:3px 4px;border:' + bdr + ';text-align:center;min-width:28px;background:' + c.subHdrBg + '">' + wc.phaseWeek + '</th>';
             });
             html += '</tr>';
 
-            // Fixed role rows
             data.fixedRoles.forEach(function (fr) {
-                html += '<tr style="background:#e0f0ff;font-weight:bold">';
-                html += '<td style="padding:2px 6px;border:1px solid #ddd"></td>';
-                html += '<td style="padding:2px 6px;border:1px solid #ddd;text-align:right">100%</td>';
-                html += '<td style="padding:2px 6px;border:1px solid #ddd">' + fr.role + '</td>';
-                html += '<td style="padding:2px 6px;border:1px solid #ddd;text-align:center">1</td>';
-                html += '<td style="padding:2px 6px;border:1px solid #ddd">' + fr.role + '</td>';
+                html += '<tr style="background:' + fixedRowBg + ';font-weight:bold">';
+                html += '<td style="padding:2px 6px;border:' + bdr + '"></td>';
+                html += '<td style="padding:2px 6px;border:' + bdr + ';text-align:right">100%</td>';
+                html += '<td style="padding:2px 6px;border:' + bdr + '">' + fr.role + '</td>';
+                html += '<td style="padding:2px 6px;border:' + bdr + ';text-align:center">1</td>';
+                html += '<td style="padding:2px 6px;border:' + bdr + '">' + fr.role + '</td>';
                 fr.hours.forEach(function (h) {
                     var val = h ? h : '';
-                    var bg = h ? '#e8f4fd' : '';
-                    html += '<td style="padding:2px 4px;border:1px solid #ddd;text-align:center;' + (bg ? 'background:' + bg : '') + '">' + val + '</td>';
+                    var bg = h ? fixedCellBg : '';
+                    html += '<td style="padding:2px 4px;border:' + bdr + ';text-align:center;' + (bg ? 'background:' + bg : '') + '">' + val + '</td>';
                 });
                 html += '</tr>';
             });
 
-            // Developer role rows
             var lastRole = "";
-            data.developers.forEach(function (dev, idx) {
+            data.developers.forEach(function (dev) {
                 var isNewRole = dev.role !== lastRole;
                 lastRole = dev.role;
-                var rowBg = isNewRole ? "background:#f8f0fc" : "";
+                var rowBg = isNewRole ? "background:" + c.highlightBg : "";
                 html += '<tr style="' + rowBg + '">';
-                html += '<td style="padding:2px 6px;border:1px solid #ddd;font-weight:bold;color:#7b2d8e">' + dev.type + '.</td>';
-                html += '<td style="padding:2px 6px;border:1px solid #ddd;text-align:right">' + Math.round(dev.pct * 100) + '%</td>';
-                html += '<td style="padding:2px 6px;border:1px solid #ddd;font-size:11px">' + dev.description + '</td>';
-                html += '<td style="padding:2px 6px;border:1px solid #ddd;text-align:center">' + dev.numResources + '</td>';
-                html += '<td style="padding:2px 6px;border:1px solid #ddd">' + (isNewRole ? dev.role : '') + '</td>';
+                html += '<td style="padding:2px 6px;border:' + bdr + ';font-weight:bold;color:' + c.hdrBg + '">' + dev.type + '.</td>';
+                html += '<td style="padding:2px 6px;border:' + bdr + ';text-align:right">' + Math.round(dev.pct * 100) + '%</td>';
+                html += '<td style="padding:2px 6px;border:' + bdr + ';font-size:11px">' + dev.description + '</td>';
+                html += '<td style="padding:2px 6px;border:' + bdr + ';text-align:center">' + dev.numResources + '</td>';
+                html += '<td style="padding:2px 6px;border:' + bdr + '">' + (isNewRole ? dev.role : '') + '</td>';
                 dev.hours.forEach(function (h) {
                     var val = h ? h : '';
-                    var bg = h ? '#f0e8f8' : '';
-                    html += '<td style="padding:2px 4px;border:1px solid #eee;text-align:center;' + (bg ? 'background:' + bg : '') + '">' + val + '</td>';
+                    var bg = h ? devCellBg : '';
+                    html += '<td style="padding:2px 4px;border:' + bdr + ';text-align:center;' + (bg ? 'background:' + bg : '') + '">' + val + '</td>';
                 });
                 html += '</tr>';
             });
@@ -1388,19 +1425,12 @@ sap.ui.define([
             var ph = data.phases || {};
             var dl = data.project ? data.project.delivery_level : 1;
 
-            var hdrBg = "#e76500";
-            var hdrFg = "#fff";
-            var subHdrBg = "#fdf0e2";
-            var sectionBg = "#f5a623";
-            var borderClr = "#d4a574";
-            var highlightBg = "#fff3cd";
-            var cellBorder = "1px solid " + borderClr;
+            var c = this._gc("orange");
 
             var html = '<div style="overflow-x:auto;max-width:100%">';
-            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
+            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%;color:' + c.textClr + '">';
 
-            // Row 1: Header bar
-            html += '<tr><th colspan="9" style="background:' + hdrBg + ';color:' + hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
+            html += '<tr><th colspan="9" style="background:' + c.hdrBg + ';color:' + c.hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
             html += 'ORANGE GRID &nbsp;&nbsp;|&nbsp;&nbsp; Delivery Level: ' + dl;
             html += ' &nbsp;&nbsp;|&nbsp;&nbsp; Phases: ';
             phaseLabels.forEach(function (lbl, i) {
@@ -1409,51 +1439,49 @@ sap.ui.define([
             });
             html += ' weeks</th></tr>';
 
-            // FUNC section
-            html += '<tr><td colspan="9" style="background:' + sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + cellBorder + '">FUNC — Functional Effort</td></tr>';
-            html += '<tr style="background:' + subHdrBg + '">';
-            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:left;min-width:180px">Role</th>';
+            html += '<tr><td colspan="9" style="background:' + c.sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + c.cellBorder + '">FUNC — Functional Effort</td></tr>';
+            html += '<tr style="background:' + c.subHdrBg + '">';
+            html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:left;min-width:180px">Role</th>';
             phaseLabels.forEach(function (lbl) {
-                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:center;min-width:60px">' + lbl + '</th>';
+                html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:center;min-width:60px">' + lbl + '</th>';
             });
-            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;min-width:70px;font-weight:bold">TOTAL</th></tr>';
+            html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:right;min-width:70px;font-weight:bold">TOTAL</th></tr>';
 
             (data.funcRows || []).forEach(function (r, idx) {
-                var bg = idx % 2 === 0 ? '#fff' : '#fef8f0';
+                var bg = idx % 2 === 0 ? c.rowBg1 : c.rowBg2;
                 html += '<tr style="background:' + bg + '">';
-                html += '<td style="padding:3px 8px;border:' + cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
+                html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
                 var rowTotal = 0;
                 phases.forEach(function (p) {
                     var v = r[p] || 0;
                     rowTotal += v;
-                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
+                    html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
                 });
-                html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
+                html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
                 html += '</tr>';
             });
 
-            // TECH section
-            html += '<tr><td colspan="9" style="background:' + sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + cellBorder + '">TECH — Technical Effort</td></tr>';
-            html += '<tr style="background:' + subHdrBg + '">';
-            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:left">Role</th>';
+            html += '<tr><td colspan="9" style="background:' + c.sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + c.cellBorder + '">TECH — Technical Effort</td></tr>';
+            html += '<tr style="background:' + c.subHdrBg + '">';
+            html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:left">Role</th>';
             phaseLabels.forEach(function (lbl) {
-                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:center">' + lbl + '</th>';
+                html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:center">' + lbl + '</th>';
             });
-            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">TOTAL</th></tr>';
+            html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:right;font-weight:bold">TOTAL</th></tr>';
 
             (data.techRows || []).forEach(function (r, idx) {
                 var isHighlight = r._highlight;
-                var bg = isHighlight ? highlightBg : (idx % 2 === 0 ? '#fff' : '#fef8f0');
+                var bg = isHighlight ? c.highlightBg : (idx % 2 === 0 ? c.rowBg1 : c.rowBg2);
                 var fw = isHighlight ? 'font-weight:bold' : '';
                 html += '<tr style="background:' + bg + ';' + fw + '">';
-                html += '<td style="padding:3px 8px;border:' + cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
+                html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
                 var rowTotal = 0;
                 phases.forEach(function (p) {
                     var v = r[p] || 0;
                     rowTotal += v;
-                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
+                    html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
                 });
-                html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
+                html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
                 html += '</tr>';
             });
 
@@ -1499,18 +1527,12 @@ sap.ui.define([
             var ph = data.phases || {};
             var dl = data.project ? data.project.delivery_level : 1;
 
-            var hdrBg = "#0854a0";
-            var hdrFg = "#fff";
-            var subHdrBg = "#e0ecf8";
-            var sectionBg = "#2b7cd0";
-            var borderClr = "#7baed4";
-            var highlightBg = "#d6eaf8";
-            var cellBorder = "1px solid " + borderClr;
+            var c = this._gc("blue");
 
             var html = '<div style="overflow-x:auto;max-width:100%">';
-            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
+            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%;color:' + c.textClr + '">';
 
-            html += '<tr><th colspan="9" style="background:' + hdrBg + ';color:' + hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
+            html += '<tr><th colspan="9" style="background:' + c.hdrBg + ';color:' + c.hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
             html += 'BLUE GRID (Customer) &nbsp;&nbsp;|&nbsp;&nbsp; Delivery Level: ' + dl;
             html += ' &nbsp;&nbsp;|&nbsp;&nbsp; Phases: ';
             phaseLabels.forEach(function (lbl, i) {
@@ -1518,60 +1540,58 @@ sap.ui.define([
             });
             html += ' weeks</th></tr>';
 
-            // FUNC section
-            html += '<tr><td colspan="9" style="background:' + sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + cellBorder + '">FUNC — Functional Effort (Customer)</td></tr>';
-            html += '<tr style="background:' + subHdrBg + '">';
-            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:left;min-width:180px">Role</th>';
+            html += '<tr><td colspan="9" style="background:' + c.sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + c.cellBorder + '">FUNC — Functional Effort (Customer)</td></tr>';
+            html += '<tr style="background:' + c.subHdrBg + '">';
+            html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:left;min-width:180px">Role</th>';
             phaseLabels.forEach(function (lbl) {
-                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:center;min-width:60px">' + lbl + '</th>';
+                html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:center;min-width:60px">' + lbl + '</th>';
             });
-            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;min-width:70px;font-weight:bold">TOTAL</th></tr>';
+            html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:right;min-width:70px;font-weight:bold">TOTAL</th></tr>';
 
             (data.funcRows || []).forEach(function (r, idx) {
-                var bg = idx % 2 === 0 ? '#fff' : '#f0f6fc';
+                var bg = idx % 2 === 0 ? c.rowBg1 : c.rowBg2;
                 html += '<tr style="background:' + bg + '">';
-                html += '<td style="padding:3px 8px;border:' + cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
+                html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
                 var rowTotal = 0;
                 phases.forEach(function (p) {
                     var v = r[p] || 0;
                     rowTotal += v;
-                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
+                    html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
                 });
-                html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
+                html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
                 html += '</tr>';
             });
 
             if (!data.funcRows || data.funcRows.length === 0) {
-                html += '<tr><td colspan="9" style="padding:6px 8px;border:' + cellBorder + ';color:#888;text-align:center;font-style:italic">No CUSTOMER functional items on this sheet</td></tr>';
+                html += '<tr><td colspan="9" style="padding:6px 8px;border:' + c.cellBorder + ';color:#888;text-align:center;font-style:italic">No CUSTOMER functional items on this sheet</td></tr>';
             }
 
-            // TECH section
-            html += '<tr><td colspan="9" style="background:' + sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + cellBorder + '">TECH — Technical Effort (Customer)</td></tr>';
-            html += '<tr style="background:' + subHdrBg + '">';
-            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:left">Role</th>';
+            html += '<tr><td colspan="9" style="background:' + c.sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + c.cellBorder + '">TECH — Technical Effort (Customer)</td></tr>';
+            html += '<tr style="background:' + c.subHdrBg + '">';
+            html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:left">Role</th>';
             phaseLabels.forEach(function (lbl) {
-                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:center">' + lbl + '</th>';
+                html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:center">' + lbl + '</th>';
             });
-            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">TOTAL</th></tr>';
+            html += '<th style="padding:4px 8px;border:' + c.cellBorder + ';text-align:right;font-weight:bold">TOTAL</th></tr>';
 
             (data.techRows || []).forEach(function (r, idx) {
                 var isHighlight = r._highlight;
-                var bg = isHighlight ? highlightBg : (idx % 2 === 0 ? '#fff' : '#f0f6fc');
+                var bg = isHighlight ? c.highlightBg : (idx % 2 === 0 ? c.rowBg1 : c.rowBg2);
                 var fw = isHighlight ? 'font-weight:bold' : '';
                 html += '<tr style="background:' + bg + ';' + fw + '">';
-                html += '<td style="padding:3px 8px;border:' + cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
+                html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
                 var rowTotal = 0;
                 phases.forEach(function (p) {
                     var v = r[p] || 0;
                     rowTotal += v;
-                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
+                    html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
                 });
-                html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
+                html += '<td style="padding:3px 8px;border:' + c.cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
                 html += '</tr>';
             });
 
             if (!data.techRows || data.techRows.length === 0) {
-                html += '<tr><td colspan="9" style="padding:6px 8px;border:' + cellBorder + ';color:#888;text-align:center;font-style:italic">No CUSTOMER technical items on this sheet</td></tr>';
+                html += '<tr><td colspan="9" style="padding:6px 8px;border:' + c.cellBorder + ';color:#888;text-align:center;font-style:italic">No CUSTOMER technical items on this sheet</td></tr>';
             }
 
             html += '</table></div>';
