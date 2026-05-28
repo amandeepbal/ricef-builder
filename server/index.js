@@ -19,7 +19,7 @@ setupAuth(app);
 if (!IS_BTP) {
   app.use(express.static(path.join(__dirname, '..', 'webapp')));
 
-  const UI5_CDN = 'https://sdk.openui5.org';
+  const UI5_CDN = 'https://ui5.sap.com';
   const UI5_CACHE_DIR = path.join(__dirname, '..', 'data', 'ui5-cache');
   fs.mkdirSync(UI5_CACHE_DIR, { recursive: true });
 

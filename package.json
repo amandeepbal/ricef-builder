@@ -11,14 +11,6 @@
     "postinstall": "node scripts/generate-ui5-manifests.js"
   },
   "dependencies": {
-    "@openui5/sap.f": "^1.148.0",
-    "@openui5/sap.m": "^1.148.0",
-    "@openui5/sap.tnt": "^1.148.0",
-    "@openui5/sap.ui.core": "^1.148.0",
-    "@openui5/sap.ui.layout": "^1.148.0",
-    "@openui5/sap.ui.table": "^1.148.0",
-    "@openui5/sap.ui.unified": "^1.148.0",
-    "@openui5/themelib_sap_horizon": "^1.148.0",
     "@sap/xssec": "^4.0.0",
     "express": "^4.21.0",
     "morgan": "^1.10.0",
