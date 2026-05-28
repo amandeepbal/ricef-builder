@@ -99,40 +99,56 @@ td[data-hm-click]:hover {
 }
 
 /* ============================================================
-   Dark theme adaptations for HTML-rendered grids
-   (Orange, Blue, Purple grids use inline HTML with hardcoded colors)
+   Dark theme adaptations for HTML-rendered grids (.effortGrid)
    ============================================================ */
-html[data-sap-ui-theme*="dark"] table td,
-html[data-sap-ui-theme*="hcb"] table td,
-html[data-sap-ui-theme*="hcw"] table td {
-    color: var(--sapTextColor, #fff) !important;
+
+/* Data row text — force theme-aware color */
+html[data-sap-ui-theme*="dark"] .effortGrid td,
+html[data-sap-ui-theme*="dark"] .effortGrid th,
+html[data-sap-ui-theme*="hcb"] .effortGrid td,
+html[data-sap-ui-theme*="hcb"] .effortGrid th {
+    color: var(--sapTextColor, #d4d4d4) !important;
 }
 
-html[data-sap-ui-theme*="dark"] table td[style*="background:#fff"],
-html[data-sap-ui-theme*="dark"] table td[style*="background: #fff"],
-html[data-sap-ui-theme*="dark"] table td[style*="background:white"],
-html[data-sap-ui-theme*="hcb"] table td[style*="background:#fff"],
-html[data-sap-ui-theme*="hcb"] table td[style*="background: #fff"],
-html[data-sap-ui-theme*="hcb"] table td[style*="background:white"] {
-    background: var(--sapList_Background, #1a1a1a) !important;
+/* Section header rows with colored backgrounds keep white text */
+html[data-sap-ui-theme*="dark"] .effortGrid td[colspan],
+html[data-sap-ui-theme*="hcb"] .effortGrid td[colspan],
+html[data-sap-ui-theme*="dark"] .effortGrid th[colspan],
+html[data-sap-ui-theme*="hcb"] .effortGrid th[colspan] {
+    color: #fff !important;
 }
 
-html[data-sap-ui-theme*="dark"] table td[style*="background:#f9f9f9"],
-html[data-sap-ui-theme*="dark"] table td[style*="background:#f5f5f5"],
-html[data-sap-ui-theme*="dark"] table td[style*="background:#fafafa"],
-html[data-sap-ui-theme*="hcb"] table td[style*="background:#f9f9f9"],
-html[data-sap-ui-theme*="hcb"] table td[style*="background:#f5f5f5"],
-html[data-sap-ui-theme*="hcb"] table td[style*="background:#fafafa"] {
-    background: var(--sapList_AlternatingBackground, #242424) !important;
+/* Data row backgrounds — override inline #fff and alternating colors */
+html[data-sap-ui-theme*="dark"] .effortGrid tr[style*="background:#fff"],
+html[data-sap-ui-theme*="dark"] .effortGrid tr[style*="background:#fef"],
+html[data-sap-ui-theme*="dark"] .effortGrid tr[style*="background:#f8f"],
+html[data-sap-ui-theme*="dark"] .effortGrid tr[style*="background:#fdf"] {
+    background: var(--sapList_Background, #1c1c1c) !important;
 }
 
-html[data-sap-ui-theme*="dark"] table,
-html[data-sap-ui-theme*="hcb"] table {
-    border-color: var(--sapList_BorderColor, #444) !important;
+html[data-sap-ui-theme*="dark"] .effortGrid tr[style*="background:#fef8f0"],
+html[data-sap-ui-theme*="dark"] .effortGrid tr[style*="background:#f0f5ff"],
+html[data-sap-ui-theme*="dark"] .effortGrid tr[style*="background:#fdf0e2"] {
+    background: var(--sapList_AlternatingBackground, #252525) !important;
 }
 
-html[data-sap-ui-theme*="dark"] table td,
-html[data-sap-ui-theme*="hcb"] table td {
+/* Sub-header row backgrounds */
+html[data-sap-ui-theme*="dark"] .effortGrid tr[style*="background:#fdf0e2"],
+html[data-sap-ui-theme*="dark"] .effortGrid tr[style*="background:#e0ecf7"],
+html[data-sap-ui-theme*="dark"] .effortGrid tr[style*="background:#f0e6f6"] {
+    background: var(--sapList_HeaderBackground, #2d2d2d) !important;
+}
+
+/* Highlight rows */
+html[data-sap-ui-theme*="dark"] .effortGrid tr[style*="background:#fff3cd"] {
+    background: #3d3520 !important;
+}
+
+/* Borders */
+html[data-sap-ui-theme*="dark"] .effortGrid td,
+html[data-sap-ui-theme*="dark"] .effortGrid th,
+html[data-sap-ui-theme*="hcb"] .effortGrid td,
+html[data-sap-ui-theme*="hcb"] .effortGrid th {
     border-color: var(--sapList_BorderColor, #444) !important;
 }
 

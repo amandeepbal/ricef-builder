@@ -318,7 +318,7 @@ sap.ui.define([
             var cellBorder = "1px solid " + borderClr;
 
             var html = '<div style="overflow-x:auto;max-width:100%">';
-            html += '<table style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
+            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
 
             var totalCols = 11;
             html += '<tr><th colspan="' + totalCols + '" style="background:' + hdrBg + ';color:' + hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
@@ -456,7 +456,7 @@ sap.ui.define([
             if (!k || k.totalItems === 0) {
                 container.innerHTML = '<div class="analyticsEmpty">' +
                     '<span style="font-size:3rem;color:#bbb;margin-bottom:1rem">&#x1f4ca;</span>' +
-                    '<div style="font-size:16px;font-weight:600;color:#666;margin-bottom:0.5rem">No Items to Analyze</div>' +
+                    '<div style="font-size:16px;font-weight:600;color:var(--sapContent_LabelColor, #666);margin-bottom:0.5rem">No Items to Analyze</div>' +
                     '<div style="font-size:13px;color:#888">Add items to the RICEF, BI, or Migration tabs to see analytics here.</div></div>';
                 return;
             }
@@ -497,7 +497,7 @@ sap.ui.define([
                 html += '<div style="flex:1;background:#e8e8e8;border-radius:3px;height:18px">';
                 html += '<div style="width:' + Math.max(pct, 2) + '%;background:' + (sheetColors[s.label] || '#999') + ';border-radius:3px;height:100%"></div>';
                 html += '</div>';
-                html += '<div style="width:90px;padding-left:8px;color:#333">' + that._fmtNum(Math.round(s.hours)) + 'h (' + pct + '%)</div>';
+                html += '<div style="width:90px;padding-left:8px;color:var(--sapTextColor, #333)">' + that._fmtNum(Math.round(s.hours)) + 'h (' + pct + '%)</div>';
                 html += '</div>';
             });
 
@@ -523,7 +523,7 @@ sap.ui.define([
                     if (fPct > 0) html += '<div style="width:' + fPct + '%;background:#0854a0;height:100%"></div>';
                     if (tPct > 0) html += '<div style="width:' + tPct + '%;background:#e76500;height:100%"></div>';
                     html += '</div>';
-                    html += '<div style="width:160px;padding-left:8px;color:#333;font-size:11px">F:' + that._fmtNum(p.func) + ' T:' + that._fmtNum(p.tech) + ' = <b>' + that._fmtNum(p.total) + 'h</b></div>';
+                    html += '<div style="width:160px;padding-left:8px;color:var(--sapTextColor, #333);font-size:11px">F:' + that._fmtNum(p.func) + ' T:' + that._fmtNum(p.tech) + ' = <b>' + that._fmtNum(p.total) + 'h</b></div>';
                     html += '</div>';
                 });
                 html += '<div style="display:flex;gap:16px;font-size:11px;margin-top:4px;padding-left:68px">';
@@ -574,7 +574,7 @@ sap.ui.define([
                         html += '<div style="flex:1;background:#e8e8e8;border-radius:3px;height:20px">';
                         html += '<div style="width:' + pct + '%;background:' + color + ';border-radius:3px;height:100%"></div>';
                         html += '</div>';
-                        html += '<div style="width:100px;padding-left:8px;color:#333">' + curr + ' ' + that._fmtNum(c.billable) + '</div>';
+                        html += '<div style="width:100px;padding-left:8px;color:var(--sapTextColor, #333)">' + curr + ' ' + that._fmtNum(c.billable) + '</div>';
                         html += '</div>';
                     });
                     html += '<div style="font-size:11px;color:#888;margin-top:4px">* Current project level</div>';
@@ -752,7 +752,7 @@ sap.ui.define([
         },
 
         _sectionTitle: function (text) {
-            return '<div style="font-weight:600;margin-bottom:8px;font-size:14px;color:#333">' + text + '</div>';
+            return '<div style="font-weight:600;margin-bottom:8px;font-size:14px;color:var(--sapTextColor, #333)">' + text + '</div>';
         },
 
         _hBar: function (label, value, max, color, suffix, labelWidth) {
@@ -762,12 +762,12 @@ sap.ui.define([
                 '<div style="width:' + w + 'px;text-align:right;padding-right:8px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + label + '">' + label + '</div>' +
                 '<div style="flex:1;background:#e8e8e8;border-radius:3px;height:20px">' +
                 '<div style="width:' + pct + '%;background:' + color + ';border-radius:3px;height:100%"></div></div>' +
-                '<div style="width:auto;min-width:80px;padding-left:8px;color:#333;font-weight:500;white-space:nowrap">' + suffix + '</div></div>';
+                '<div style="width:auto;min-width:80px;padding-left:8px;color:var(--sapTextColor, #333);font-weight:500;white-space:nowrap">' + suffix + '</div></div>';
         },
 
         _kpiTile: function (title, value, subtitle, color) {
-            return '<div style="background:#fff;border-left:4px solid ' + color + ';border-radius:4px;padding:12px 16px;min-width:160px;box-shadow:0 1px 3px rgba(0,0,0,0.12)">' +
-                '<div style="font-size:12px;color:#666;margin-bottom:4px">' + title + '</div>' +
+            return '<div style="background:var(--sapTile_Background, #fff);border-left:4px solid ' + color + ';border-radius:4px;padding:12px 16px;min-width:160px;box-shadow:0 1px 3px rgba(0,0,0,0.12)">' +
+                '<div style="font-size:12px;color:var(--sapContent_LabelColor, #666);margin-bottom:4px">' + title + '</div>' +
                 '<div style="font-size:22px;font-weight:700;color:' + color + '">' + value + '</div>' +
                 '<div style="font-size:11px;color:#888;margin-top:2px">' + subtitle + '</div></div>';
         },
@@ -877,7 +877,7 @@ sap.ui.define([
             var html = '';
 
             html += '<div style="margin-top:16px">';
-            html += '<div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#333">Comparison: Current vs Snapshot "' +
+            html += '<div style="font-size:16px;font-weight:700;margin-bottom:12px;color:var(--sapTextColor, #333)">Comparison: Current vs Snapshot "' +
                 snap.phase + (snap.label ? ' - ' + snap.label : '') + '" (' + snap.created_at + ')</div>';
 
             // KPI delta
@@ -1135,19 +1135,19 @@ sap.ui.define([
                             var r = prevMap[role];
                             var cur = curMap[role];
                             html += '<tr>';
-                            html += '<td style="padding:2px 6px;border:' + bdr + ';font-weight:500;font-size:10px;white-space:nowrap;color:#666">' + role + '</td>';
+                            html += '<td style="padding:2px 6px;border:' + bdr + ';font-weight:500;font-size:10px;white-space:nowrap;color:var(--sapContent_LabelColor, #666)">' + role + '</td>';
                             P.forEach(function (p) {
                                 var v = r ? (r[p] || 0) : 0;
                                 var cv = cur ? (cur[p] || 0) : 0;
                                 var changed = v !== cv;
                                 var bg = changed ? 'background:#fff3cd' : '';
                                 var fw = changed ? 'font-weight:700' : '';
-                                html += '<td style="padding:2px 4px;border:' + bdr + ';text-align:center;color:#666;' + bg + ';' + fw + '">' + (v || '') + '</td>';
+                                html += '<td style="padding:2px 4px;border:' + bdr + ';text-align:center;color:var(--sapContent_LabelColor, #666);' + bg + ';' + fw + '">' + (v || '') + '</td>';
                             });
                             var t = r ? (r.total || 0) : 0;
                             var ct = cur ? (cur.total || 0) : 0;
                             var tChanged = t !== ct;
-                            html += '<td style="padding:2px 4px;border:' + bdr + ';text-align:right;font-weight:700;color:#666;' + (tChanged ? 'background:#fff3cd' : '') + '">' + (t || '') + '</td>';
+                            html += '<td style="padding:2px 4px;border:' + bdr + ';text-align:right;font-weight:700;color:var(--sapContent_LabelColor, #666);' + (tChanged ? 'background:#fff3cd' : '') + '">' + (t || '') + '</td>';
                             html += '</tr>';
                         });
                         html += '</table></div>';
@@ -1195,9 +1195,9 @@ sap.ui.define([
             var deltaStr = delta > 0 ? "+" + this._fmtNum(delta) : delta < 0 ? this._fmtNum(delta) : "0";
             var color = delta > 0 ? "#e76500" : delta < 0 ? "#1a6e3a" : "#666";
             var borderColor = delta !== 0 ? color : "#ccc";
-            return '<div style="background:#fff;border-left:4px solid ' + borderColor + ';border-radius:4px;padding:12px 16px;min-width:150px;box-shadow:0 1px 3px rgba(0,0,0,0.12)">' +
-                '<div style="font-size:12px;color:#666;margin-bottom:4px">' + title + '</div>' +
-                '<div style="font-size:20px;font-weight:700;color:#333">' + this._fmtNum(current) + unit + '</div>' +
+            return '<div style="background:var(--sapTile_Background, #fff);border-left:4px solid ' + borderColor + ';border-radius:4px;padding:12px 16px;min-width:150px;box-shadow:0 1px 3px rgba(0,0,0,0.12)">' +
+                '<div style="font-size:12px;color:var(--sapContent_LabelColor, #666);margin-bottom:4px">' + title + '</div>' +
+                '<div style="font-size:20px;font-weight:700;color:var(--sapTextColor, #333)">' + this._fmtNum(current) + unit + '</div>' +
                 '<div style="font-size:12px;color:' + color + ';font-weight:600;margin-top:2px">' + deltaStr + unit + ' from snapshot</div>' +
                 '<div style="font-size:11px;color:#888">was ' + this._fmtNum(previous) + unit + '</div></div>';
         },
@@ -1268,7 +1268,7 @@ sap.ui.define([
             var container = document.getElementById("purpleGridContainer");
             if (!container) return;
             if (!data || !data.weekCols || data.weekCols.length === 0) {
-                container.innerHTML = "<p style='padding:1rem;color:#666'>No staffing data</p>";
+                container.innerHTML = "<p style='padding:1rem;color:var(--sapContent_LabelColor, #666)'>No staffing data</p>";
                 return;
             }
 
@@ -1287,7 +1287,7 @@ sap.ui.define([
             });
 
             var html = '<div style="overflow-x:auto;max-width:100%">';
-            html += '<table style="border-collapse:collapse;font-size:12px;white-space:nowrap">';
+            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap">';
 
             // Row 1: Phase headers (merged)
             html += '<tr>';
@@ -1397,7 +1397,7 @@ sap.ui.define([
             var cellBorder = "1px solid " + borderClr;
 
             var html = '<div style="overflow-x:auto;max-width:100%">';
-            html += '<table style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
+            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
 
             // Row 1: Header bar
             html += '<tr><th colspan="9" style="background:' + hdrBg + ';color:' + hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
@@ -1508,7 +1508,7 @@ sap.ui.define([
             var cellBorder = "1px solid " + borderClr;
 
             var html = '<div style="overflow-x:auto;max-width:100%">';
-            html += '<table style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
+            html += '<table class="effortGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
 
             html += '<tr><th colspan="9" style="background:' + hdrBg + ';color:' + hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
             html += 'BLUE GRID (Customer) &nbsp;&nbsp;|&nbsp;&nbsp; Delivery Level: ' + dl;

@@ -7,12 +7,7 @@
             <Button text="Export PDF" icon="sap-icon://pdf-attachment" press="onExportPdf" type="Transparent"/>
         </headerContent>
         <content>
-            <Breadcrumbs class="projectBreadcrumb">
-                <Link text="Projects" press="onNavHome"/>
-                <Link text="{ctrl>/project/project_number}" press="onNavBack"/>
-                <Link text="Summary"/>
-            </Breadcrumbs>
-            <!-- Delivery Level (Orange Grid) -->
+<!-- Delivery Level (Orange Grid) -->
             <Panel class="sapUiSmallMargin">
                 <HBox alignItems="Center" class="sapUiSmallMargin">
                     <Label text="Delivery Level:" class="sapUiSmallMarginEnd"/>

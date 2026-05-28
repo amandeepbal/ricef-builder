@@ -1,42 +1,17 @@
-<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:tnt="sap.tnt" xmlns:f="sap.f"
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f"
     controllerName="com.syntax.ricefbuilder.controller.App">
-    <tnt:ToolPage id="toolPage" sideExpanded="false" class="ricefAppShell">
-        <tnt:header>
-            <f:ShellBar id="shellBar"
-                title="RICEFW Estimator"
-                secondTitle="SAP Project Estimation"
-                homeIcon="./resources/Syntax-logo.webp"
-                showNavButton="{appView>/showNavButton}"
-                showMenuButton="{appView>/showMenuButton}"
-                menuButtonPressed="onToggleSideNav"
-                navButtonPressed="onShellHome"
-                homeIconPressed="onShellHome"
-                avatarPressed="onUserInfo">
-                <f:profile>
-                    <Avatar initials="{userInfo>/initials}" displaySize="XS"
-                        backgroundColor="Accent6"/>
-                </f:profile>
-            </f:ShellBar>
-        </tnt:header>
-        <tnt:sideContent>
-            <tnt:SideNavigation id="sideNav" selectedKey="home"
-                visible="{appView>/showSideNav}">
-                <tnt:NavigationList>
-                    <tnt:NavigationListItem text="Projects" icon="sap-icon://home" key="home" select="onNavHome"/>
-                    <tnt:NavigationListItem text="Admin" icon="sap-icon://settings" key="admin" select="onNavToAdmin"
-                        visible="{userInfo>/isAdmin}">
-                        <tnt:NavigationListItem text="RICEF Types" key="adminRicefTypes" select="onNavAdmin"/>
-                        <tnt:NavigationListItem text="Estimation Grid" key="adminGrid" select="onNavAdmin"/>
-                        <tnt:NavigationListItem text="Blended Rates" key="adminRates" select="onNavAdmin"/>
-                        <tnt:NavigationListItem text="Complexity" key="adminComplexity" select="onNavAdmin"/>
-                        <tnt:NavigationListItem text="Dropdowns" key="adminDropdowns" select="onNavAdmin"/>
-                        <tnt:NavigationListItem text="Sheet Config" key="adminSheetConfig" select="onNavAdmin"/>
-                    </tnt:NavigationListItem>
-                </tnt:NavigationList>
-            </tnt:SideNavigation>
-        </tnt:sideContent>
-        <tnt:mainContents>
-            <NavContainer id="appNavContainer"/>
-        </tnt:mainContents>
-    </tnt:ToolPage>
+    <f:ShellBar id="shellBar"
+        title="RICEFW Estimator"
+        secondTitle="SAP Project Estimation"
+        homeIcon="./resources/Syntax-logo.webp"
+        showNavButton="{appView>/showNavButton}"
+        navButtonPressed="onShellHome"
+        homeIconPressed="onShellHome"
+        avatarPressed="onUserInfo">
+        <f:profile>
+            <Avatar initials="{userInfo>/initials}" displaySize="XS"
+                backgroundColor="Accent6"/>
+        </f:profile>
+    </f:ShellBar>
+    <NavContainer id="appNavContainer"/>
 </mvc:View>

@@ -8,11 +8,7 @@
             <Button text="Take Snapshot" icon="sap-icon://camera" press="onTakeSnapshot" type="Transparent"/>
         </headerContent>
         <content>
-            <Breadcrumbs class="projectBreadcrumb">
-                <Link text="Projects" press="onNavBack"/>
-                <Link text="{viewModel>/projectNumber}"/>
-            </Breadcrumbs>
-            <MessageStrip text="This project is outside its active date range and is read-only." type="Warning"
+<MessageStrip text="This project is outside its active date range and is read-only." type="Warning"
                 showIcon="true" visible="{viewModel>/readonly}" class="sapUiSmallMargin"/>
             <MessageStrip id="actionConfirmStrip" visible="false" type="Success" showCloseButton="true" showIcon="true"
                 class="actionConfirmStrip sapUiSmallMargin"/>

@@ -49,39 +49,11 @@ sap.ui.define([
         _onRouteMatched: function (oEvent) {
             var sRoute = oEvent.getParameter("name");
             var oAppView = this.getOwnerComponent().getModel("appView");
-            var bIsLaunchpad = sRoute === "launchpad";
-            var oRootNav = this.byId("rootNavContainer");
-
-            oAppView.setProperty("/showNavButton", !bIsLaunchpad);
-            oAppView.setProperty("/showToolPage", !bIsLaunchpad);
-
-            if (bIsLaunchpad) {
-                oRootNav.to(this.byId("launchpadHost"), "fade");
-            } else {
-                oRootNav.to(this.byId("toolPageHost"), "fade");
-            }
+            oAppView.setProperty("/showNavButton", sRoute !== "launchpad");
         },
 
         onShellHome: function () {
             this.getOwnerComponent().getRouter().navTo("launchpad");
-        },
-
-        onToggleSideNav: function () {
-            var tp = this.byId("toolPage");
-            tp.setSideExpanded(!tp.getSideExpanded());
-        },
-
-        onNavHome: function () {
-            this.getOwnerComponent().getRouter().navTo("home");
-        },
-
-        onNavToAdmin: function () {
-            this.getOwnerComponent().getRouter().navTo("admin");
-        },
-
-        onNavAdmin: function (oEvent) {
-            var key = oEvent.getParameter("item").getKey();
-            this.getOwnerComponent().getRouter().navTo(key);
         },
 
         onUserInfo: function (oEvent) {
