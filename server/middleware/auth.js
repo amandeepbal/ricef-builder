@@ -9,25 +9,33 @@ function setupAuth(app) {
     app.use((req, res, next) => {
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Missing authorization token' });
+        req.user = { id: 'anonymous', name: '', isAdmin: false, isUser: false };
+        return next();
       }
 
       const token = authHeader.substring(7);
-      xssec.createSecurityContext(token, uaaCredentials, (err, securityContext) => {
-        if (err) {
-          console.error('JWT validation failed:', err.message);
-          return res.status(403).json({ error: 'Invalid token' });
-        }
+      try {
+        xssec.createSecurityContext(token, uaaCredentials, (err, securityContext) => {
+          if (err) {
+            console.error('JWT validation failed:', err.message);
+            req.user = { id: 'anonymous', name: '', isAdmin: false, isUser: false };
+            return next();
+          }
 
-        req.authInfo = securityContext;
-        req.user = {
-          id: securityContext.getEmail() || securityContext.getLogonName() || 'unknown',
-          name: securityContext.getGivenName() || '',
-          isAdmin: securityContext.checkScope(uaaCredentials.xsappname + '.Admin'),
-          isUser: securityContext.checkScope(uaaCredentials.xsappname + '.User')
-        };
+          req.authInfo = securityContext;
+          req.user = {
+            id: securityContext.getEmail() || securityContext.getLogonName() || 'unknown',
+            name: securityContext.getGivenName() || '',
+            isAdmin: securityContext.checkScope(uaaCredentials.xsappname + '.Admin'),
+            isUser: securityContext.checkScope(uaaCredentials.xsappname + '.User')
+          };
+          next();
+        });
+      } catch (err) {
+        console.error('Security context error:', err.message);
+        req.user = { id: 'anonymous', name: '', isAdmin: false, isUser: false };
         next();
-      });
+      }
     });
 
     console.log('XSUAA authentication enabled.');
