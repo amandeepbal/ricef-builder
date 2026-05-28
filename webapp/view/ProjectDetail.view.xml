@@ -22,27 +22,50 @@
 
             <!-- RICEF / BI / MIGRATION Items Table -->
             <VBox id="itemsPanel" visible="{viewModel>/showItems}">
-                <!-- Per-sheet control section -->
-                <Panel headerText="Control Section (per Week Hours)" expandable="true" expanded="false" class="sapUiSmallMargin">
-                    <Table id="sheetControlTable" fixedLayout="true">
-                        <columns>
-                            <Column width="14rem"><Text text="Setting"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
-                        </columns>
-                    </Table>
+                <!-- Orange Grid Group -->
+                <Panel headerText="Orange Grid (Vendor)" expandable="true" expanded="false" class="sapUiSmallMargin">
+                    <Panel headerText="Control Section (per Week Hours)" expandable="true" expanded="false">
+                        <Table id="sheetControlTable" fixedLayout="true">
+                            <columns>
+                                <Column width="14rem"><Text text="Setting"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
+                            </columns>
+                        </Table>
+                    </Panel>
+                    <Panel id="orangeGridPanel" headerText="Calculated Effort" expandable="true" expanded="true"
+                        expand="onOrangeGridExpand">
+                        <core:HTML id="orangeGridHtml" content="&lt;div id='orangeGridContainer'&gt;&lt;/div&gt;"
+                            afterRendering="onOrangeGridAfterRendering"/>
+                    </Panel>
                 </Panel>
 
-                <!-- Orange Grid -->
-                <Panel id="orangeGridPanel" headerText="Orange Grid" expandable="true" expanded="false"
-                    class="sapUiSmallMargin" expand="onOrangeGridExpand">
-                    <core:HTML id="orangeGridHtml" content="&lt;div id='orangeGridContainer'&gt;&lt;/div&gt;"
-                        afterRendering="onOrangeGridAfterRendering"/>
+                <!-- Blue Grid Group -->
+                <Panel headerText="Blue Grid (Customer)" expandable="true" expanded="false" class="sapUiSmallMargin">
+                    <Panel headerText="Control Section (per Week Hours)" expandable="true" expanded="false">
+                        <Table id="blueControlTable" fixedLayout="true">
+                            <columns>
+                                <Column width="14rem"><Text text="Setting"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
+                                <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
+                            </columns>
+                        </Table>
+                    </Panel>
+                    <Panel id="blueGridPanel" headerText="Calculated Effort" expandable="true" expanded="true"
+                        expand="onBlueGridExpand">
+                        <core:HTML id="blueGridHtml" content="&lt;div id='blueGridContainer'&gt;&lt;/div&gt;"
+                            afterRendering="onBlueGridAfterRendering"/>
+                    </Panel>
                 </Panel>
 
                 <!-- Purple Grid (Staffing Explosion) -->
@@ -272,98 +295,10 @@
                     </Table>
                 </Panel>
 
-                <!-- Calculated Output: Functional Scope Effort -->
-                <Panel headerText="Functional Scope — Functional Effort" expandable="true" expanded="true">
-                    <Table items="{ path: 'funcEffort>/scopeEffort' }" fixedLayout="true">
-                        <columns>
-                            <Column width="14rem"><Text text="Role"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
-                            <Column hAlign="End" width="6rem"><Text text="TOTAL"/></Column>
-                        </columns>
-                        <items>
-                            <ColumnListItem>
-                                <Text text="{funcEffort>role}"/>
-                                <ObjectNumber number="{funcEffort>prep}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>fts}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>design}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>build}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>sit_uat}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>dep}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>hyp}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>total}" emphasized="true"/>
-                            </ColumnListItem>
-                        </items>
-                    </Table>
-                </Panel>
-
-                <!-- Calculated Output: Technical Scope Effort -->
-                <Panel headerText="Technical Scope — Functional Effort" expandable="true" expanded="true">
-                    <Table items="{ path: 'funcEffort>/techScopeEffort' }" fixedLayout="true">
-                        <columns>
-                            <Column width="14rem"><Text text="Role"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
-                            <Column hAlign="End" width="6rem"><Text text="TOTAL"/></Column>
-                        </columns>
-                        <items>
-                            <ColumnListItem>
-                                <Text text="{funcEffort>role}"/>
-                                <ObjectNumber number="{funcEffort>prep}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>fts}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>design}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>build}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>sit_uat}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>dep}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>hyp}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>total}" emphasized="true"/>
-                            </ColumnListItem>
-                        </items>
-                    </Table>
-                </Panel>
-
-                <!-- Calculated Output: Total Functional Effort -->
-                <Panel headerText="Total — Functional Effort" expandable="true" expanded="true">
-                    <Table items="{ path: 'funcEffort>/totalEffort' }" fixedLayout="true">
-                        <columns>
-                            <Column width="14rem"><Text text="Role"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="PREP"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="FTS"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="DESIGN"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="BUILD"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="SIT/UAT"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="DEP"/></Column>
-                            <Column hAlign="Center" width="5.5rem"><Text text="HYP"/></Column>
-                            <Column hAlign="End" width="6rem"><Text text="TOTAL"/></Column>
-                            <Column hAlign="End" width="5rem"><Text text="Lead"/></Column>
-                            <Column hAlign="End" width="5.5rem"><Text text="Consultant"/></Column>
-                        </columns>
-                        <items>
-                            <ColumnListItem highlight="{= ${funcEffort>_highlight} ? 'Information' : 'None' }">
-                                <Text text="{funcEffort>role}"/>
-                                <ObjectNumber number="{funcEffort>prep}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>fts}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>design}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>build}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>sit_uat}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>dep}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>hyp}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>total}" emphasized="true"/>
-                                <ObjectNumber number="{funcEffort>lead}" emphasized="false"/>
-                                <ObjectNumber number="{funcEffort>consultant}" emphasized="false"/>
-                            </ColumnListItem>
-                        </items>
-                    </Table>
+                <!-- Orange Grid (Functional Effort) -->
+                <Panel id="funcOrangeGridPanel" headerText="Orange Grid" expandable="true" expanded="true" class="sapUiTinyMarginTop">
+                    <core:HTML id="funcOrangeGridHtml" content="&lt;div id='funcOrangeGridContainer'&gt;&lt;/div&gt;"
+                        afterRendering="onFuncOrangeGridAfterRendering"/>
                 </Panel>
             </VBox>
         </content>

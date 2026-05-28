@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { getDb } = require('../db/connection');
+const { buildSummary } = require('../services/summary-aggregator');
 const router = Router();
 
 function captureProjectState(db, pid) {
@@ -11,8 +12,8 @@ function captureProjectState(db, pid) {
   const contingency = db.prepare('SELECT * FROM project_contingency WHERE project_id = ?').get(pid);
   const scopeConfig = db.prepare('SELECT * FROM project_scope_config WHERE project_id = ?').get(pid);
   const scopeItems = db.prepare('SELECT * FROM project_scope_items WHERE project_id = ? ORDER BY id').all(pid);
-  const sheetFuncPct = db.prepare('SELECT * FROM project_sheet_func_pct WHERE project_id = ? ORDER BY sheet_type_code').all(pid);
-  const fixedRoles = db.prepare('SELECT * FROM project_fixed_roles WHERE project_id = ? ORDER BY team, id').all(pid);
+  const sheetFuncPct = db.prepare('SELECT * FROM project_sheet_func_pct WHERE project_id = ? ORDER BY sheet_type_code, grid_type').all(pid);
+  const fixedRoles = db.prepare('SELECT * FROM project_fixed_roles WHERE project_id = ? ORDER BY team, grid_type, id').all(pid);
   const staffingProfiles = db.prepare('SELECT * FROM project_staffing_profiles WHERE project_id = ? ORDER BY team, sort_order').all(pid);
 
   const items = db.prepare(`
@@ -23,6 +24,53 @@ function captureProjectState(db, pid) {
 
   const activeItems = items.filter(i => i.seq_number > 0);
   const totalHours = activeItems.reduce((s, i) => s + (i.grand_total_hours || 0), 0);
+
+  // Capture calculated outputs
+  const summary = buildSummary(db, pid);
+  const P = ['prep', 'fts', 'design', 'build', 'sit_uat', 'dep', 'hyp'];
+
+  function flattenRows(rows) {
+    return (rows || []).map(r => {
+      const row = { role: r.role || '' };
+      P.forEach(p => { row[p] = Math.round(r[p] || 0); });
+      row.total = Math.round(r.total || P.reduce((s, p) => s + (row[p] || 0), 0));
+      if (r.lead != null) row.lead = Math.round(r.lead);
+      if (r.consultant != null) row.consultant = Math.round(r.consultant);
+      return row;
+    });
+  }
+
+  const archRow = summary.funcArchitect || {};
+  archRow._highlight = true;
+  const funcTotalRows = [archRow].concat(summary.funcByRole || []);
+
+  const calculated = {
+    orangeGrid: {
+      RICEF: { funcRows: flattenRows(summary.sheetFunc && summary.sheetFunc.RICEF), techRows: flattenRows(summary.techDev) },
+      BI: { funcRows: flattenRows(summary.sheetFunc && summary.sheetFunc.BI), techRows: flattenRows(summary.techBi) },
+      MIGRATION: { funcRows: flattenRows(summary.sheetFunc && summary.sheetFunc.MIGRATION), techRows: flattenRows(summary.techMig) }
+    },
+    funcEffort: {
+      scopeEffort: flattenRows(summary.funcScopeEffort),
+      techScopeEffort: flattenRows(summary.techScopeEffort),
+      totalEffort: flattenRows(funcTotalRows)
+    },
+    summary: {
+      phases: flattenRows(summary.phases),
+      funcScope: flattenRows(summary.funcByRole),
+      funcArchitect: flattenRows([summary.funcArchitect || {}]),
+      techDev: flattenRows(summary.techDev),
+      techBi: flattenRows(summary.techBi),
+      techMig: flattenRows(summary.techMig)
+    },
+    summaryTotals: {
+      totalFunc: summary.totalFunc || 0,
+      totalTech: summary.totalTech || 0,
+      totalPgo: summary.totalPgo || 0,
+      totalGrand: summary.totalGrand || 0,
+      itemCount: summary.itemCount || 0
+    }
+  };
 
   return {
     project,
@@ -37,6 +85,7 @@ function captureProjectState(db, pid) {
     fixedRoles,
     staffingProfiles,
     items,
+    calculated,
     _meta: {
       totalItems: activeItems.length,
       totalHours: Math.round(totalHours),
@@ -98,6 +147,8 @@ router.get('/:projectId/compare/:snapshotId', (req, res) => {
   diff.snapshot = { id: snap.id, phase: snap.phase, label: snap.label, created_at: snap.created_at };
   diff.currentMeta = current._meta;
   diff.previousMeta = previous._meta;
+  diff.currentCalculated = current.calculated || null;
+  diff.previousCalculated = previous.calculated || null;
 
   res.json(diff);
 });
@@ -136,22 +187,23 @@ function buildDiff(current, previous) {
   controlDiff.scopeConfig = diffFields(current.scopeConfig, previous.scopeConfig,
     ['low_hours', 'medium_hours', 'high_hours', 'kdd_hours', 'ip_hours', 'complexity_multiplier']);
 
-  // Sheet func pct — keyed by sheet_type_code
+  // Sheet func pct — keyed by sheet_type_code + grid_type
   const sheetPctDiff = {};
   const prevSheetMap = {};
-  (previous.sheetFuncPct || []).forEach(s => { prevSheetMap[s.sheet_type_code] = s; });
+  (previous.sheetFuncPct || []).forEach(s => { prevSheetMap[(s.sheet_type_code || '') + '|' + (s.grid_type || 'ORANGE')] = s; });
   (current.sheetFuncPct || []).forEach(s => {
-    const d = diffFields(s, prevSheetMap[s.sheet_type_code], phases);
-    if (d) sheetPctDiff[s.sheet_type_code] = d;
+    const key = (s.sheet_type_code || '') + '|' + (s.grid_type || 'ORANGE');
+    const d = diffFields(s, prevSheetMap[key], phases);
+    if (d) sheetPctDiff[key] = d;
   });
   controlDiff.sheetFuncPct = Object.keys(sheetPctDiff).length > 0 ? sheetPctDiff : null;
 
-  // Fixed roles — keyed by team + role_name
+  // Fixed roles — keyed by team + role_name + grid_type
   const fixedRoleDiff = {};
   const prevRoleMap = {};
-  (previous.fixedRoles || []).forEach(r => { prevRoleMap[r.team + '|' + r.role_name] = r; });
+  (previous.fixedRoles || []).forEach(r => { prevRoleMap[r.team + '|' + r.role_name + '|' + (r.grid_type || 'ORANGE')] = r; });
   (current.fixedRoles || []).forEach(r => {
-    const key = r.team + '|' + r.role_name;
+    const key = r.team + '|' + r.role_name + '|' + (r.grid_type || 'ORANGE');
     const d = diffFields(r, prevRoleMap[key], phases);
     if (d) fixedRoleDiff[key] = d;
   });
@@ -178,7 +230,7 @@ function buildDiff(current, previous) {
     if (!curScopeKeys.has(key)) scopeDiff.removed.push(prevScopeMap[key]);
   });
 
-  // Items — keyed by id (stable unique key; ricef_number+seq is not unique for sub-items)
+  // Items — keyed by id
   const itemFields = ['description', 'status', 'complexity', 'classification', 'module',
     'func_effort_adj', 'tech_effort_adj', 'func_role', 'tech_role',
     'build_func', 'build_tech', 'sit_func', 'sit_tech', 'sub_items_func', 'sub_items_tech',
@@ -212,7 +264,99 @@ function buildDiff(current, previous) {
     }
   });
 
-  return { controlDiff, scopeDiff, itemDiff };
+  // Calculated output diff — compare computed grid/summary values
+  const calculatedDiff = buildCalculatedDiff(current.calculated, previous.calculated);
+
+  return { controlDiff, scopeDiff, itemDiff, calculatedDiff };
+}
+
+function buildCalculatedDiff(cur, prev) {
+  if (!cur || !prev) return null;
+  const P = ['prep', 'fts', 'design', 'build', 'sit_uat', 'dep', 'hyp', 'total'];
+  const result = { grids: [], summaryTotals: null };
+
+  function diffGridRows(curRows, prevRows, sectionLabel) {
+    const prevMap = {};
+    (prevRows || []).forEach(r => { prevMap[r.role] = r; });
+    const changes = [];
+    (curRows || []).forEach(r => {
+      const prev = prevMap[r.role];
+      if (!prev) {
+        changes.push({ role: r.role, type: 'added', current: r });
+      } else {
+        const fieldChanges = {};
+        let hasChange = false;
+        P.forEach(p => {
+          const cv = r[p] || 0;
+          const pv = prev[p] || 0;
+          if (cv !== pv) {
+            fieldChanges[p] = { current: cv, previous: pv, delta: cv - pv };
+            hasChange = true;
+          }
+        });
+        ['lead', 'consultant'].forEach(p => {
+          if (r[p] != null || (prev[p] != null)) {
+            const cv = r[p] || 0;
+            const pv = prev[p] || 0;
+            if (cv !== pv) {
+              fieldChanges[p] = { current: cv, previous: pv, delta: cv - pv };
+              hasChange = true;
+            }
+          }
+        });
+        if (hasChange) changes.push({ role: r.role, type: 'changed', fields: fieldChanges });
+      }
+    });
+    (prevRows || []).forEach(r => {
+      if (!(curRows || []).find(c => c.role === r.role)) {
+        changes.push({ role: r.role, type: 'removed', previous: r });
+      }
+    });
+    if (changes.length > 0) result.grids.push({ section: sectionLabel, changes });
+  }
+
+  // Orange Grid per sheet
+  ['RICEF', 'BI', 'MIGRATION'].forEach(sheet => {
+    const cg = (cur.orangeGrid || {})[sheet] || {};
+    const pg = (prev.orangeGrid || {})[sheet] || {};
+    diffGridRows(cg.funcRows, pg.funcRows, sheet + ' — Orange Grid FUNC');
+    diffGridRows(cg.techRows, pg.techRows, sheet + ' — Orange Grid TECH');
+  });
+
+  // Functional effort
+  const cfe = cur.funcEffort || {};
+  const pfe = prev.funcEffort || {};
+  diffGridRows(cfe.scopeEffort, pfe.scopeEffort, 'Functional Scope Effort');
+  diffGridRows(cfe.techScopeEffort, pfe.techScopeEffort, 'Technical Scope Effort');
+  diffGridRows(cfe.totalEffort, pfe.totalEffort, 'Total Functional Effort');
+
+  // Summary page sections
+  const csu = cur.summary || {};
+  const psu = prev.summary || {};
+  diffGridRows(csu.phases, psu.phases, 'Summary — Project Phases');
+  diffGridRows(csu.funcArchitect, psu.funcArchitect, 'Summary — Architect');
+  diffGridRows(csu.funcScope, psu.funcScope, 'Summary — Functional Scope');
+  diffGridRows(csu.techDev, psu.techDev, 'Summary — Technical DEV');
+  diffGridRows(csu.techBi, psu.techBi, 'Summary — Technical BI');
+  diffGridRows(csu.techMig, psu.techMig, 'Summary — Technical Migration');
+
+  // Summary totals
+  const cs = cur.summaryTotals || {};
+  const ps = prev.summaryTotals || {};
+  const totalFields = {};
+  let hasTotalChange = false;
+  ['totalFunc', 'totalTech', 'totalPgo', 'totalGrand', 'itemCount'].forEach(f => {
+    const cv = cs[f] || 0;
+    const pv = ps[f] || 0;
+    if (cv !== pv) {
+      totalFields[f] = { current: cv, previous: pv, delta: cv - pv };
+      hasTotalChange = true;
+    }
+  });
+  result.summaryTotals = hasTotalChange ? totalFields : null;
+
+  const hasChanges = result.grids.length > 0 || result.summaryTotals;
+  return hasChanges ? result : null;
 }
 
 router.delete('/:projectId/snapshots/:snapshotId', (req, res) => {

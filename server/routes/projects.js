@@ -66,25 +66,30 @@ router.post('/', (req, res) => {
     db.prepare(`INSERT INTO project_scope_config (project_id, low_hours, medium_hours, high_hours, kdd_hours, ip_hours, complexity_multiplier)
       VALUES (?, 24, 48, 72, 40, -40, 1)`).run(pid);
 
-    // Per-sheet FUNC phase distribution %
-    db.prepare(`INSERT INTO project_sheet_func_pct (project_id, sheet_type_code, prep, fts, design, build, sit_uat, dep, hyp)
-      VALUES (?, 'RICEF', 0, 0, 0.25, 0.75, 0, 0.03, 0.10)`).run(pid);
-    db.prepare(`INSERT INTO project_sheet_func_pct (project_id, sheet_type_code, prep, fts, design, build, sit_uat, dep, hyp)
-      VALUES (?, 'BI', 0, 0, 0.25, 0.75, 0, 0.03, 0.10)`).run(pid);
-    db.prepare(`INSERT INTO project_sheet_func_pct (project_id, sheet_type_code, prep, fts, design, build, sit_uat, dep, hyp)
-      VALUES (?, 'MIGRATION', 0, 0, 0, 0.75, 0.25, 0, 0.10)`).run(pid);
-
-    // Fixed roles (default template per team)
-    const insertFixed = db.prepare(
-      `INSERT INTO project_fixed_roles (project_id, team, role_name, prep, fts, design, build, sit_uat, dep, hyp)
+    // Per-sheet FUNC phase distribution % (ORANGE = SYNTAX, BLUE = CUSTOMER)
+    const insertFuncPct = db.prepare(
+      `INSERT INTO project_sheet_func_pct (project_id, sheet_type_code, prep, fts, design, build, sit_uat, dep, hyp, grid_type)
        VALUES (?,?,?,?,?,?,?,?,?,?)`
     );
-    insertFixed.run(pid, 'DEV', 'Architect TSA',         4, 8, 16, 4, 2, 0.03, 0.1);
-    insertFixed.run(pid, 'DEV', 'Technical Lead - DEV',  2, 8, 16, 24, 20, 0.03, 0.1);
-    insertFixed.run(pid, 'BI',  'Architect BI',          8, 8, 2, 0, 0, 0.03, 0);
-    insertFixed.run(pid, 'BI',  'Technical Lead - BI',   0, 0, 8, 12, 2, 0.03, 0);
-    insertFixed.run(pid, 'MIGRATION', 'Architect MIGRATION',         0, 0, 0, 0, 0, 0, 0);
-    insertFixed.run(pid, 'MIGRATION', 'Technical Lead - MIGRATION', 20,20,20, 0, 0, 0.15, 0.1);
+    ['ORANGE', 'BLUE'].forEach(gt => {
+      insertFuncPct.run(pid, 'RICEF',     0, 0, 0.25, 0.75, 0, 0.03, 0.10, gt);
+      insertFuncPct.run(pid, 'BI',        0, 0, 0.25, 0.75, 0, 0.03, 0.10, gt);
+      insertFuncPct.run(pid, 'MIGRATION', 0, 0, 0,    0.75, 0.25, 0, 0.10, gt);
+    });
+
+    // Fixed roles (default template per team) — ORANGE + BLUE
+    const insertFixed = db.prepare(
+      `INSERT INTO project_fixed_roles (project_id, team, role_name, prep, fts, design, build, sit_uat, dep, hyp, grid_type)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+    );
+    ['ORANGE', 'BLUE'].forEach(gt => {
+      insertFixed.run(pid, 'DEV', 'Architect TSA',         4, 8, 16, 4, 2, 0.03, 0.1, gt);
+      insertFixed.run(pid, 'DEV', 'Technical Lead - DEV',  2, 8, 16, 24, 20, 0.03, 0.1, gt);
+      insertFixed.run(pid, 'BI',  'Architect BI',          8, 8, 2, 0, 0, 0.03, 0, gt);
+      insertFixed.run(pid, 'BI',  'Technical Lead - BI',   0, 0, 8, 12, 2, 0.03, 0, gt);
+      insertFixed.run(pid, 'MIGRATION', 'Architect MIGRATION',         0, 0, 0, 0, 0, 0, 0, gt);
+      insertFixed.run(pid, 'MIGRATION', 'Technical Lead - MIGRATION', 20,20,20, 0, 0, 0.15, 0.1, gt);
+    });
 
     return pid;
   });

@@ -482,6 +482,102 @@ router.get('/:projectId/orange-grid/:sheetType', (req, res) => {
   });
 });
 
+// GET Blue Grid data for a specific sheet tab (CUSTOMER team items)
+router.get('/:projectId/blue-grid/:sheetType', (req, res) => {
+  const db = getDb();
+  const pid = req.params.projectId;
+  const sheet = req.params.sheetType;
+  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(pid);
+  if (!project) return res.status(404).json({ error: 'Project not found' });
+
+  const phases = db.prepare('SELECT * FROM project_phases WHERE project_id = ?').get(pid);
+  const funcPct = db.prepare("SELECT * FROM project_sheet_func_pct WHERE project_id=? AND sheet_type_code=? AND grid_type='BLUE'").get(pid, sheet);
+  const teamMap = { RICEF: 'DEV', BI: 'BI', MIGRATION: 'MIGRATION' };
+  const fixedRoles = db.prepare("SELECT * FROM project_fixed_roles WHERE project_id=? AND team=? AND grid_type='BLUE' ORDER BY id").all(pid, teamMap[sheet] || sheet);
+
+  const items = db.prepare(`
+    SELECT i.*, rt.sheet_type_code
+    FROM items i JOIN ricef_types rt ON i.ricef_type_id = rt.id
+    WHERE i.project_id = ? AND i.status != 'Cancelled' AND i.classification != 'TOTAL'
+      AND rt.sheet_type_code = ?
+  `).all(pid, sheet);
+
+  const pct = funcPct || {};
+  const P = ['prep', 'fts', 'design', 'build', 'sit_uat', 'dep', 'hyp'];
+
+  // FUNC rows: aggregate by func_role where func_team = 'CUSTOMER'
+  const funcRoleData = {};
+  for (const item of items) {
+    if (item.func_team !== 'CUSTOMER') continue;
+    const fr = item.func_role || 'Unassigned';
+    if (!funcRoleData[fr]) funcRoleData[fr] = { base: 0, sit: 0 };
+    funcRoleData[fr].base += (item.build_func || 0) + (item.sub_items_func || 0);
+    funcRoleData[fr].sit += (item.sit_func || 0);
+  }
+
+  const funcRows = [];
+  for (const [role, data] of Object.entries(funcRoleData)) {
+    const row = { role };
+    const designPct = pct.design || 0;
+    const buildPct = pct.build || 0;
+    const depPct = pct.dep || 0;
+    const hypPct = pct.hyp || 0;
+    row.design = Math.round(data.base * designPct);
+    row.build = Math.round(data.base * buildPct);
+    row.sit_uat = Math.round(data.sit);
+    row.dep = Math.round((row.design + row.build + row.sit_uat) * depPct);
+    row.hyp = Math.round((row.design + row.build + row.sit_uat + row.dep) * hypPct);
+    row.prep = 0; row.fts = 0;
+    row.total = P.reduce((s, p) => s + (row[p] || 0), 0);
+    if (row.total > 0) funcRows.push(row);
+  }
+
+  // TECH rows: fixed roles (hours/week × weeks) + developer roles (tech_team = 'CUSTOMER')
+  const techRows = [];
+  for (const fr of fixedRoles) {
+    const row = { role: fr.role_name, _highlight: true };
+    P.forEach(p => {
+      if (p === 'dep' || p === 'hyp') {
+        const sumBefore = P.slice(0, P.indexOf(p)).reduce((s, k) => s + (row[k] || 0), 0);
+        row[p] = Math.round(sumBefore * (fr[p] || 0));
+      } else {
+        row[p] = Math.round((fr[p] || 0) * (phases[p] || 0));
+      }
+    });
+    row.total = P.reduce((s, p) => s + (row[p] || 0), 0);
+    techRows.push(row);
+  }
+
+  const techRoleData = {};
+  for (const item of items) {
+    if (item.tech_team !== 'CUSTOMER') continue;
+    const tr = item.tech_role || 'Unassigned';
+    if (!techRoleData[tr]) techRoleData[tr] = { build: 0, sit: 0 };
+    techRoleData[tr].build += (item.build_tech || 0) + (item.sub_items_tech || 0);
+    techRoleData[tr].sit += (item.sit_tech || 0);
+  }
+
+  for (const [role, data] of Object.entries(techRoleData)) {
+    const row = { role };
+    row.build = Math.round(data.build);
+    row.sit_uat = Math.round(data.sit);
+    row.prep = 0; row.fts = 0; row.design = 0;
+    const depPct = pct.dep || 0;
+    const hypPct = pct.hyp || 0;
+    row.dep = Math.round((row.build + row.sit_uat) * depPct);
+    row.hyp = Math.round((row.build + row.sit_uat + row.dep) * hypPct);
+    row.total = P.reduce((s, p) => s + (row[p] || 0), 0);
+    if (row.total > 0) techRows.push(row);
+  }
+
+  res.json({
+    project: { delivery_level: project.delivery_level, currency: project.currency },
+    phases,
+    funcRows,
+    techRows
+  });
+});
+
 // GET control section data for project settings panel
 router.get('/:projectId/control', (req, res) => {
   const db = getDb();
@@ -576,25 +672,27 @@ router.get('/:projectId/scope', (req, res) => {
   res.json({ items, config });
 });
 
-// GET per-sheet control data (func pct + fixed roles)
+// GET per-sheet control data (func pct + fixed roles) — supports ?grid_type=ORANGE|BLUE
 router.get('/:projectId/sheet-control/:sheetCode', (req, res) => {
   const db = getDb();
   const pid = req.params.projectId;
   const code = req.params.sheetCode;
+  const gridType = req.query.grid_type || 'ORANGE';
   const teamMap = { RICEF: 'DEV', BI: 'BI', MIGRATION: 'MIGRATION' };
   res.json({
-    funcPct: db.prepare('SELECT * FROM project_sheet_func_pct WHERE project_id=? AND sheet_type_code=?').get(pid, code),
-    fixedRoles: db.prepare('SELECT * FROM project_fixed_roles WHERE project_id=? AND team=? ORDER BY id').all(pid, teamMap[code] || code)
+    funcPct: db.prepare('SELECT * FROM project_sheet_func_pct WHERE project_id=? AND sheet_type_code=? AND grid_type=?').get(pid, code, gridType),
+    fixedRoles: db.prepare('SELECT * FROM project_fixed_roles WHERE project_id=? AND team=? AND grid_type=? ORDER BY id').all(pid, teamMap[code] || code, gridType)
   });
 });
 
-// PUT per-sheet func pct
+// PUT per-sheet func pct — supports ?grid_type=ORANGE|BLUE
 router.put('/:projectId/sheet-control/:sheetCode/func-pct', (req, res) => {
   const db = getDb();
   const b = req.body;
+  const gridType = req.query.grid_type || 'ORANGE';
   db.prepare(`UPDATE project_sheet_func_pct SET prep=?, fts=?, design=?, build=?, sit_uat=?, dep=?, hyp=?
-    WHERE project_id=? AND sheet_type_code=?`)
-    .run(b.prep, b.fts, b.design, b.build, b.sit_uat, b.dep, b.hyp, req.params.projectId, req.params.sheetCode);
+    WHERE project_id=? AND sheet_type_code=? AND grid_type=?`)
+    .run(b.prep, b.fts, b.design, b.build, b.sit_uat, b.dep, b.hyp, req.params.projectId, req.params.sheetCode, gridType);
   res.json({ ok: true });
 });
 

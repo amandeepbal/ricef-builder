@@ -163,12 +163,16 @@
         "content": "Setting classification + complexity triggers automatic calculation:\n1. Grid lookup: classification → baseline hours\n2. Apply effort adjustments (func_adj, tech_adj)\n3. Apply blended multiplier (from complexity)\n4. Apply contingency % (FUNC: 0%, TECH: 15% default)\n5. Calculate SIT hours (FUNC: 10%, TECH: 12% of build)\n6. Sum totals"
       },
       {
-        "heading": "Control Section",
-        "content": "Each sheet tab has a collapsible control section with:\n• FUNC % Explore vs Build: How functional hours split across DESIGN and BUILD phases\n• Fixed Roles: Architect and Tech Lead hours per phase (hours/week for absolute values, percentages for DEP/HYP)"
+        "heading": "Control Sections (Orange & Blue)",
+        "content": "Each sheet has TWO control sections — one for the Orange Grid (Vendor/SYNTAX) and one for the Blue Grid (Customer).\n\nEach control section contains:\n• FUNC % Explore vs Build: How functional hours split across DESIGN and BUILD phases\n• Fixed Roles: Architect and Tech Lead hours per phase (hours/week for absolute values, percentages for DEP/HYP)\n\nThe two grids can have different control values. Items are assigned to a team (SYNTAX or CUSTOMER) via the FUNC Team and TECH Team fields — this determines which grid their hours appear in."
       },
       {
-        "heading": "Orange Grid",
-        "content": "Per-sheet calculated summary showing:\n• FUNC — Functional Effort: How this sheet's item functional hours are distributed across phases per role\n• TECH — Technical Effort: Fixed roles (Architect, Tech Lead) + developer role hours per phase\n\nThese are read-only computed values that feed into the project Summary. The Orange Grid also shows the current delivery level and phase weeks (maintained in Summary)."
+        "heading": "Orange Grid (Vendor)",
+        "content": "Per-sheet calculated summary for SYNTAX (vendor) team items:\n• FUNC — Functional Effort: Item functional hours distributed across phases per role, filtered to SYNTAX team\n• TECH — Technical Effort: Fixed roles (hours/week × phase weeks) + developer role hours per phase\n\nThese are read-only computed values that feed into the project Summary. The header shows the current delivery level and phase weeks."
+      },
+      {
+        "heading": "Blue Grid (Customer)",
+        "content": "Per-sheet calculated summary for CUSTOMER team items — same structure as the Orange Grid but filtered to items where FUNC Team or TECH Team = CUSTOMER.\n\nUse this to separate vendor effort from customer effort. Each grid has its own control section so explore/build percentages and fixed role hours can differ between vendor and customer.\n\nIf no items are assigned to CUSTOMER team on a sheet, the Blue Grid will show empty."
       },
       {
         "heading": "Staffing Explosion (Purple Grid)",

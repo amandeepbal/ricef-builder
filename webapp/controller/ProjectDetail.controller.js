@@ -33,6 +33,7 @@ sap.ui.define([
             this.getView().setModel(new JSONModel([]), "funcRoles");
             this.getView().setModel(new JSONModel({ scopeEffort: [], techScopeEffort: [], totalEffort: [] }), "funcEffort");
             this.getView().setModel(new JSONModel({ funcRows: [], techRows: [] }), "orangeGrid");
+            this.getView().setModel(new JSONModel({}), "blueCtrl");
             var router = this.getOwnerComponent().getRouter();
             router.getRoute("project").attachPatternMatched(this._onRouteMatched, this);
             router.getRoute("projectSheet").attachPatternMatched(this._onRouteMatched, this);
@@ -122,7 +123,9 @@ sap.ui.define([
                 this._resetFilters();
                 this._loadItems();
                 this._loadOrangeGrid(sheetType);
-                this._loadSheetControl(sheetType);
+                this._loadBlueGrid(sheetType);
+                this._loadSheetControl(sheetType, "ORANGE");
+                this._loadBlueSheetControl(sheetType);
                 this._loadPurpleGrid(sheetType);
             }
         },
@@ -288,7 +291,90 @@ sap.ui.define([
                     techScopeEffort: data.techScopeEffort || [],
                     totalEffort: totalEffort
                 });
+                that._renderFuncOrangeGrid(data.funcScopeEffort || [], data.techScopeEffort || [], totalEffort);
             });
+        },
+
+        onFuncOrangeGridAfterRendering: function () {
+            var m = this.getView().getModel("funcEffort");
+            if (m) {
+                this._renderFuncOrangeGrid(m.getProperty("/scopeEffort") || [], m.getProperty("/techScopeEffort") || [], m.getProperty("/totalEffort") || []);
+            }
+        },
+
+        _renderFuncOrangeGrid: function (scopeEffort, techScopeEffort, totalEffort) {
+            var container = document.getElementById("funcOrangeGridContainer");
+            if (!container) return;
+
+            var phases = ["prep", "fts", "design", "build", "sit_uat", "dep", "hyp"];
+            var phaseLabels = ["PREP", "FTS", "DESIGN", "BUILD", "SIT/UAT", "DEP", "HYP"];
+
+            var hdrBg = "#e76500";
+            var hdrFg = "#fff";
+            var subHdrBg = "#fdf0e2";
+            var sectionBg = "#f5a623";
+            var borderClr = "#d4a574";
+            var highlightBg = "#fff3cd";
+            var cellBorder = "1px solid " + borderClr;
+
+            var html = '<div style="overflow-x:auto;max-width:100%">';
+            html += '<table style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
+
+            var totalCols = 11;
+            html += '<tr><th colspan="' + totalCols + '" style="background:' + hdrBg + ';color:' + hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
+            html += 'FUNCTIONAL — ORANGE GRID</th></tr>';
+
+            function renderSection(title, rows, hasLeadCols) {
+                html += '<tr><td colspan="' + totalCols + '" style="background:' + sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + cellBorder + '">' + title + '</td></tr>';
+                html += '<tr style="background:' + subHdrBg + '">';
+                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:left;min-width:180px">Role</th>';
+                phaseLabels.forEach(function (lbl) {
+                    html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:center;min-width:60px">' + lbl + '</th>';
+                });
+                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;min-width:70px;font-weight:bold">TOTAL</th>';
+                if (hasLeadCols) {
+                    html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;min-width:55px">Lead</th>';
+                    html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;min-width:70px">Consultant</th>';
+                } else {
+                    html += '<th style="border:' + cellBorder + '"></th><th style="border:' + cellBorder + '"></th>';
+                }
+                html += '</tr>';
+
+                if (!rows || rows.length === 0) {
+                    html += '<tr><td colspan="' + totalCols + '" style="padding:6px 8px;border:' + cellBorder + ';color:#888;text-align:center;font-style:italic">No data</td></tr>';
+                    return;
+                }
+
+                rows.forEach(function (r, idx) {
+                    var isHL = r._highlight;
+                    var bg = isHL ? highlightBg : (idx % 2 === 0 ? '#fff' : '#fef8f0');
+                    var fw = isHL ? 'font-weight:bold' : '';
+                    html += '<tr style="background:' + bg + ';' + fw + '">';
+                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
+                    var rowTotal = 0;
+                    phases.forEach(function (p) {
+                        var v = r[p] || 0;
+                        rowTotal += v;
+                        html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
+                    });
+                    var total = r.total || rowTotal;
+                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">' + (total ? Math.round(total) : '') + '</td>';
+                    if (hasLeadCols) {
+                        html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right">' + (r.lead ? Math.round(r.lead) : '') + '</td>';
+                        html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right">' + (r.consultant ? Math.round(r.consultant) : '') + '</td>';
+                    } else {
+                        html += '<td style="border:' + cellBorder + '"></td><td style="border:' + cellBorder + '"></td>';
+                    }
+                    html += '</tr>';
+                });
+            }
+
+            renderSection("Functional Scope — Functional Effort", scopeEffort, false);
+            renderSection("Technical Scope — Functional Effort", techScopeEffort, false);
+            renderSection("Total — Functional Effort", totalEffort, true);
+
+            html += '</table></div>';
+            container.innerHTML = html;
         },
 
         onTabSelect: function (oEvent) {
@@ -833,18 +919,25 @@ sap.ui.define([
                 });
 
                 if (cd.sheetFuncPct) {
-                    Object.keys(cd.sheetFuncPct).forEach(function (sheet) {
-                        Object.keys(cd.sheetFuncPct[sheet]).forEach(function (field) {
-                            var c = cd.sheetFuncPct[sheet][field];
-                            html += that._diffRow(sheet + " FUNC %", field, c.current, c.previous);
+                    Object.keys(cd.sheetFuncPct).forEach(function (key) {
+                        var parts = key.split("|");
+                        var sheet = parts[0] || key;
+                        var grid = parts[1] === "BLUE" ? "Blue Grid" : "Orange Grid";
+                        Object.keys(cd.sheetFuncPct[key]).forEach(function (field) {
+                            var c = cd.sheetFuncPct[key][field];
+                            html += that._diffRow(sheet + " — " + grid + " FUNC %", field, c.current, c.previous);
                         });
                     });
                 }
                 if (cd.fixedRoles) {
                     Object.keys(cd.fixedRoles).forEach(function (key) {
+                        var parts = key.split("|");
+                        var team = parts[0] || "";
+                        var roleName = parts[1] || key;
+                        var grid = parts[2] === "BLUE" ? "Blue Grid" : "Orange Grid";
                         Object.keys(cd.fixedRoles[key]).forEach(function (field) {
                             var c = cd.fixedRoles[key][field];
-                            html += that._diffRow("Fixed: " + key.split("|")[1], field, c.current, c.previous);
+                            html += that._diffRow(team + " — " + grid + " — " + roleName, field, c.current, c.previous);
                         });
                     });
                 }
@@ -943,6 +1036,154 @@ sap.ui.define([
 
             if (id.changed.length === 0 && id.added.length === 0 && id.removed.length === 0) {
                 html += '<div style="font-size:12px;color:#888;padding:8px 0">No item changes detected.</div>';
+            }
+
+            // Calculated impact — side-by-side
+            var curCalc = diff.currentCalculated;
+            var prevCalc = diff.previousCalculated;
+            var calc = diff.calculatedDiff;
+            if (calc || (curCalc && prevCalc)) {
+                html += '<div style="margin-top:16px;padding:12px;background:#f8f0e0;border-left:4px solid #e76500;border-radius:4px">';
+                html += that._sectionTitle("Calculated Impact");
+
+                // Summary totals as KPI tiles
+                if (calc && calc.summaryTotals) {
+                    html += '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">';
+                    var totalLabels = { totalFunc: "Total FUNC", totalTech: "Total TECH", totalPgo: "Total PGO", totalGrand: "Grand Total", itemCount: "Item Count" };
+                    var totalUnits = { totalFunc: "h", totalTech: "h", totalPgo: "h", totalGrand: "h", itemCount: "" };
+                    Object.keys(calc.summaryTotals).forEach(function (f) {
+                        var c = calc.summaryTotals[f];
+                        html += that._deltaTile(totalLabels[f] || f, c.current, c.previous, totalUnits[f] || "");
+                    });
+                    html += '</div>';
+                }
+
+                // Side-by-side grids
+                if (curCalc && prevCalc) {
+                    var P = ['prep', 'fts', 'design', 'build', 'sit_uat', 'dep', 'hyp'];
+                    var PL = ['PREP', 'FTS', 'DESIGN', 'BUILD', 'SIT/UAT', 'DEP', 'HYP'];
+                    var bdr = '1px solid #ddd';
+
+                    html += '<div style="display:flex;gap:0;margin-bottom:4px">';
+                    html += '<div style="flex:1;text-align:center;font-size:15px;font-weight:700;color:#0854a0;padding:8px 0">CURRENT</div>';
+                    html += '<div style="width:2px"></div>';
+                    html += '<div style="flex:1;text-align:center;font-size:15px;font-weight:700;color:#888;padding:8px 0">SNAPSHOT</div>';
+                    html += '</div>';
+
+                    function buildSideBySideGrid(title, curRows, prevRows) {
+                        if ((!curRows || curRows.length === 0) && (!prevRows || prevRows.length === 0)) return;
+                        var prevMap = {};
+                        (prevRows || []).forEach(function (r) { prevMap[r.role] = r; });
+                        var curMap = {};
+                        (curRows || []).forEach(function (r) { curMap[r.role] = r; });
+                        var allRoles = [];
+                        var seen = {};
+                        (curRows || []).concat(prevRows || []).forEach(function (r) {
+                            if (!seen[r.role]) { allRoles.push(r.role); seen[r.role] = true; }
+                        });
+
+                        html += '<div style="font-weight:600;font-size:12px;margin:12px 0 4px;color:#e76500">' + title + '</div>';
+                        html += '<div style="display:flex;gap:0;overflow-x:auto">';
+
+                        function cellStyle(v, pv, isTotal) {  // eslint-disable-line no-inner-declarations
+                            var changed = v !== pv;
+                            var bg = changed ? (v > pv ? 'background:#e6f4ea' : 'background:#fce8e6') : '';
+                            var fw = changed || isTotal ? 'font-weight:700' : '';
+                            return bg + ';' + fw;
+                        }
+                        function deltaTag(v, pv) {
+                            var d = v - pv;
+                            if (d === 0) return '';
+                            var color = d > 0 ? '#1a6e3a' : '#bb0000';
+                            var sign = d > 0 ? '+' : '';
+                            return '<div style="font-size:9px;color:' + color + ';font-weight:600">' + sign + d + '</div>';
+                        }
+
+                        // Current (left)
+                        html += '<div style="flex:1;min-width:420px;padding-right:8px">';
+                        html += '<table style="width:100%;border-collapse:collapse;font-size:11px">';
+                        html += '<tr style="background:#e0ecf8"><th style="padding:3px 6px;border:' + bdr + ';text-align:left">Role</th>';
+                        PL.forEach(function (l) { html += '<th style="padding:3px 4px;border:' + bdr + ';text-align:center">' + l + '</th>'; });
+                        html += '<th style="padding:3px 4px;border:' + bdr + ';text-align:right;font-weight:700">TOTAL</th></tr>';
+                        allRoles.forEach(function (role) {
+                            var r = curMap[role];
+                            var prev = prevMap[role];
+                            html += '<tr>';
+                            html += '<td style="padding:2px 6px;border:' + bdr + ';font-weight:500;font-size:10px;white-space:nowrap">' + role + '</td>';
+                            P.forEach(function (p) {
+                                var v = r ? (r[p] || 0) : 0;
+                                var pv = prev ? (prev[p] || 0) : 0;
+                                html += '<td style="padding:2px 4px;border:' + bdr + ';text-align:center;' + cellStyle(v, pv, false) + '">' + (v || '') + (v !== pv ? deltaTag(v, pv) : '') + '</td>';
+                            });
+                            var t = r ? (r.total || 0) : 0;
+                            var pt = prev ? (prev.total || 0) : 0;
+                            html += '<td style="padding:2px 4px;border:' + bdr + ';text-align:right;' + cellStyle(t, pt, true) + '">' + (t || '') + (t !== pt ? deltaTag(t, pt) : '') + '</td>';
+                            html += '</tr>';
+                        });
+                        html += '</table></div>';
+
+                        // Divider
+                        html += '<div style="width:2px;background:#333;flex-shrink:0"></div>';
+
+                        // Snapshot (right)
+                        html += '<div style="flex:1;min-width:420px;padding-left:8px">';
+                        html += '<table style="width:100%;border-collapse:collapse;font-size:11px">';
+                        html += '<tr style="background:#f2f2f2"><th style="padding:3px 6px;border:' + bdr + ';text-align:left">Role</th>';
+                        PL.forEach(function (l) { html += '<th style="padding:3px 4px;border:' + bdr + ';text-align:center">' + l + '</th>'; });
+                        html += '<th style="padding:3px 4px;border:' + bdr + ';text-align:right;font-weight:700">TOTAL</th></tr>';
+                        allRoles.forEach(function (role) {
+                            var r = prevMap[role];
+                            var cur = curMap[role];
+                            html += '<tr>';
+                            html += '<td style="padding:2px 6px;border:' + bdr + ';font-weight:500;font-size:10px;white-space:nowrap;color:#666">' + role + '</td>';
+                            P.forEach(function (p) {
+                                var v = r ? (r[p] || 0) : 0;
+                                var cv = cur ? (cur[p] || 0) : 0;
+                                var changed = v !== cv;
+                                var bg = changed ? 'background:#fff3cd' : '';
+                                var fw = changed ? 'font-weight:700' : '';
+                                html += '<td style="padding:2px 4px;border:' + bdr + ';text-align:center;color:#666;' + bg + ';' + fw + '">' + (v || '') + '</td>';
+                            });
+                            var t = r ? (r.total || 0) : 0;
+                            var ct = cur ? (cur.total || 0) : 0;
+                            var tChanged = t !== ct;
+                            html += '<td style="padding:2px 4px;border:' + bdr + ';text-align:right;font-weight:700;color:#666;' + (tChanged ? 'background:#fff3cd' : '') + '">' + (t || '') + '</td>';
+                            html += '</tr>';
+                        });
+                        html += '</table></div>';
+
+                        html += '</div>';
+                    }
+
+                    ['RICEF', 'BI', 'MIGRATION'].forEach(function (sheet) {
+                        var cg = (curCalc.orangeGrid || {})[sheet] || {};
+                        var pg = (prevCalc.orangeGrid || {})[sheet] || {};
+                        if ((cg.funcRows && cg.funcRows.length) || (pg.funcRows && pg.funcRows.length)) {
+                            buildSideBySideGrid(sheet + ' — Orange Grid FUNC', cg.funcRows, pg.funcRows);
+                        }
+                        if ((cg.techRows && cg.techRows.length) || (pg.techRows && pg.techRows.length)) {
+                            buildSideBySideGrid(sheet + ' — Orange Grid TECH', cg.techRows, pg.techRows);
+                        }
+                    });
+
+                    var cfe = curCalc.funcEffort || {};
+                    var pfe = prevCalc.funcEffort || {};
+                    buildSideBySideGrid('Functional Scope Effort', cfe.scopeEffort, pfe.scopeEffort);
+                    buildSideBySideGrid('Technical Scope Effort', cfe.techScopeEffort, pfe.techScopeEffort);
+                    buildSideBySideGrid('Total Functional Effort', cfe.totalEffort, pfe.totalEffort);
+
+                    // Summary page sections
+                    var csu = curCalc.summary || {};
+                    var psu = prevCalc.summary || {};
+                    buildSideBySideGrid('Summary — Project Phases', csu.phases, psu.phases);
+                    buildSideBySideGrid('Summary — Architect', csu.funcArchitect, psu.funcArchitect);
+                    buildSideBySideGrid('Summary — Functional Scope', csu.funcScope, psu.funcScope);
+                    buildSideBySideGrid('Summary — Technical DEV', csu.techDev, psu.techDev);
+                    buildSideBySideGrid('Summary — Technical BI', csu.techBi, psu.techBi);
+                    buildSideBySideGrid('Summary — Technical Migration', csu.techMig, psu.techMig);
+                }
+
+                html += '</div>';
             }
 
             html += '</div>';
@@ -1220,18 +1461,147 @@ sap.ui.define([
             container.innerHTML = html;
         },
 
-        _loadSheetControl: function (sheetCode) {
+        // --- Blue Grid (Customer) ---
+
+        _blueGridData: null,
+
+        _loadBlueGrid: function (sheetType) {
             var that = this;
             this.getOwnerComponent().api("GET",
-                "/projects/" + this._projectId + "/sheet-control/" + sheetCode
+                "/projects/" + this._projectId + "/blue-grid/" + sheetType
             ).then(function (data) {
-                that._buildSheetControlTable(data, sheetCode);
+                that._blueGridData = data;
+                if (that.byId("blueGridPanel").getExpanded()) {
+                    that._renderBlueGrid();
+                }
             });
         },
 
-        _buildSheetControlTable: function (data, sheetCode) {
+        onBlueGridExpand: function (oEvent) {
             var that = this;
-            var table = this.byId("sheetControlTable");
+            if (oEvent.getParameter("expand") && this._blueGridData) {
+                setTimeout(function () { that._renderBlueGrid(); }, 50);
+            }
+        },
+
+        onBlueGridAfterRendering: function () {
+            if (this._blueGridData && this.byId("blueGridPanel").getExpanded()) {
+                this._renderBlueGrid();
+            }
+        },
+
+        _renderBlueGrid: function () {
+            var container = document.getElementById("blueGridContainer");
+            if (!container || !this._blueGridData) return;
+            var data = this._blueGridData;
+            var phases = ["prep", "fts", "design", "build", "sit_uat", "dep", "hyp"];
+            var phaseLabels = ["PREP", "FTS", "DESIGN", "BUILD", "SIT/UAT", "DEP", "HYP"];
+            var ph = data.phases || {};
+            var dl = data.project ? data.project.delivery_level : 1;
+
+            var hdrBg = "#0854a0";
+            var hdrFg = "#fff";
+            var subHdrBg = "#e0ecf8";
+            var sectionBg = "#2b7cd0";
+            var borderClr = "#7baed4";
+            var highlightBg = "#d6eaf8";
+            var cellBorder = "1px solid " + borderClr;
+
+            var html = '<div style="overflow-x:auto;max-width:100%">';
+            html += '<table style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%">';
+
+            html += '<tr><th colspan="9" style="background:' + hdrBg + ';color:' + hdrFg + ';padding:6px 10px;text-align:left;font-size:13px">';
+            html += 'BLUE GRID (Customer) &nbsp;&nbsp;|&nbsp;&nbsp; Delivery Level: ' + dl;
+            html += ' &nbsp;&nbsp;|&nbsp;&nbsp; Phases: ';
+            phaseLabels.forEach(function (lbl, i) {
+                html += lbl + ' ' + (ph[phases[i]] || 0) + (i < 6 ? ' | ' : '');
+            });
+            html += ' weeks</th></tr>';
+
+            // FUNC section
+            html += '<tr><td colspan="9" style="background:' + sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + cellBorder + '">FUNC — Functional Effort (Customer)</td></tr>';
+            html += '<tr style="background:' + subHdrBg + '">';
+            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:left;min-width:180px">Role</th>';
+            phaseLabels.forEach(function (lbl) {
+                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:center;min-width:60px">' + lbl + '</th>';
+            });
+            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;min-width:70px;font-weight:bold">TOTAL</th></tr>';
+
+            (data.funcRows || []).forEach(function (r, idx) {
+                var bg = idx % 2 === 0 ? '#fff' : '#f0f6fc';
+                html += '<tr style="background:' + bg + '">';
+                html += '<td style="padding:3px 8px;border:' + cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
+                var rowTotal = 0;
+                phases.forEach(function (p) {
+                    var v = r[p] || 0;
+                    rowTotal += v;
+                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
+                });
+                html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
+                html += '</tr>';
+            });
+
+            if (!data.funcRows || data.funcRows.length === 0) {
+                html += '<tr><td colspan="9" style="padding:6px 8px;border:' + cellBorder + ';color:#888;text-align:center;font-style:italic">No CUSTOMER functional items on this sheet</td></tr>';
+            }
+
+            // TECH section
+            html += '<tr><td colspan="9" style="background:' + sectionBg + ';color:#fff;padding:4px 10px;font-weight:bold;border:' + cellBorder + '">TECH — Technical Effort (Customer)</td></tr>';
+            html += '<tr style="background:' + subHdrBg + '">';
+            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:left">Role</th>';
+            phaseLabels.forEach(function (lbl) {
+                html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:center">' + lbl + '</th>';
+            });
+            html += '<th style="padding:4px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">TOTAL</th></tr>';
+
+            (data.techRows || []).forEach(function (r, idx) {
+                var isHighlight = r._highlight;
+                var bg = isHighlight ? highlightBg : (idx % 2 === 0 ? '#fff' : '#f0f6fc');
+                var fw = isHighlight ? 'font-weight:bold' : '';
+                html += '<tr style="background:' + bg + ';' + fw + '">';
+                html += '<td style="padding:3px 8px;border:' + cellBorder + ';font-weight:500">' + (r.role || '') + '</td>';
+                var rowTotal = 0;
+                phases.forEach(function (p) {
+                    var v = r[p] || 0;
+                    rowTotal += v;
+                    html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:center">' + (v ? Math.round(v) : '') + '</td>';
+                });
+                html += '<td style="padding:3px 8px;border:' + cellBorder + ';text-align:right;font-weight:bold">' + (rowTotal ? Math.round(rowTotal) : '') + '</td>';
+                html += '</tr>';
+            });
+
+            if (!data.techRows || data.techRows.length === 0) {
+                html += '<tr><td colspan="9" style="padding:6px 8px;border:' + cellBorder + ';color:#888;text-align:center;font-style:italic">No CUSTOMER technical items on this sheet</td></tr>';
+            }
+
+            html += '</table></div>';
+            container.innerHTML = html;
+        },
+
+        // --- Sheet control section (RICEF/BI/MIGRATION) ---
+
+        _loadSheetControl: function (sheetCode, gridType) {
+            var that = this;
+            var gt = gridType || "ORANGE";
+            this.getOwnerComponent().api("GET",
+                "/projects/" + this._projectId + "/sheet-control/" + sheetCode + "?grid_type=" + gt
+            ).then(function (data) {
+                that._buildSheetControlTable(data, sheetCode, "sheetControlTable", "sheetCtrl", gt);
+            });
+        },
+
+        _loadBlueSheetControl: function (sheetCode) {
+            var that = this;
+            this.getOwnerComponent().api("GET",
+                "/projects/" + this._projectId + "/sheet-control/" + sheetCode + "?grid_type=BLUE"
+            ).then(function (data) {
+                that._buildSheetControlTable(data, sheetCode, "blueControlTable", "blueCtrl", "BLUE");
+            });
+        },
+
+        _buildSheetControlTable: function (data, sheetCode, tableId, modelName, gridType) {
+            var that = this;
+            var table = this.byId(tableId);
             table.removeAllItems();
 
             formatter.pctToDisplay(data.funcPct);
@@ -1241,21 +1611,22 @@ sap.ui.define([
             var Text = sap.m.Text;
             var InputCtrl = sap.m.Input;
             var phases = ["prep", "fts", "design", "build", "sit_uat", "dep", "hyp"];
+            var gridLabel = gridType === "BLUE" ? "Blue Grid" : "Orange Grid";
 
             // Row 1: FUNC % Explore vs Build
             if (data.funcPct) {
                 var funcRow = new ColumnListItem();
                 var funcLabel = new sap.m.HBox({ alignItems: "Center" });
                 funcLabel.addItem(new Text({ text: "FUNC  % Explore vs Build" }));
-                funcLabel.addItem(new sap.ui.core.Icon({ src: "sap-icon://hint", color: "#0854a0", tooltip: "How functional item hours split across DESIGN (Explore) and BUILD phases for this sheet.\nPREP-DEP should total ~100%. HYP is additive." }).addStyleClass("inlineHint"));
+                funcLabel.addItem(new sap.ui.core.Icon({ src: "sap-icon://hint", color: "#0854a0", tooltip: "How functional item hours split across DESIGN (Explore) and BUILD phases for this sheet (" + gridLabel + ").\nPREP-DEP should total ~100%. HYP is additive." }).addStyleClass("inlineHint"));
                 funcLabel.addStyleClass("sapUiSmallMarginBegin");
                 funcRow.addCell(funcLabel);
                 var isEditable = !that.getView().getModel("viewModel").getProperty("/readonly");
                 phases.forEach(function (p) {
                     var inp = new InputCtrl({
-                        value: "{sheetCtrl>/funcPct/" + p + "}",
+                        value: "{" + modelName + ">/funcPct/" + p + "}",
                         type: "Number", textAlign: "Center", editable: isEditable,
-                        change: function () { that._saveSheetFuncPct(sheetCode); }
+                        change: function () { that._saveSheetFuncPct(sheetCode, gridType); }
                     });
                     funcRow.addCell(inp);
                 });
@@ -1267,46 +1638,57 @@ sap.ui.define([
                 var roleRow = new ColumnListItem();
                 var roleLabel = new sap.m.HBox({ alignItems: "Center" });
                 roleLabel.addItem(new Text({ text: role.role_name }));
-                roleLabel.addItem(new sap.ui.core.Icon({ src: "sap-icon://hint", color: "#0854a0", tooltip: "Fixed role hours per phase (hours/week).\nFed into the Orange Grid TECH section and Summary." }).addStyleClass("inlineHint"));
+                roleLabel.addItem(new sap.ui.core.Icon({ src: "sap-icon://hint", color: "#0854a0", tooltip: "Fixed role hours per phase (hours/week).\nFed into the " + gridLabel + " TECH section and Summary." }).addStyleClass("inlineHint"));
                 roleLabel.addStyleClass("sapUiSmallMarginBegin");
                 roleRow.addCell(roleLabel);
                 var isEdit = !that.getView().getModel("viewModel").getProperty("/readonly");
                 phases.forEach(function (p) {
                     var idx = data.fixedRoles.indexOf(role);
                     var inp = new InputCtrl({
-                        value: "{sheetCtrl>/fixedRoles/" + idx + "/" + p + "}",
+                        value: "{" + modelName + ">/fixedRoles/" + idx + "/" + p + "}",
                         type: "Number", textAlign: "Center", editable: isEdit,
-                        change: function () { that._saveFixedRole(role.id, idx); }
+                        change: function () { that._saveFixedRole(role.id, idx, modelName); }
                     });
                     roleRow.addCell(inp);
                 });
                 table.addItem(roleRow);
             });
 
-            this.getView().setModel(new sap.ui.model.json.JSONModel(data), "sheetCtrl");
+            this.getView().setModel(new sap.ui.model.json.JSONModel(data), modelName);
         },
 
-        _saveSheetFuncPct: function (sheetCode) {
+        _saveSheetFuncPct: function (sheetCode, gridType) {
             var that = this;
+            var gt = gridType || "ORANGE";
+            var mn = gt === "BLUE" ? "blueCtrl" : "sheetCtrl";
             if (this._sheetFuncTimer) clearTimeout(this._sheetFuncTimer);
             this._sheetFuncTimer = setTimeout(function () {
-                var data = JSON.parse(JSON.stringify(that.getView().getModel("sheetCtrl").getProperty("/funcPct")));
+                var data = JSON.parse(JSON.stringify(that.getView().getModel(mn).getProperty("/funcPct")));
                 formatter.pctFromDisplay(data);
                 that.getOwnerComponent().api("PUT",
-                    "/projects/" + that._projectId + "/sheet-control/" + sheetCode + "/func-pct", data
-                ).then(function () { MessageToast.show("Saved"); });
+                    "/projects/" + that._projectId + "/sheet-control/" + sheetCode + "/func-pct?grid_type=" + gt, data
+                ).then(function () {
+                    MessageToast.show("Saved");
+                    if (gt === "BLUE") { that._loadBlueGrid(that._sheetType); }
+                    else { that._loadOrangeGrid(that._sheetType); }
+                });
             }, 600);
         },
 
-        _saveFixedRole: function (roleId, idx) {
+        _saveFixedRole: function (roleId, idx, modelName) {
             var that = this;
+            var mn = modelName || "sheetCtrl";
             if (this._fixedRoleTimer) clearTimeout(this._fixedRoleTimer);
             this._fixedRoleTimer = setTimeout(function () {
-                var data = JSON.parse(JSON.stringify(that.getView().getModel("sheetCtrl").getProperty("/fixedRoles/" + idx)));
+                var data = JSON.parse(JSON.stringify(that.getView().getModel(mn).getProperty("/fixedRoles/" + idx)));
                 formatter.fixedRolePctFromDisplay(data);
                 that.getOwnerComponent().api("PUT",
                     "/projects/" + that._projectId + "/fixed-role/" + roleId, data
-                ).then(function () { MessageToast.show("Saved"); });
+                ).then(function () {
+                    MessageToast.show("Saved");
+                    if (mn === "blueCtrl") { that._loadBlueGrid(that._sheetType); }
+                    else { that._loadOrangeGrid(that._sheetType); }
+                });
             }, 600);
         },
 

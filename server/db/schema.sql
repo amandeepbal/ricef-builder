@@ -344,6 +344,7 @@ CREATE TABLE project_fixed_roles (
     sit_uat     REAL NOT NULL DEFAULT 0,
     dep         REAL NOT NULL DEFAULT 0,
     hyp         REAL NOT NULL DEFAULT 0,
+    grid_type   TEXT NOT NULL DEFAULT 'ORANGE',
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
 
@@ -388,9 +389,10 @@ CREATE TABLE project_sheet_func_pct (
     sit_uat         REAL NOT NULL DEFAULT 0,
     dep             REAL NOT NULL DEFAULT 0,
     hyp             REAL NOT NULL DEFAULT 0,
+    grid_type       TEXT NOT NULL DEFAULT 'ORANGE',
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
-CREATE UNIQUE INDEX idx_psfp ON project_sheet_func_pct(project_id, sheet_type_code);
+CREATE UNIQUE INDEX idx_psfp ON project_sheet_func_pct(project_id, sheet_type_code, grid_type);
 
 -- Project Snapshots (point-in-time captures for comparison)
 CREATE TABLE project_snapshots (
