@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS items (
     ricef_type_id       INTEGER NOT NULL,
     backlog_number      TEXT,
     architecture_ref    TEXT,
-    tsa_group           INTEGER,
+    tsa_group           TEXT,
     tsa_process         TEXT,
     special_notes       TEXT,
     predecessor         TEXT,

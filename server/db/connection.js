@@ -57,6 +57,13 @@ async function initDb() {
     const seed = fs.readFileSync(path.join(__dirname, 'seed.sql'), 'utf8');
     await pool.query(seed);
 
+    const samplePath = path.join(__dirname, 'seed-sample-project.sql');
+    if (fs.existsSync(samplePath)) {
+      console.log('Seeding sample project...');
+      const sampleSeed = fs.readFileSync(samplePath, 'utf8');
+      await pool.query(sampleSeed);
+    }
+
     console.log('Database initialized.');
   } else {
     console.log('Database already exists, skipping init.');
