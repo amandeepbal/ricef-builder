@@ -80,17 +80,19 @@ sap.ui.define([
         },
 
         _onRouteMatched: function (oEvent) {
+            var that = this;
             var args = oEvent.getParameter("arguments");
             this._projectId = args.projectId;
             this._sheetType = args.sheetType || "RICEF";
-            this._loadProject();
-            this._loadSheetTabs();
-            this._switchTab(this._sheetType);
+            this._loadProject().then(function () {
+                that._loadSheetTabs();
+                that._switchTab(that._sheetType);
+            });
         },
 
         _loadProject: function () {
             var that = this;
-            this.getOwnerComponent().api("GET", "/projects/" + this._projectId).then(function (p) {
+            return this.getOwnerComponent().api("GET", "/projects/" + this._projectId).then(function (p) {
                 that._projectRole = p.user_role || null;
                 var isViewer = p.user_role === "viewer";
                 var isReadonly = !!p.is_readonly || isViewer;
@@ -121,6 +123,8 @@ sap.ui.define([
             var that = this;
             var tabs = this.byId("sheetTabs");
             if (tabs.getItems().length > 0) {
+                var membersTab = tabs.getItems().filter(function(t) { return t.getKey() === "MEMBERS"; })[0];
+                if (membersTab) membersTab.setVisible(this._projectRole === "supervisor");
                 tabs.setSelectedKey(this._sheetType);
                 return;
             }
