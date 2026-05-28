@@ -66,7 +66,27 @@ async function initDb() {
 
     console.log('Database initialized.');
   } else {
-    console.log('Database already exists, skipping init.');
+    console.log('Database already exists, checking migrations...');
+    const pmCheck = await pool.query(
+      "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = 'project_members'"
+    );
+    if (pmCheck.rows.length === 0) {
+      console.log('Creating project_members table...');
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS project_members (
+          id SERIAL PRIMARY KEY,
+          project_id INTEGER NOT NULL,
+          user_email TEXT NOT NULL,
+          role TEXT NOT NULL DEFAULT 'viewer',
+          added_by TEXT,
+          created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+          FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_pm_unique ON project_members(project_id, user_email);
+        CREATE INDEX IF NOT EXISTS idx_pm_email ON project_members(user_email);
+      `);
+      console.log('project_members table created.');
+    }
   }
 }
 

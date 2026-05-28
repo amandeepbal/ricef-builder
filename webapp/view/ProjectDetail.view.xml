@@ -150,6 +150,41 @@
                 <core:HTML id="compareHtml" content="&lt;div id='compareContainer'&gt;&lt;/div&gt;"/>
             </VBox>
 
+            <!-- MEMBERS (Supervisor only) -->
+            <VBox id="membersPanel" visible="{viewModel>/showMembers}" class="sapUiSmallMargin">
+                <Toolbar>
+                    <Title text="Project Members" level="H4"/>
+                    <ToolbarSpacer/>
+                    <Button text="Add Member" icon="sap-icon://add-employee" press="onAddMember" type="Emphasized"/>
+                </Toolbar>
+                <Table items="{viewModel>/members}" noDataText="No members assigned yet.">
+                    <columns>
+                        <Column><Text text="Email"/></Column>
+                        <Column width="10rem" hAlign="Center"><Text text="Role"/></Column>
+                        <Column width="10rem"><Text text="Added By"/></Column>
+                        <Column width="10rem"><Text text="Added On"/></Column>
+                        <Column width="5rem" hAlign="Center"><Text text=""/></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <Text text="{viewModel>user_email}"/>
+                            <Select selectedKey="{viewModel>role}" change="onChangeMemberRole">
+                                <core:Item key="viewer" text="Viewer"/>
+                                <core:Item key="member" text="Member"/>
+                                <core:Item key="supervisor" text="Supervisor"/>
+                            </Select>
+                            <Text text="{viewModel>added_by}"/>
+                            <Text text="{
+                                path: 'viewModel>created_at',
+                                type: 'sap.ui.model.type.String'
+                            }"/>
+                            <Button icon="sap-icon://delete" type="Transparent" press="onRemoveMember"
+                                tooltip="Remove member"/>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+
             <!-- FUNCTIONAL Scope Items -->
             <VBox id="functionalPanel" visible="{viewModel>/showFunctional}" class="sapUiSmallMargin">
                 <!-- Distribution / Contingency / Architect — mirrors Excel FUNCTIONAL sheet control section -->

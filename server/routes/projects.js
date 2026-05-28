@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { getPool } = require('../db/connection');
+const { checkProjectRole } = require('../middleware/project-access');
 const router = Router();
 
 function computeReadonly(project) {
@@ -15,13 +16,23 @@ function computeReadonly(project) {
 router.get('/', async (req, res, next) => {
   try {
     const pool = getPool();
+    const userEmail = req.user.email || req.user.id;
+    const isAdmin = req.user.isAdmin;
+
     const rows = (await pool.query(
       `SELECT p.*,
          (SELECT COUNT(*) FROM items WHERE project_id = p.id) AS item_count,
-         (SELECT name FROM config_versions WHERE id = p.config_version_id) AS config_version_name
-       FROM projects p WHERE p.is_active = 1 ORDER BY p.id DESC`
+         (SELECT name FROM config_versions WHERE id = p.config_version_id) AS config_version_name,
+         (SELECT role FROM project_members WHERE project_id = p.id AND user_email = $1 LIMIT 1) AS user_role
+       FROM projects p WHERE p.is_active = 1 ORDER BY p.id DESC`,
+      [userEmail]
     )).rows;
-    rows.forEach(computeReadonly);
+
+    rows.forEach(r => {
+      computeReadonly(r);
+      if (isAdmin) r.user_role = r.user_role || 'supervisor';
+    });
+
     res.json(rows);
   } catch (e) {
     next(e);
@@ -128,6 +139,14 @@ router.post('/', async (req, res, next) => {
         );
       }
 
+      const creatorEmail = (req.user.email || req.user.id || '').toLowerCase().trim();
+      if (creatorEmail) {
+        await client.query(
+          'INSERT INTO project_members (project_id, user_email, role, added_by) VALUES ($1, $2, $3, $4)',
+          [pid, creatorEmail, 'supervisor', creatorEmail]
+        );
+      }
+
       await client.query('COMMIT');
       res.status(201).json({ id: pid });
     } catch (e) {
@@ -147,8 +166,19 @@ router.get('/:id', async (req, res, next) => {
     const project = (await pool.query('SELECT * FROM projects WHERE id = $1', [req.params.id])).rows[0];
     if (!project) return res.status(404).json({ error: 'Project not found' });
 
+    const userEmail = req.user.email || req.user.id;
+    const membership = (await pool.query(
+      'SELECT role FROM project_members WHERE project_id = $1 AND user_email = $2',
+      [req.params.id, userEmail]
+    )).rows[0];
+
+    if (!membership && !req.user.isAdmin) {
+      return res.status(403).json({ error: 'You do not have access to this project' });
+    }
+
     const factors = (await pool.query('SELECT * FROM project_factors WHERE project_id = $1', [req.params.id])).rows[0];
     project.factors = factors || {};
+    project.user_role = req.user.isAdmin ? 'supervisor' : (membership ? membership.role : null);
     computeReadonly(project);
     res.json(project);
   } catch (e) {
@@ -156,7 +186,7 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', checkProjectRole('member'), async (req, res, next) => {
   try {
     const pool = getPool();
     const { project_number, description, currency, delivery_level, start_date, end_date, config_version_id } = req.body;
@@ -172,7 +202,7 @@ router.put('/:id', async (req, res, next) => {
   }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', checkProjectRole('supervisor'), async (req, res, next) => {
   try {
     const pool = getPool();
     await pool.query('UPDATE projects SET is_active=0, updated_at=NOW() WHERE id=$1',

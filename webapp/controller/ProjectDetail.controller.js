@@ -91,19 +91,29 @@ sap.ui.define([
         _loadProject: function () {
             var that = this;
             this.getOwnerComponent().api("GET", "/projects/" + this._projectId).then(function (p) {
+                that._projectRole = p.user_role || null;
+                var isViewer = p.user_role === "viewer";
+                var isReadonly = !!p.is_readonly || isViewer;
+
                 var vm = that.getView().getModel("viewModel");
-                vm.setProperty("/title", p.description + (p.is_readonly ? " (Read-Only)" : ""));
+                vm.setProperty("/title", p.description + (isViewer ? " (View Only)" : p.is_readonly ? " (Read-Only)" : ""));
                 vm.setProperty("/project", p);
                 vm.setProperty("/projectNumber", p.project_number || "Project");
-                vm.setProperty("/editable", !p.is_readonly);
-                vm.setProperty("/readonly", !!p.is_readonly);
+                vm.setProperty("/editable", !isReadonly);
+                vm.setProperty("/readonly", isReadonly);
+                vm.setProperty("/projectRole", p.user_role || "");
+                vm.setProperty("/isSupervisor", p.user_role === "supervisor");
+                vm.setProperty("/canEdit", p.user_role === "member" || p.user_role === "supervisor");
 
                 var page = that.byId("projectPage");
-                if (p.is_readonly) {
+                if (isReadonly) {
                     page.addStyleClass("readOnlyProject");
                 } else {
                     page.removeStyleClass("readOnlyProject");
                 }
+            }).catch(function (err) {
+                sap.m.MessageBox.error(err.message || "Access denied");
+                that.getOwnerComponent().getRouter().navTo("home");
             });
         },
 
@@ -135,6 +145,12 @@ sap.ui.define([
                     text: "Snapshots",
                     icon: "sap-icon://camera"
                 }));
+                tabs.addItem(new IconTabFilter({
+                    key: "MEMBERS",
+                    text: "Members",
+                    icon: "sap-icon://group",
+                    visible: that._projectRole === "supervisor"
+                }));
                 tabs.setSelectedKey(that._sheetType);
             });
         },
@@ -148,7 +164,11 @@ sap.ui.define([
             vm.setProperty("/showFunctional", false);
             vm.setProperty("/showAnalytics", false);
             vm.setProperty("/showSnapshots", false);
-            if (sheetType === "SNAPSHOTS") {
+            vm.setProperty("/showMembers", false);
+            if (sheetType === "MEMBERS") {
+                vm.setProperty("/showMembers", true);
+                this._loadMembers();
+            } else if (sheetType === "SNAPSHOTS") {
                 vm.setProperty("/showSnapshots", true);
                 this._loadSnapshots();
             } else if (sheetType === "ANALYTICS") {
@@ -1869,6 +1889,93 @@ sap.ui.define([
 
         onNavBack: function () {
             this.getOwnerComponent().getRouter().navTo("home");
+        },
+
+        // --- Members Management ---
+        _loadMembers: function () {
+            var that = this;
+            this.getOwnerComponent().api("GET", "/projects/" + this._projectId + "/members").then(function (data) {
+                that.getView().getModel("viewModel").setProperty("/members", data);
+            });
+        },
+
+        onAddMember: function () {
+            var that = this;
+            var email = new sap.m.Input({ placeholder: "user@example.com", type: "Email" });
+            var role = new sap.m.Select({
+                items: [
+                    new sap.ui.core.Item({ key: "viewer", text: "Viewer" }),
+                    new sap.ui.core.Item({ key: "member", text: "Member" }),
+                    new sap.ui.core.Item({ key: "supervisor", text: "Supervisor" })
+                ],
+                selectedKey: "member"
+            });
+
+            var dialog = new sap.m.Dialog({
+                title: "Add Member",
+                type: "Message",
+                content: [
+                    new sap.ui.layout.form.SimpleForm({ editable: true, content: [
+                        new sap.m.Label({ text: "Email" }), email,
+                        new sap.m.Label({ text: "Role" }), role
+                    ]})
+                ],
+                beginButton: new sap.m.Button({
+                    text: "Add",
+                    type: "Emphasized",
+                    press: function () {
+                        var e = email.getValue().trim();
+                        if (!e) { sap.m.MessageToast.show("Email is required"); return; }
+                        that.getOwnerComponent().api("POST",
+                            "/projects/" + that._projectId + "/members",
+                            { user_email: e, role: role.getSelectedKey() }
+                        ).then(function () {
+                            sap.m.MessageToast.show("Member added");
+                            that._loadMembers();
+                            dialog.close();
+                        }).catch(function (err) {
+                            sap.m.MessageBox.error(err.message);
+                        });
+                    }
+                }),
+                endButton: new sap.m.Button({ text: "Cancel", press: function () { dialog.close(); } }),
+                afterClose: function () { dialog.destroy(); }
+            });
+            dialog.open();
+        },
+
+        onChangeMemberRole: function (oEvent) {
+            var that = this;
+            var ctx = oEvent.getSource().getBindingContext("viewModel");
+            var member = ctx.getObject();
+            var newRole = oEvent.getParameter("selectedItem").getKey();
+
+            this.getOwnerComponent().api("PUT",
+                "/projects/" + this._projectId + "/members/" + member.id,
+                { role: newRole }
+            ).then(function () {
+                sap.m.MessageToast.show("Role updated");
+                that._loadMembers();
+            });
+        },
+
+        onRemoveMember: function (oEvent) {
+            var that = this;
+            var ctx = oEvent.getSource().getBindingContext("viewModel");
+            var member = ctx.getObject();
+
+            sap.m.MessageBox.confirm("Remove " + member.user_email + " from this project?", {
+                onClose: function (action) {
+                    if (action === sap.m.MessageBox.Action.OK) {
+                        that.getOwnerComponent().api("DELETE",
+                            "/projects/" + that._projectId + "/members/" + member.id
+                        ).then(function () {
+                            sap.m.MessageToast.show("Member removed");
+                            that._loadMembers();
+                        });
+                    }
+                }
+            });
         }
     });
 });

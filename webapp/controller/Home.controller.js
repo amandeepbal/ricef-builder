@@ -33,6 +33,10 @@ sap.ui.define([
 
         onProjectPress: function (oEvent) {
             var obj = oEvent.getSource().getBindingContext("projects").getObject();
+            if (!obj.user_role) {
+                sap.m.MessageToast.show("You do not have access to this project. Contact a Supervisor.");
+                return;
+            }
             this.getOwnerComponent().getRouter().navTo("project", { projectId: obj.id });
         },
 

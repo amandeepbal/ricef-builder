@@ -412,6 +412,19 @@ CREATE TABLE IF NOT EXISTS project_staffing_profiles (
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
 
+-- Project Members (role-based access per project)
+CREATE TABLE IF NOT EXISTS project_members (
+    id              SERIAL PRIMARY KEY,
+    project_id      INTEGER NOT NULL,
+    user_email      TEXT    NOT NULL,
+    role            TEXT    NOT NULL DEFAULT 'viewer',
+    added_by        TEXT,
+    created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pm_unique ON project_members(project_id, user_email);
+CREATE INDEX IF NOT EXISTS idx_pm_email ON project_members(user_email);
+
 -- Project Snapshots (point-in-time captures for comparison)
 CREATE TABLE IF NOT EXISTS project_snapshots (
     id              SERIAL PRIMARY KEY,

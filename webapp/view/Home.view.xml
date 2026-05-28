@@ -1,4 +1,4 @@
-<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m"
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
     controllerName="com.syntax.ricefbuilder.controller.Home">
     <Page title="Projects" id="homePage">
         <headerContent>
@@ -17,11 +17,16 @@
                     <Column width="8rem"><Text text="End"/></Column>
                     <Column width="5rem" hAlign="Center"><Text text="Items"/></Column>
                     <Column width="9rem"><Text text="Config Version"/></Column>
+                    <Column width="6rem" hAlign="Center"><Text text="My Role"/></Column>
                     <Column width="8rem" hAlign="Center"><Text text="Actions"/></Column>
                 </columns>
                 <items>
                     <ColumnListItem type="Navigation" press="onProjectPress">
-                        <Text text="{projects>project_number}"/>
+                        <HBox alignItems="Center">
+                            <core:Icon src="sap-icon://locked" visible="{= !${projects>user_role}}" class="sapUiTinyMarginEnd"
+                                tooltip="No access — contact a Supervisor"/>
+                            <Text text="{projects>project_number}"/>
+                        </HBox>
                         <HBox>
                             <Text text="{projects>description}"/>
                             <ObjectStatus text="Read-Only" state="Warning" visible="{projects>is_readonly}" class="sapUiTinyMarginBegin"/>
@@ -31,10 +36,18 @@
                         <Text text="{projects>end_date}"/>
                         <ObjectNumber number="{projects>item_count}" emphasized="false"/>
                         <Text text="{projects>config_version_name}"/>
+                        <ObjectStatus
+                            text="{= ${projects>user_role} ? ${projects>user_role}.charAt(0).toUpperCase() + ${projects>user_role}.slice(1) : 'No Access'}"
+                            state="{= ${projects>user_role} === 'supervisor' ? 'Success' : ${projects>user_role} === 'member' ? 'Information' : ${projects>user_role} === 'viewer' ? 'None' : 'Error'}"
+                            icon="{= ${projects>user_role} === 'supervisor' ? 'sap-icon://employee-approvals' : ${projects>user_role} === 'member' ? 'sap-icon://person-placeholder' : ${projects>user_role} === 'viewer' ? 'sap-icon://show' : 'sap-icon://locked'}"
+                            inverted="true"/>
                         <HBox>
-                            <Button icon="sap-icon://edit" tooltip="Edit" type="Transparent" press="onEditProject"/>
-                            <Button icon="sap-icon://copy" tooltip="Copy as Template" type="Transparent" press="onCopyProject"/>
-                            <Button icon="sap-icon://delete" tooltip="Delete" type="Transparent" press="onDeleteProject"/>
+                            <Button icon="sap-icon://edit" tooltip="Edit" type="Transparent" press="onEditProject"
+                                visible="{= ${projects>user_role} === 'member' || ${projects>user_role} === 'supervisor'}"/>
+                            <Button icon="sap-icon://copy" tooltip="Copy" type="Transparent" press="onCopyProject"
+                                visible="{= ${projects>user_role} === 'supervisor'}"/>
+                            <Button icon="sap-icon://delete" tooltip="Delete" type="Transparent" press="onDeleteProject"
+                                visible="{= ${projects>user_role} === 'supervisor'}"/>
                         </HBox>
                     </ColumnListItem>
                 </items>

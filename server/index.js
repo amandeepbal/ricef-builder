@@ -88,6 +88,7 @@ app.get('/api/user-info', (req, res) => {
 });
 
 app.use('/api/projects', require('./routes/projects'));
+app.use('/api/projects', require('./routes/project-members'));
 app.use('/api/projects', require('./routes/items'));
 app.use('/api/projects', require('./routes/summary'));
 app.use('/api/projects', require('./routes/snapshots'));
