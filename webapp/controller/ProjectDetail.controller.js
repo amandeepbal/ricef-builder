@@ -114,54 +114,9 @@ sap.ui.define([
                     page.removeStyleClass("readOnlyProject");
                 }
 
-                that._loadConfigVersions(p.config_version_id);
             }).catch(function (err) {
                 sap.m.MessageBox.error(err.message || "Access denied");
                 that.getOwnerComponent().getRouter().navTo("home");
-            });
-        },
-
-        _loadConfigVersions: function (currentVersionId) {
-            var that = this;
-            this.getOwnerComponent().api("GET", "/admin/config-versions").then(function (versions) {
-                var vm = that.getView().getModel("viewModel");
-                vm.setProperty("/configVersions", versions);
-                var current = versions.find(function (v) { return v.id === currentVersionId; });
-                if (current) {
-                    vm.setProperty("/configVersionStatus", current.name);
-                    vm.setProperty("/configVersionState", current.id === 1 ? "Warning" : "Success");
-                }
-            });
-        },
-
-        onConfigVersionChange: function (oEvent) {
-            var that = this;
-            var newVersionId = parseInt(oEvent.getParameter("selectedItem").getKey(), 10);
-            if (newVersionId === 1) {
-                sap.m.MessageBox.warning("Template version should not be assigned directly. Clone it first.");
-                return;
-            }
-
-            var vm = this.getView().getModel("viewModel");
-            var project = vm.getProperty("/project");
-
-            this.getOwnerComponent().api("PUT", "/projects/" + this._projectId, {
-                project_number: project.project_number,
-                description: project.description,
-                currency: project.currency,
-                delivery_level: project.delivery_level,
-                start_date: project.start_date,
-                end_date: project.end_date,
-                config_version_id: newVersionId
-            }).then(function () {
-                vm.setProperty("/project/config_version_id", newVersionId);
-                var versions = vm.getProperty("/configVersions") || [];
-                var v = versions.find(function (ver) { return ver.id === newVersionId; });
-                vm.setProperty("/configVersionStatus", v ? v.name : "");
-                vm.setProperty("/configVersionState", "Success");
-                sap.m.MessageToast.show("Config version updated. Recalculate items to apply new rates.");
-            }).catch(function (err) {
-                sap.m.MessageBox.error(err.message);
             });
         },
 

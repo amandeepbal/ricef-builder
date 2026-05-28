@@ -8,17 +8,6 @@
             <Button text="Take Snapshot" icon="sap-icon://camera" press="onTakeSnapshot" type="Transparent"/>
         </headerContent>
         <content>
-            <Toolbar visible="{viewModel>/canEdit}" class="sapUiTinyMarginBottom">
-                <Label text="Config Version:" class="sapUiSmallMarginBegin"/>
-                <Select id="projectConfigVersion"
-                    items="{ path: 'viewModel>/configVersions' }"
-                    selectedKey="{viewModel>/project/config_version_id}"
-                    change="onConfigVersionChange">
-                    <core:Item key="{viewModel>id}" text="{viewModel>name}"/>
-                </Select>
-                <ObjectStatus text="{viewModel>/configVersionStatus}" state="{viewModel>/configVersionState}"
-                    class="sapUiSmallMarginBegin"/>
-            </Toolbar>
 <MessageStrip text="This project is outside its active date range and is read-only." type="Warning"
                 showIcon="true" visible="{viewModel>/readonly}" class="sapUiSmallMargin"/>
             <MessageStrip id="actionConfirmStrip" visible="false" type="Success" showCloseButton="true" showIcon="true"
