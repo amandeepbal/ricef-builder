@@ -1,27 +1,26 @@
-<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout"
     controllerName="com.syntax.ricefbuilder.controller.Launchpad">
-    <Page showHeader="false" class="launchpadPage">
+    <Page showHeader="false" class="launchpadPage" enableScrolling="true">
         <content>
-            <VBox alignItems="Center" class="sapUiLargeMarginTop">
-                <Title text="RICEFW Estimator" level="H1" class="sapUiMediumMarginBottom"/>
-                <Text text="SAP Project Estimation Tool" class="sapUiSmallMarginBottom sapThemeHighlight-asColor"/>
-                <FlexBox wrap="Wrap" justifyContent="Center" class="sapUiLargeMarginTop launchpadTiles">
-                    <GenericTile header="Projects" subheader="Estimation workbench"
-                        press="onTilePress" class="launchpadTile">
+            <VBox class="sapUiResponsiveMargin">
+                <Title text="Home" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom"/>
+                <HBox wrap="Wrap" class="launchpadTiles">
+                    <GenericTile header="Projects" subheader="Create and manage estimation projects"
+                        frameType="OneByOne" press="onTilePress" class="launchpadTile sapUiTinyMarginEnd sapUiTinyMarginBottom">
                         <customData><core:CustomData key="target" value="home"/></customData>
                         <TileContent>
                             <ImageContent src="sap-icon://project-definition-triangle-2"/>
                         </TileContent>
                     </GenericTile>
-                    <GenericTile id="adminTile" header="Administration" subheader="Configuration and rates"
-                        press="onTilePress" class="launchpadTile"
+                    <GenericTile id="adminTile" header="Administration" subheader="Configuration, rates and dropdowns"
+                        frameType="OneByOne" press="onTilePress" class="launchpadTile sapUiTinyMarginEnd sapUiTinyMarginBottom"
                         visible="{userInfo>/isAdmin}">
                         <customData><core:CustomData key="target" value="admin"/></customData>
                         <TileContent>
                             <ImageContent src="sap-icon://settings"/>
                         </TileContent>
                     </GenericTile>
-                </FlexBox>
+                </HBox>
             </VBox>
         </content>
     </Page>

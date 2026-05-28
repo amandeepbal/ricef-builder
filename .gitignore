@@ -9,3 +9,8 @@ data/ui5-cache/
 .claude/
 default-env.json
 approuter/node_modules/
+approuter/webapp/
+approuter/package-lock.json
+server/package-lock.json
+mta_archives/
+.ricef-builder_mta_build_tmp/

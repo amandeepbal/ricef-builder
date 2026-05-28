@@ -11,7 +11,7 @@ sap.ui.define([
 
         init: function () {
             UIComponent.prototype.init.apply(this, arguments);
-            this.setModel(new JSONModel({ busy: false, showNavButton: false, showToolPage: false }), "appView");
+            this.setModel(new JSONModel({ busy: false, showNavButton: false, showMenuButton: false, showSideNav: false }), "appView");
             this.getRouter().initialize();
         },
 

@@ -40,7 +40,7 @@
         { "name": "adminSheetConfig","pattern": "admin/sheet-config",                   "target": "adminSheetConfig" }
       ],
       "targets": {
-        "launchpad":        { "viewName": "Launchpad", "controlId": "launchpadNavContainer", "controlAggregation": "pages" },
+        "launchpad":        { "viewName": "Launchpad" },
         "home":             { "viewName": "Home" },
         "projectDetail":    { "viewName": "ProjectDetail" },
         "itemDetail":       { "viewName": "ItemDetail" },
