@@ -77,26 +77,68 @@ td[data-hm-click]:hover {
 
 /* Launchpad */
 .launchpadPage {
-    background: var(--sapBackgroundColor, #f7f7f7);
+    background: var(--sapShell_Background, #edeff0);
+    min-height: 100%;
 }
 .launchpadTiles {
-    gap: 1rem;
+    gap: 0.5rem;
 }
 .launchpadTile {
-    margin: 0.5rem;
-}
-.launchpadTile .sapMGTHdrTxt {
-    font-size: 1.125rem;
+    margin: 0;
 }
 
-/* Shell layout */
-#shellPage {
-    display: flex;
-    flex-direction: column;
+/* ShellBar logo sizing */
+.sapFShellBar .sapFShellBarOImgHolder img {
+    max-height: 2rem;
+    object-fit: contain;
 }
-#shellPage .sapMPageEnableScrolling {
-    overflow: hidden;
-}
+
+/* Ensure full height layout */
 .sapFShellBar {
-    z-index: 10;
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   Dark theme adaptations for HTML-rendered grids
+   (Orange, Blue, Purple grids use inline HTML with hardcoded colors)
+   ============================================================ */
+html[data-sap-ui-theme*="dark"] table td,
+html[data-sap-ui-theme*="hcb"] table td,
+html[data-sap-ui-theme*="hcw"] table td {
+    color: var(--sapTextColor, #fff) !important;
+}
+
+html[data-sap-ui-theme*="dark"] table td[style*="background:#fff"],
+html[data-sap-ui-theme*="dark"] table td[style*="background: #fff"],
+html[data-sap-ui-theme*="dark"] table td[style*="background:white"],
+html[data-sap-ui-theme*="hcb"] table td[style*="background:#fff"],
+html[data-sap-ui-theme*="hcb"] table td[style*="background: #fff"],
+html[data-sap-ui-theme*="hcb"] table td[style*="background:white"] {
+    background: var(--sapList_Background, #1a1a1a) !important;
+}
+
+html[data-sap-ui-theme*="dark"] table td[style*="background:#f9f9f9"],
+html[data-sap-ui-theme*="dark"] table td[style*="background:#f5f5f5"],
+html[data-sap-ui-theme*="dark"] table td[style*="background:#fafafa"],
+html[data-sap-ui-theme*="hcb"] table td[style*="background:#f9f9f9"],
+html[data-sap-ui-theme*="hcb"] table td[style*="background:#f5f5f5"],
+html[data-sap-ui-theme*="hcb"] table td[style*="background:#fafafa"] {
+    background: var(--sapList_AlternatingBackground, #242424) !important;
+}
+
+html[data-sap-ui-theme*="dark"] table,
+html[data-sap-ui-theme*="hcb"] table {
+    border-color: var(--sapList_BorderColor, #444) !important;
+}
+
+html[data-sap-ui-theme*="dark"] table td,
+html[data-sap-ui-theme*="hcb"] table td {
+    border-color: var(--sapList_BorderColor, #444) !important;
+}
+
+/* Read-only project styling — theme-aware */
+html[data-sap-ui-theme*="dark"] .readOnlyProject .sapMInputBaseInner,
+html[data-sap-ui-theme*="dark"] .readOnlyProject .sapMSltLabel,
+html[data-sap-ui-theme*="dark"] .readOnlyProject .sapMSlt {
+    background-color: #2a2a2a !important;
 }
