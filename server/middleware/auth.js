@@ -1,3 +1,5 @@
+const passport = require('passport');
+
 function setupAuth(app) {
   if (process.env.VCAP_SERVICES) {
     const xssec = require('@sap/xssec');
@@ -6,36 +8,24 @@ function setupAuth(app) {
     xsenv.loadEnv();
     const uaaCredentials = xsenv.getServices({ uaa: { tag: 'xsuaa' } }).uaa;
 
+    passport.use('JWT', new xssec.XssecPassportStrategy(uaaCredentials));
+    app.use(passport.initialize());
+
     app.use((req, res, next) => {
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        req.user = { id: 'anonymous', name: '', isAdmin: false, isUser: false };
-        return next();
-      }
-
-      const token = authHeader.substring(7);
-      try {
-        xssec.createSecurityContext(token, uaaCredentials, (err, securityContext) => {
-          if (err) {
-            console.error('JWT validation failed:', err.message);
-            req.user = { id: 'anonymous', name: '', isAdmin: false, isUser: false };
-            return next();
-          }
-
-          req.authInfo = securityContext;
+      passport.authenticate('JWT', { session: false }, (err, user, info) => {
+        if (err || !user) {
+          req.user = { id: 'anonymous', name: '', isAdmin: false, isUser: false };
+        } else {
+          const ctx = req[xssec.SECURITY_CONTEXT] || req.authInfo;
           req.user = {
-            id: securityContext.getEmail() || securityContext.getLogonName() || 'unknown',
-            name: securityContext.getGivenName() || '',
-            isAdmin: securityContext.checkScope(uaaCredentials.xsappname + '.Admin'),
-            isUser: securityContext.checkScope(uaaCredentials.xsappname + '.User')
+            id: (ctx && ctx.getEmail ? ctx.getEmail() : '') || (ctx && ctx.getLogonName ? ctx.getLogonName() : '') || 'unknown',
+            name: (ctx && ctx.getGivenName ? ctx.getGivenName() : '') || '',
+            isAdmin: ctx && ctx.checkScope ? ctx.checkScope(uaaCredentials.xsappname + '.Admin') : false,
+            isUser: ctx && ctx.checkScope ? ctx.checkScope(uaaCredentials.xsappname + '.User') : false
           };
-          next();
-        });
-      } catch (err) {
-        console.error('Security context error:', err.message);
-        req.user = { id: 'anonymous', name: '', isAdmin: false, isUser: false };
+        }
         next();
-      }
+      })(req, res, next);
     });
 
     console.log('XSUAA authentication enabled.');
