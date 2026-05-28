@@ -1,26 +1,23 @@
 const P = ['prep', 'fts', 'design', 'build', 'sit_uat', 'dep', 'hyp'];
 
-function buildSummary(db, projectId) {
-  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
-  const phases = db.prepare('SELECT * FROM project_phases WHERE project_id = ?').get(projectId);
-  const funcPhasePct = db.prepare('SELECT * FROM project_func_phase_pct WHERE project_id = ?').get(projectId)
+async function buildSummary(pool, projectId) {
+  const project = (await pool.query('SELECT * FROM projects WHERE id = $1', [projectId])).rows[0];
+  const phases = (await pool.query('SELECT * FROM project_phases WHERE project_id = $1', [projectId])).rows[0];
+  const funcPhasePct = (await pool.query('SELECT * FROM project_func_phase_pct WHERE project_id = $1', [projectId])).rows[0]
     || { prep: 0.15, fts: 0.15, design: 0.10, build: 0.30, sit_uat: 0.24, dep: 0.06, hyp: 0.10, architect_pct: 0.10 };
-  const pgoData = db.prepare('SELECT * FROM project_pgo WHERE project_id = ?').get(projectId)
+  const pgoData = (await pool.query('SELECT * FROM project_pgo WHERE project_id = $1', [projectId])).rows[0]
     || { prep: 0.20, fts: 0.20, design: 0.20, build: 0.20, sit_uat: 0.20, dep: 0.20, hyp: 0.15, lead_split: 0.23, consultant_split: 0.80 };
-  const cont = db.prepare('SELECT * FROM project_contingency WHERE project_id = ?').get(projectId)
+  const cont = (await pool.query('SELECT * FROM project_contingency WHERE project_id = $1', [projectId])).rows[0]
     || { prep: 0.10, fts: 0.10, design: 0.10, build: 0.15, sit_uat: 0.15, dep: 0.15, hyp: 0 };
-  const scopeConfig = db.prepare('SELECT * FROM project_scope_config WHERE project_id = ?').get(projectId)
+  const scopeConfig = (await pool.query('SELECT * FROM project_scope_config WHERE project_id = $1', [projectId])).rows[0]
     || { low_hours: 24, medium_hours: 48, high_hours: 72, kdd_hours: 40, ip_hours: -40, complexity_multiplier: 1 };
-  const scopeItems = db.prepare('SELECT * FROM project_scope_items WHERE project_id = ?').all(projectId);
-  const fixedRoles = db.prepare('SELECT * FROM project_fixed_roles WHERE project_id = ?').all(projectId);
-  const sheetFuncPcts = db.prepare('SELECT * FROM project_sheet_func_pct WHERE project_id = ?').all(projectId);
+  const scopeItems = (await pool.query('SELECT * FROM project_scope_items WHERE project_id = $1', [projectId])).rows;
+  const fixedRoles = (await pool.query('SELECT * FROM project_fixed_roles WHERE project_id = $1', [projectId])).rows;
+  const sheetFuncPcts = (await pool.query('SELECT * FROM project_sheet_func_pct WHERE project_id = $1', [projectId])).rows;
 
   const sheetPctMap = {};
   sheetFuncPcts.forEach(s => sheetPctMap[s.sheet_type_code] = s);
 
-  // ============================================================
-  // 1. FUNCTIONAL sheet scope hours per role (total, not yet phase-distributed)
-  // ============================================================
   const funcScopeByRole = {};
   for (const si of scopeItems) {
     const hrs = ((si.low_count * scopeConfig.low_hours) + (si.medium_count * scopeConfig.medium_hours) +
@@ -30,30 +27,12 @@ function buildSummary(db, projectId) {
     if (hrs > 0) funcScopeByRole[si.func_role] = (funcScopeByRole[si.func_role] || 0) + hrs;
   }
 
-  // ============================================================
-  // 2. Per-sheet FUNC distribution from items
-  //    Each sheet (RICEF/BI/MIGRATION) has its own FUNC section that
-  //    distributes item functional hours across phases using that sheet's
-  //    explore/build percentages.
-  //
-  //    Excel formula per sheet:
-  //      base = SUM(build_func + sub_items_func) per role
-  //      For RICEF/BI: DESIGN = base × explore_pct, BUILD = base × build_pct
-  //      For MIGRATION: BUILD = base × build_pct, SIT_UAT = base × sit_pct
-  //      SIT = ROUND(SUM(sit_func), 0)  [RICEF/BI only]
-  //      DEP = ROUND((sum of preceding) × dep_pct, 0)
-  //      HYP = ROUND((sum of preceding + DEP) × hyp_pct, 0)
-  // ============================================================
-  const items = db.prepare(`
+  const items = (await pool.query(`
     SELECT i.*, rt.sheet_type_code FROM items i
     JOIN ricef_types rt ON i.ricef_type_id = rt.id
-    WHERE i.project_id = ? AND i.status != 'Cancelled' AND i.classification != 'TOTAL'
-  `).all(projectId);
+    WHERE i.project_id = $1 AND i.status != 'Cancelled' AND i.classification != 'TOTAL'
+  `, [projectId])).rows;
 
-  // Accumulate per-role per-sheet FUNC data
-  // RICEF/BI: base = build_func + sub_items_func, sit = sit_func
-  // MIGRATION: base = sub_items_func from Extraction+Cleansing+Development only,
-  //   mockQaSit = sub_items_func from Mock Load QA, cutover = sub_items_func from Cutover
   const sheetRoleData = {};
   const techDev = {}, techBi = {}, techMig = {};
 
@@ -79,8 +58,6 @@ function buildSummary(db, projectId) {
       sheetRoleData[st][fr].sit += (item.sit_func || 0);
     }
 
-    // Tech hours for tech sections
-    // MIGRATION: only fixed roles contribute (sub-items don't flow to SUMMARY tech section)
     if (st !== 'MIGRATION') {
       const techHrs = (item.build_tech || 0) + (item.sub_items_tech || 0);
       const sitTech = item.sit_tech || 0;
@@ -91,8 +68,6 @@ function buildSummary(db, projectId) {
     }
   }
 
-  // Compute per-sheet FUNC phase distribution per role
-  // Returns { role: { prep, fts, design, build, sit_uat, dep, hyp, total } }
   function computeSheetFunc(sheetCode) {
     const pct = sheetPctMap[sheetCode] || {};
     const roleData = sheetRoleData[sheetCode] || {};
@@ -102,11 +77,6 @@ function buildSummary(db, projectId) {
       const row = {};
 
       if (sheetCode === 'MIGRATION') {
-        // MIGRATION special formula:
-        // BUILD = base × build_pct (0.75)
-        // SIT_UAT = base × sit_pct (0.25) + SUM(Mock Load QA sub_items_func)
-        // DEP = SUM(Cutover sub_items_func)
-        // HYP = ROUND((BUILD + SIT + DEP) × hyp_pct)
         row.prep = 0;
         row.fts = 0;
         row.design = 0;
@@ -116,7 +86,6 @@ function buildSummary(db, projectId) {
         const running = row.build + row.sit_uat + row.dep;
         row.hyp = (pct.hyp || 0) > 0 ? Math.round(running * (pct.hyp || 0)) : 0;
       } else {
-        // RICEF/BI: DESIGN and BUILD from base × pct, SIT_UAT = ROUND(sit_func)
         let running = 0;
         P.forEach(p => {
           if (p === 'dep' || p === 'hyp') return;
@@ -127,11 +96,9 @@ function buildSummary(db, projectId) {
           }
           running += row[p];
         });
-        // DEP = ROUND(running × dep_pct)
         const depPct = pct.dep || 0;
         row.dep = depPct > 0 ? Math.round(running * depPct) : 0;
         running += row.dep;
-        // HYP = ROUND((running + DEP) × hyp_pct)
         const hypPct = pct.hyp || 0;
         row.hyp = hypPct > 0 ? Math.round(running * hypPct) : 0;
       }
@@ -146,9 +113,6 @@ function buildSummary(db, projectId) {
   const biFunc = computeSheetFunc('BI');
   const migFunc = computeSheetFunc('MIGRATION');
 
-  // ============================================================
-  // 3. SUMMARY FUNC = (FUNCTIONAL_scope + RICEF_func + BI_func + MIG_func) × (1 + contingency)
-  // ============================================================
   const allFuncRoles = new Set([
     ...Object.keys(funcScopeByRole),
     ...Object.keys(ricefFunc),
@@ -162,12 +126,10 @@ function buildSummary(db, projectId) {
   const orderedRoles = roleOrder.filter(r => allFuncRoles.has(r));
   allFuncRoles.forEach(r => { if (!orderedRoles.includes(r)) orderedRoles.push(r); });
 
-  // Build intermediate tables for FUNCTIONAL sheet display
   const funcScopeEffort = [];
   const techScopeEffort = [];
 
   for (const role of orderedRoles) {
-    // FUNCTIONAL SCOPE effort (from scope items only)
     const scopeHrs = funcScopeByRole[role] || 0;
     if (scopeHrs > 0) {
       const sRow = { role };
@@ -178,7 +140,6 @@ function buildSummary(db, projectId) {
       funcScopeEffort.push(sRow);
     }
 
-    // TECHNICAL SCOPE effort (from RICEF/BI/MIG items functional hours)
     const ricef = ricefFunc[role] || {};
     const bi = biFunc[role] || {};
     const mig = migFunc[role] || {};
@@ -193,7 +154,6 @@ function buildSummary(db, projectId) {
     }
   }
 
-  // TOTAL FUNCTIONAL EFFORT = scope + tech scope + contingency
   const funcByRole = [];
   let totalFuncHours = 0;
 
@@ -222,7 +182,6 @@ function buildSummary(db, projectId) {
     if (rowTotal !== 0) funcByRole.push(row);
   }
 
-  // Chief/Solution ARCHITECT = per-phase architect % × total functional per phase × (1 + contingency)
   const archPctMap = {
     prep: funcPhasePct.arch_prep != null ? funcPhasePct.arch_prep : (funcPhasePct.architect_pct || 0.10),
     fts: funcPhasePct.arch_fts != null ? funcPhasePct.arch_fts : (funcPhasePct.architect_pct || 0.10),
@@ -243,9 +202,6 @@ function buildSummary(db, projectId) {
   archRow.total = r(archTotal);
   totalFuncHours += archTotal;
 
-  // ============================================================
-  // 4. TECHNICAL sections
-  // ============================================================
   const devSection = buildTechSection(fixedRoles, 'DEV', techDev, phases);
   const biSection = buildTechSection(fixedRoles, 'BI', techBi, phases);
   const migSection = buildTechSection(fixedRoles, 'MIGRATION', techMig, phases);
@@ -254,9 +210,6 @@ function buildSummary(db, projectId) {
   [devSection, biSection, migSection].forEach(section =>
     section.forEach(row => { totalTechHours += row.total || 0; }));
 
-  // ============================================================
-  // 5. PGO = pgo% × (func + tech) per phase
-  // ============================================================
   const pgoRow = { role: 'PGO' };
   let pgoTotal = 0;
   P.forEach(p => {
@@ -287,9 +240,6 @@ function buildSummary(db, projectId) {
     return rows;
   }
 
-  // ============================================================
-  // 6. Phase summary (Orange Grid)
-  // ============================================================
   const weeksRow = { role: '# of Weeks' };
   P.forEach(p => weeksRow[p] = (phases || {})[p] || 0);
   weeksRow.total = '';
@@ -324,9 +274,9 @@ function buildSummary(db, projectId) {
     techDev: devSection,
     techBi: biSection,
     techMig: migSection,
-    devBlended: getBlendedInfo(db, '(D)', project),
-    biBlended: getBlendedInfo(db, '(B)', project),
-    migBlended: getBlendedInfo(db, '(M)', project),
+    devBlended: await getBlendedInfo(pool, '(D)', project),
+    biBlended: await getBlendedInfo(pool, '(B)', project),
+    migBlended: await getBlendedInfo(pool, '(M)', project),
     leadSplit: pgoData.lead_split,
     consultantSplit: pgoData.consultant_split
   };
@@ -336,7 +286,6 @@ function buildTechSection(fixedRoles, team, devRoles, phases) {
   const rows = [];
   const numWeeks = phases || {};
 
-  // Compute developer rows first (needed for fixed role BUILD/SIT/DEP on some sheets)
   const devEntries = Object.entries(devRoles)
     .filter(([, v]) => v.build > 0 || v.sit > 0)
     .sort((a, b) => (b[1].build + b[1].sit) - (a[1].build + a[1].sit));
@@ -359,7 +308,6 @@ function buildTechSection(fixedRoles, team, devRoles, phases) {
     devDepTotal += dep;
   }
 
-  // Fixed roles
   const isMigTeam = team === 'MIGRATION';
   const fixed = fixedRoles.filter(r => r.team === team);
   for (const fr of fixed) {
@@ -368,7 +316,6 @@ function buildTechSection(fixedRoles, team, devRoles, phases) {
     ['prep', 'fts', 'design', 'build', 'sit_uat'].forEach(p => {
       const val = fr[p] || 0;
       if (val > 0 && val < 1 && isMigTeam) {
-        // MIGRATION: BUILD/SIT percentages × developer subtotal (which is 0)
         row[p] = 0;
       } else {
         const hrs = val * (numWeeks[p] || 1);
@@ -377,7 +324,6 @@ function buildTechSection(fixedRoles, team, devRoles, phases) {
       subtotal += row[p];
     });
 
-    // DEP: if < 1, percentage of subtotal; for MIGRATION, 0 (developer-dependent)
     let dep;
     if (fr.dep > 0 && fr.dep < 1) {
       dep = isMigTeam ? 0 : Math.round(subtotal * fr.dep);
@@ -386,7 +332,6 @@ function buildTechSection(fixedRoles, team, devRoles, phases) {
     }
     row.dep = r(dep);
 
-    // HYP: ROUND(sum of all preceding × hyp_pct)
     const hypBase = subtotal + dep;
     const hyp = (fr.hyp > 0 && fr.hyp < 1) ? Math.round(hypBase * fr.hyp) : (fr.hyp || 0) * (numWeeks.hyp || 1);
     row.hyp = r(hyp);
@@ -409,15 +354,15 @@ function sumPhase(section, phase) {
   return section.reduce((sum, row) => sum + (row[phase] || 0), 0);
 }
 
-function getBlendedInfo(db, teamPrefix, project) {
+async function getBlendedInfo(pool, teamPrefix, project) {
   const vid = project.config_version_id || 1;
-  const config = db.prepare('SELECT * FROM blended_rate_configs WHERE version_id = ? AND team_prefix = ?').get(vid, teamPrefix);
+  const config = (await pool.query('SELECT * FROM blended_rate_configs WHERE version_id = $1 AND team_prefix = $2', [vid, teamPrefix])).rows[0];
   if (!config) return null;
-  const level = db.prepare('SELECT * FROM blended_delivery_levels WHERE config_id = ? AND level_number = ?')
-    .get(config.id, project.delivery_level || 1);
+  const level = (await pool.query('SELECT * FROM blended_delivery_levels WHERE config_id = $1 AND level_number = $2',
+    [config.id, project.delivery_level || 1])).rows[0];
   if (!level) return null;
-  const rates = db.prepare('SELECT * FROM blended_rates WHERE level_id = ? AND currency = ?')
-    .get(level.id, project.currency || 'USD');
+  const rates = (await pool.query('SELECT * FROM blended_rates WHERE level_id = $1 AND currency = $2',
+    [level.id, project.currency || 'USD'])).rows[0];
   return {
     team: config.team_label, level: level.level_label, currency: project.currency || 'USD',
     billable_rate: rates ? rates.billable_rate : 0,

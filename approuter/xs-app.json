@@ -1,0 +1,30 @@
+{
+  "welcomeFile": "/index.html",
+  "authenticationMethod": "route",
+  "routes": [
+    {
+      "source": "^/api/(.*)$",
+      "target": "/api/$1",
+      "destination": "srv-api",
+      "authenticationType": "xsuaa",
+      "csrfProtection": false
+    },
+    {
+      "source": "^/resources/(.*)$",
+      "target": "/resources/$1",
+      "destination": "ui5",
+      "authenticationType": "none"
+    },
+    {
+      "source": "^(.*)$",
+      "target": "$1",
+      "localDir": "../webapp",
+      "authenticationType": "xsuaa"
+    }
+  ],
+  "destinations": {
+    "ui5": {
+      "url": "https://sdk.openui5.org"
+    }
+  }
+}

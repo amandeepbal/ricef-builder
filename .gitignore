@@ -4,5 +4,8 @@ data/*.db-shm
 data/*.db-wal
 data/ui5-cache/
 *.xlsm
+*.mtar
 .DS_Store
 .claude/
+default-env.json
+approuter/node_modules/

@@ -1,5 +1,5 @@
 -- ============================================================
--- RICEFW Estimator - Seed Data (from Excel workbook)
+-- RICEFW Estimator - Seed Data (PostgreSQL)
 -- ============================================================
 
 -- Config Version (Template — clone this for new projects)
@@ -43,211 +43,212 @@ INSERT INTO estimation_factors (factor_key, factor_name, calc_factor) VALUES
 -- Estimation Grid (v7 values + v1 extras for missing classifications)
 -- ============================================================
 
-INSERT INTO estimation_grid VALUES (NULL,'Report Abap','ALV','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Report Abap','ALV','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Report Abap','ALV','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Report Abap','ALV','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Report Abap','ALV','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'Report Abap','Interactive','1-Very Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'Report Abap','Interactive','2-Low',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Report Abap','Interactive','3-Medium',60,3.6,3.6,16.8,6.0,6.0,48.0,6.0,6.0,6.0,4.8,9.6,9.6,6.0,54.0,78.0,132.0);
-INSERT INTO estimation_grid VALUES (NULL,'Report Abap','Interactive','4-High',120,7.2,7.2,33.6,12.0,12.0,96.0,12.0,12.0,12.0,9.6,19.2,19.2,12.0,108.0,156.0,264.0);
-INSERT INTO estimation_grid VALUES (NULL,'Report Abap','Interactive','5-Very High',180,10.8,10.8,50.4,18.0,18.0,144.0,18.0,18.0,18.0,14.4,28.8,28.8,18.0,162.0,234.0,396.0);
-INSERT INTO estimation_grid VALUES (NULL,'RESTFul ABAP','Backend','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'RESTFul ABAP','Backend','2-Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'RESTFul ABAP','Backend','3-Medium',36,2.2,2.2,10.1,3.6,3.6,28.8,3.6,3.6,3.6,2.9,5.8,5.8,3.6,32.6,46.8,79.4);
-INSERT INTO estimation_grid VALUES (NULL,'RESTFul ABAP','Backend','4-High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'RESTFul ABAP','Backend','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'Program','Abap','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Program','Abap','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Program','Abap','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Program','Abap','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6);
-INSERT INTO estimation_grid VALUES (NULL,'Program','Abap','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6);
-INSERT INTO estimation_grid VALUES (NULL,'Interface Abap','Inbound','1-Very Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Interface Abap','Inbound','2-Low',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6);
-INSERT INTO estimation_grid VALUES (NULL,'Interface Abap','Inbound','3-Medium',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'Interface Abap','Inbound','4-High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'Interface Abap','Inbound','5-Very High',240,14.4,14.4,67.2,24.0,24.0,192.0,24.0,24.0,24.0,19.2,38.4,38.4,24.0,216.0,312.0,528.0);
-INSERT INTO estimation_grid VALUES (NULL,'Interface Abap','Outbound','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Interface Abap','Outbound','2-Low',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Interface Abap','Outbound','3-Medium',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6);
-INSERT INTO estimation_grid VALUES (NULL,'Interface Abap','Outbound','4-High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'Interface Abap','Outbound','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6);
-INSERT INTO estimation_grid VALUES (NULL,'Process Integration','Extract-Load','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Process Integration','Extract-Load','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Process Integration','Extract-Load','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Process Integration','Extract-Load','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Process Integration','Extract-Load','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Process Integration','Mapping','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Process Integration','Mapping','2-Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'Process Integration','Mapping','3-Medium',40,2.4,2.4,11.2,4.0,4.0,32.0,4.0,4.0,4.0,3.2,6.4,6.4,4.0,36.0,52.0,88.0);
-INSERT INTO estimation_grid VALUES (NULL,'Process Integration','Mapping','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6);
-INSERT INTO estimation_grid VALUES (NULL,'Process Integration','Mapping','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'PI Migration','Extract-Load','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'PI Migration','Extract-Load','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'PI Migration','Extract-Load','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'PI Migration','Extract-Load','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'PI Migration','Extract-Load','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'PI Migration','Mapping','1-Very Low',1,0.1,0.1,0.3,0.1,0.1,0.8,0.1,0.1,0.1,0.1,0.2,0.2,0.1,1.1,1.3,2.4);
-INSERT INTO estimation_grid VALUES (NULL,'PI Migration','Mapping','2-Low',4,0.2,0.2,1.1,0.4,0.4,3.2,0.4,0.4,0.4,0.3,0.6,0.6,0.4,3.4,5.2,8.6);
-INSERT INTO estimation_grid VALUES (NULL,'PI Migration','Mapping','3-Medium',40,2.4,2.4,11.2,4.0,4.0,32.0,4.0,4.0,4.0,3.2,6.4,6.4,4.0,36.0,52.0,88.0);
-INSERT INTO estimation_grid VALUES (NULL,'PI Migration','Mapping','4-High',56,3.4,3.4,15.7,5.6,5.6,44.8,5.6,5.6,5.6,4.5,9.0,9.0,5.6,50.6,72.8,123.4);
-INSERT INTO estimation_grid VALUES (NULL,'PI Migration','Mapping','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'CPI','Extract-Load','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'CPI','Extract-Load','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'CPI','Extract-Load','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'CPI','Extract-Load','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'CPI','Extract-Load','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'CPI','Mapping','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'CPI','Mapping','2-Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'CPI','Mapping','3-Medium',40,2.4,2.4,11.2,4.0,4.0,32.0,4.0,4.0,4.0,3.2,6.4,6.4,4.0,36.0,52.0,88.0);
-INSERT INTO estimation_grid VALUES (NULL,'CPI','Mapping','4-High',56,3.4,3.4,15.7,5.6,5.6,44.8,5.6,5.6,5.6,4.5,9.0,9.0,5.6,50.6,72.8,123.4);
-INSERT INTO estimation_grid VALUES (NULL,'CPI','Mapping','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'Conversion','Load','1-Very Low',14,0.8,0.8,3.9,1.4,1.4,11.2,1.4,1.4,1.4,1.1,2.2,2.2,1.4,12.4,18.2,30.6);
-INSERT INTO estimation_grid VALUES (NULL,'Conversion','Load','2-Low',26,1.6,1.6,7.3,2.6,2.6,20.8,2.6,2.6,2.6,2.1,4.2,4.2,2.6,23.6,33.8,57.4);
-INSERT INTO estimation_grid VALUES (NULL,'Conversion','Load','3-Medium',39,2.3,2.3,10.9,3.9,3.9,31.2,3.9,3.9,3.9,3.1,6.2,6.2,3.9,34.9,50.7,85.6);
-INSERT INTO estimation_grid VALUES (NULL,'Conversion','Load','4-High',78,4.7,4.7,21.8,7.8,7.8,62.4,7.8,7.8,7.8,6.2,12.5,12.5,7.8,70.2,101.4,171.6);
-INSERT INTO estimation_grid VALUES (NULL,'Conversion','Load','5-Very High',130,7.8,7.8,36.4,13.0,13.0,104.0,13.0,13.0,13.0,10.4,20.8,20.8,13.0,117.0,169.0,286.0);
-INSERT INTO estimation_grid VALUES (NULL,'Conversion','Support Functional','1-Very Low',20,1.2,1.2,5.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.2,0.0,11.2,0.0,11.2);
-INSERT INTO estimation_grid VALUES (NULL,'Conversion','Support Functional','2-Low',40,2.4,2.4,11.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6.4,0.0,22.4,0.0,22.4);
-INSERT INTO estimation_grid VALUES (NULL,'Conversion','Support Functional','3-Medium',80,4.8,4.8,22.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,12.8,0.0,44.8,0.0,44.8);
-INSERT INTO estimation_grid VALUES (NULL,'Conversion','Support Functional','4-High',160,9.6,9.6,44.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,25.6,0.0,89.6,0.0,89.6);
-INSERT INTO estimation_grid VALUES (NULL,'Conversion','Support Functional','5-Very High',320,19.2,19.2,89.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,51.2,0.0,179.2,0.0,179.2);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','Modification','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','Modification','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','Modification','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','Modification','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','Modification','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','InApp','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','InApp','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','InApp','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','InApp','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','InApp','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','Extract-Load','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','Extract-Load','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','Extract-Load','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','Extract-Load','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','Extract-Load','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','CDS View','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','CDS View','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','CDS View','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','CDS View','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Enhancement','CDS View','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Form','Standard','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Form','Standard','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Form','Standard','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Form','Standard','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Form','Standard','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori','FE - Fiori Element','1-Very Low',12,0.7,0.7,3.4,1.2,1.2,9.6,1.2,1.2,1.2,1.0,1.9,1.9,1.2,10.8,15.6,26.4);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori','FE - Fiori Element','2-Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori','FE - Fiori Element','3-Medium',30,1.8,1.8,8.4,3.0,3.0,24.0,3.0,3.0,3.0,2.4,4.8,4.8,3.0,27.0,39.0,66.0);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori','FE - Fiori Element','4-High',60,3.6,3.6,16.8,6.0,6.0,48.0,6.0,6.0,6.0,4.8,9.6,9.6,6.0,54.0,78.0,132.0);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori','FE - Fiori Element','5-Very High',120,7.2,7.2,33.6,12.0,12.0,96.0,12.0,12.0,12.0,9.6,19.2,19.2,12.0,108.0,156.0,264.0);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori','FE - Freestyle','1-Very Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori','FE - Freestyle','2-Low',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori','FE - Freestyle','3-Medium',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori','FE - Freestyle','4-High',192,11.5,11.5,53.8,19.2,19.2,153.6,19.2,19.2,19.2,15.4,30.7,30.7,19.2,172.8,249.6,422.4);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori','FE - Freestyle','5-Very High',320,19.2,19.2,89.6,32.0,32.0,256.0,32.0,32.0,32.0,25.6,51.2,51.2,32.0,288.0,416.0,704.0);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori Extension','Frontend','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori Extension','Frontend','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori Extension','Frontend','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori Extension','Frontend','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Fiori Extension','Frontend','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'Workflow','Flexible','1-Very Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'Workflow','Flexible','2-Low',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Workflow','Flexible','3-Medium',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'Workflow','Flexible','4-High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'Workflow','Flexible','5-Very High',240,14.4,14.4,67.2,24.0,24.0,192.0,24.0,24.0,24.0,19.2,38.4,38.4,24.0,216.0,312.0,528.0);
-INSERT INTO estimation_grid VALUES (NULL,'Workflow','Standard','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Workflow','Standard','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Workflow','Standard','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Workflow','Standard','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Workflow','Standard','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'BI FE','Story','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'BI FE','Story','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'BI FE','Story','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'BI FE','Story','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'BI FE','Story','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'BI FE','Analysis','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'BI FE','Analysis','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'BI FE','Analysis','3-Medium',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'BI FE','Analysis','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'BI FE','Analysis','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'BI Model','Standard','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'BI Model','Standard','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'BI Model','Standard','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'BI Model','Standard','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6);
-INSERT INTO estimation_grid VALUES (NULL,'BI Model','Standard','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6);
-INSERT INTO estimation_grid VALUES (NULL,'BI Model','Planning','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'BI Model','Planning','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'BI Model','Planning','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'BI Model','Planning','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'BI Model','Planning','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'BI BE','CDS View','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'BI BE','CDS View','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'BI BE','CDS View','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'BI BE','CDS View','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6);
-INSERT INTO estimation_grid VALUES (NULL,'BI BE','CDS View','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Extraction','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Extraction','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Extraction','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Extraction','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Extraction','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Cleansing','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Cleansing','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Cleansing','3-Medium',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Cleansing','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Cleansing','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Development','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Development','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Development','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Development','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Development','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Mock Load QA','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Mock Load QA','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Mock Load QA','3-Medium',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Mock Load QA','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Mock Load QA','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Cutover','1-Very Low',4,0.2,0.2,1.1,0.4,0.4,3.2,0.4,0.4,0.4,0.3,0.6,0.6,0.4,3.6,5.2,8.8);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Cutover','2-Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Cutover','3-Medium',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Cutover','4-High',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Migration','Cutover','5-Very High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','Frontend','1-Very Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','Frontend','2-Low',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','Frontend','3-Medium',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','Frontend','4-High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','Frontend','5-Very High',240,14.4,14.4,67.2,24.0,24.0,192.0,24.0,24.0,24.0,19.2,38.4,38.4,24.0,216.0,312.0,528.0);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','Service','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','Service','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','Service','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','Service','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','Service','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','DB','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','DB','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','DB','3-Medium',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','DB','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'CAP','DB','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'SAP Build','App','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'SAP Build','App','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'SAP Build','App','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'SAP Build','App','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'SAP Build','App','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'Build','BuildApp FE','1-Very Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6);
-INSERT INTO estimation_grid VALUES (NULL,'Build','BuildApp FE','2-Low',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Build','BuildApp FE','3-Medium',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0);
-INSERT INTO estimation_grid VALUES (NULL,'Build','BuildApp FE','4-High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'Build','BuildApp FE','5-Very High',240,14.4,14.4,67.2,24.0,24.0,192.0,24.0,24.0,24.0,19.2,38.4,38.4,24.0,216.0,312.0,528.0);
-INSERT INTO estimation_grid VALUES (NULL,'Build','Process Automation','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Build','Process Automation','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Build','Process Automation','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6);
-INSERT INTO estimation_grid VALUES (NULL,'Build','Process Automation','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4);
-INSERT INTO estimation_grid VALUES (NULL,'Build','Process Automation','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0);
-INSERT INTO estimation_grid VALUES (NULL,'Build','RPA','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6);
-INSERT INTO estimation_grid VALUES (NULL,'Build','RPA','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4);
-INSERT INTO estimation_grid VALUES (NULL,'Build','RPA','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4);
-INSERT INTO estimation_grid VALUES (NULL,'Build','RPA','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6);
-INSERT INTO estimation_grid VALUES (NULL,'Build','RPA','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6);
+INSERT INTO estimation_grid (version_id,frice,classification,complexity,baseline,fs_bus_req,fs_f_analysis,fs_f_spec,dev_t_analysis,dev_t_spec,dev_coding,dev_tt_cases,dev_ut,dev_qa,fut_f_tcases,fut_test_data,fut_fut,brk_fix,total_func,total_tech,grand_total) VALUES
+(1,'Report Abap','ALV','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Report Abap','ALV','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Report Abap','ALV','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Report Abap','ALV','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Report Abap','ALV','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'Report Abap','Interactive','1-Very Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'Report Abap','Interactive','2-Low',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Report Abap','Interactive','3-Medium',60,3.6,3.6,16.8,6.0,6.0,48.0,6.0,6.0,6.0,4.8,9.6,9.6,6.0,54.0,78.0,132.0),
+(1,'Report Abap','Interactive','4-High',120,7.2,7.2,33.6,12.0,12.0,96.0,12.0,12.0,12.0,9.6,19.2,19.2,12.0,108.0,156.0,264.0),
+(1,'Report Abap','Interactive','5-Very High',180,10.8,10.8,50.4,18.0,18.0,144.0,18.0,18.0,18.0,14.4,28.8,28.8,18.0,162.0,234.0,396.0),
+(1,'RESTFul ABAP','Backend','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'RESTFul ABAP','Backend','2-Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'RESTFul ABAP','Backend','3-Medium',36,2.2,2.2,10.1,3.6,3.6,28.8,3.6,3.6,3.6,2.9,5.8,5.8,3.6,32.6,46.8,79.4),
+(1,'RESTFul ABAP','Backend','4-High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'RESTFul ABAP','Backend','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'Program','Abap','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Program','Abap','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Program','Abap','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Program','Abap','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6),
+(1,'Program','Abap','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6),
+(1,'Interface Abap','Inbound','1-Very Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Interface Abap','Inbound','2-Low',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6),
+(1,'Interface Abap','Inbound','3-Medium',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'Interface Abap','Inbound','4-High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'Interface Abap','Inbound','5-Very High',240,14.4,14.4,67.2,24.0,24.0,192.0,24.0,24.0,24.0,19.2,38.4,38.4,24.0,216.0,312.0,528.0),
+(1,'Interface Abap','Outbound','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Interface Abap','Outbound','2-Low',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Interface Abap','Outbound','3-Medium',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6),
+(1,'Interface Abap','Outbound','4-High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'Interface Abap','Outbound','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6),
+(1,'Process Integration','Extract-Load','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Process Integration','Extract-Load','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Process Integration','Extract-Load','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Process Integration','Extract-Load','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Process Integration','Extract-Load','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Process Integration','Mapping','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Process Integration','Mapping','2-Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'Process Integration','Mapping','3-Medium',40,2.4,2.4,11.2,4.0,4.0,32.0,4.0,4.0,4.0,3.2,6.4,6.4,4.0,36.0,52.0,88.0),
+(1,'Process Integration','Mapping','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6),
+(1,'Process Integration','Mapping','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'PI Migration','Extract-Load','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'PI Migration','Extract-Load','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'PI Migration','Extract-Load','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'PI Migration','Extract-Load','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'PI Migration','Extract-Load','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'PI Migration','Mapping','1-Very Low',1,0.1,0.1,0.3,0.1,0.1,0.8,0.1,0.1,0.1,0.1,0.2,0.2,0.1,1.1,1.3,2.4),
+(1,'PI Migration','Mapping','2-Low',4,0.2,0.2,1.1,0.4,0.4,3.2,0.4,0.4,0.4,0.3,0.6,0.6,0.4,3.4,5.2,8.6),
+(1,'PI Migration','Mapping','3-Medium',40,2.4,2.4,11.2,4.0,4.0,32.0,4.0,4.0,4.0,3.2,6.4,6.4,4.0,36.0,52.0,88.0),
+(1,'PI Migration','Mapping','4-High',56,3.4,3.4,15.7,5.6,5.6,44.8,5.6,5.6,5.6,4.5,9.0,9.0,5.6,50.6,72.8,123.4),
+(1,'PI Migration','Mapping','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'CPI','Extract-Load','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'CPI','Extract-Load','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'CPI','Extract-Load','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'CPI','Extract-Load','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'CPI','Extract-Load','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'CPI','Mapping','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'CPI','Mapping','2-Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'CPI','Mapping','3-Medium',40,2.4,2.4,11.2,4.0,4.0,32.0,4.0,4.0,4.0,3.2,6.4,6.4,4.0,36.0,52.0,88.0),
+(1,'CPI','Mapping','4-High',56,3.4,3.4,15.7,5.6,5.6,44.8,5.6,5.6,5.6,4.5,9.0,9.0,5.6,50.6,72.8,123.4),
+(1,'CPI','Mapping','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'Conversion','Load','1-Very Low',14,0.8,0.8,3.9,1.4,1.4,11.2,1.4,1.4,1.4,1.1,2.2,2.2,1.4,12.4,18.2,30.6),
+(1,'Conversion','Load','2-Low',26,1.6,1.6,7.3,2.6,2.6,20.8,2.6,2.6,2.6,2.1,4.2,4.2,2.6,23.6,33.8,57.4),
+(1,'Conversion','Load','3-Medium',39,2.3,2.3,10.9,3.9,3.9,31.2,3.9,3.9,3.9,3.1,6.2,6.2,3.9,34.9,50.7,85.6),
+(1,'Conversion','Load','4-High',78,4.7,4.7,21.8,7.8,7.8,62.4,7.8,7.8,7.8,6.2,12.5,12.5,7.8,70.2,101.4,171.6),
+(1,'Conversion','Load','5-Very High',130,7.8,7.8,36.4,13.0,13.0,104.0,13.0,13.0,13.0,10.4,20.8,20.8,13.0,117.0,169.0,286.0),
+(1,'Conversion','Support Functional','1-Very Low',20,1.2,1.2,5.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.2,0.0,11.2,0.0,11.2),
+(1,'Conversion','Support Functional','2-Low',40,2.4,2.4,11.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6.4,0.0,22.4,0.0,22.4),
+(1,'Conversion','Support Functional','3-Medium',80,4.8,4.8,22.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,12.8,0.0,44.8,0.0,44.8),
+(1,'Conversion','Support Functional','4-High',160,9.6,9.6,44.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,25.6,0.0,89.6,0.0,89.6),
+(1,'Conversion','Support Functional','5-Very High',320,19.2,19.2,89.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,51.2,0.0,179.2,0.0,179.2),
+(1,'Enhancement','Modification','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Enhancement','Modification','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Enhancement','Modification','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Enhancement','Modification','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Enhancement','Modification','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Enhancement','InApp','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Enhancement','InApp','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Enhancement','InApp','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Enhancement','InApp','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Enhancement','InApp','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Enhancement','Extract-Load','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Enhancement','Extract-Load','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Enhancement','Extract-Load','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Enhancement','Extract-Load','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Enhancement','Extract-Load','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Enhancement','CDS View','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Enhancement','CDS View','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Enhancement','CDS View','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Enhancement','CDS View','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Enhancement','CDS View','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Form','Standard','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Form','Standard','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Form','Standard','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Form','Standard','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Form','Standard','5-Very High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Fiori','FE - Fiori Element','1-Very Low',12,0.7,0.7,3.4,1.2,1.2,9.6,1.2,1.2,1.2,1.0,1.9,1.9,1.2,10.8,15.6,26.4),
+(1,'Fiori','FE - Fiori Element','2-Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'Fiori','FE - Fiori Element','3-Medium',30,1.8,1.8,8.4,3.0,3.0,24.0,3.0,3.0,3.0,2.4,4.8,4.8,3.0,27.0,39.0,66.0),
+(1,'Fiori','FE - Fiori Element','4-High',60,3.6,3.6,16.8,6.0,6.0,48.0,6.0,6.0,6.0,4.8,9.6,9.6,6.0,54.0,78.0,132.0),
+(1,'Fiori','FE - Fiori Element','5-Very High',120,7.2,7.2,33.6,12.0,12.0,96.0,12.0,12.0,12.0,9.6,19.2,19.2,12.0,108.0,156.0,264.0),
+(1,'Fiori','FE - Freestyle','1-Very Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Fiori','FE - Freestyle','2-Low',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6),
+(1,'Fiori','FE - Freestyle','3-Medium',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Fiori','FE - Freestyle','4-High',192,11.5,11.5,53.8,19.2,19.2,153.6,19.2,19.2,19.2,15.4,30.7,30.7,19.2,172.8,249.6,422.4),
+(1,'Fiori','FE - Freestyle','5-Very High',320,19.2,19.2,89.6,32.0,32.0,256.0,32.0,32.0,32.0,25.6,51.2,51.2,32.0,288.0,416.0,704.0),
+(1,'Fiori Extension','Frontend','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Fiori Extension','Frontend','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Fiori Extension','Frontend','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Fiori Extension','Frontend','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Fiori Extension','Frontend','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'Workflow','Flexible','1-Very Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'Workflow','Flexible','2-Low',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Workflow','Flexible','3-Medium',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'Workflow','Flexible','4-High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'Workflow','Flexible','5-Very High',240,14.4,14.4,67.2,24.0,24.0,192.0,24.0,24.0,24.0,19.2,38.4,38.4,24.0,216.0,312.0,528.0),
+(1,'Workflow','Standard','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Workflow','Standard','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Workflow','Standard','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Workflow','Standard','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Workflow','Standard','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'BI FE','Story','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'BI FE','Story','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'BI FE','Story','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'BI FE','Story','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'BI FE','Story','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'BI FE','Analysis','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'BI FE','Analysis','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'BI FE','Analysis','3-Medium',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'BI FE','Analysis','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'BI FE','Analysis','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'BI Model','Standard','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'BI Model','Standard','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'BI Model','Standard','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'BI Model','Standard','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6),
+(1,'BI Model','Standard','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6),
+(1,'BI Model','Planning','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'BI Model','Planning','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'BI Model','Planning','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'BI Model','Planning','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'BI Model','Planning','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'BI BE','CDS View','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'BI BE','CDS View','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'BI BE','CDS View','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'BI BE','CDS View','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6),
+(1,'BI BE','CDS View','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6),
+(1,'Migration','Extraction','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Migration','Extraction','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Migration','Extraction','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Migration','Extraction','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6),
+(1,'Migration','Extraction','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6),
+(1,'Migration','Cleansing','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Migration','Cleansing','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Migration','Cleansing','3-Medium',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'Migration','Cleansing','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Migration','Cleansing','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'Migration','Development','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Migration','Development','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Migration','Development','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Migration','Development','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Migration','Development','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'Migration','Mock Load QA','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Migration','Mock Load QA','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Migration','Mock Load QA','3-Medium',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'Migration','Mock Load QA','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Migration','Mock Load QA','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'Migration','Cutover','1-Very Low',4,0.2,0.2,1.1,0.4,0.4,3.2,0.4,0.4,0.4,0.3,0.6,0.6,0.4,3.6,5.2,8.8),
+(1,'Migration','Cutover','2-Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Migration','Cutover','3-Medium',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Migration','Cutover','4-High',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Migration','Cutover','5-Very High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'CAP','Frontend','1-Very Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'CAP','Frontend','2-Low',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'CAP','Frontend','3-Medium',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'CAP','Frontend','4-High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'CAP','Frontend','5-Very High',240,14.4,14.4,67.2,24.0,24.0,192.0,24.0,24.0,24.0,19.2,38.4,38.4,24.0,216.0,312.0,528.0),
+(1,'CAP','Service','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'CAP','Service','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'CAP','Service','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'CAP','Service','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'CAP','Service','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'CAP','DB','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'CAP','DB','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'CAP','DB','3-Medium',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'CAP','DB','4-High',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'CAP','DB','5-Very High',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'SAP Build','App','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'SAP Build','App','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'SAP Build','App','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'SAP Build','App','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'SAP Build','App','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'Build','BuildApp FE','1-Very Low',24,1.4,1.4,6.7,2.4,2.4,19.2,2.4,2.4,2.4,1.9,3.8,3.8,2.4,21.4,31.2,52.6),
+(1,'Build','BuildApp FE','2-Low',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Build','BuildApp FE','3-Medium',80,4.8,4.8,22.4,8.0,8.0,64.0,8.0,8.0,8.0,6.4,12.8,12.8,8.0,72.0,104.0,176.0),
+(1,'Build','BuildApp FE','4-High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'Build','BuildApp FE','5-Very High',240,14.4,14.4,67.2,24.0,24.0,192.0,24.0,24.0,24.0,19.2,38.4,38.4,24.0,216.0,312.0,528.0),
+(1,'Build','Process Automation','1-Very Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Build','Process Automation','2-Low',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Build','Process Automation','3-Medium',48,2.9,2.9,13.4,4.8,4.8,38.4,4.8,4.8,4.8,3.8,7.7,7.7,4.8,43.2,62.4,105.6),
+(1,'Build','Process Automation','4-High',96,5.8,5.8,26.9,9.6,9.6,76.8,9.6,9.6,9.6,7.7,15.4,15.4,9.6,86.6,124.8,211.4),
+(1,'Build','Process Automation','5-Very High',160,9.6,9.6,44.8,16.0,16.0,128.0,16.0,16.0,16.0,12.8,25.6,25.6,16.0,144.0,208.0,352.0),
+(1,'Build','RPA','1-Very Low',8,0.5,0.5,2.2,0.8,0.8,6.4,0.8,0.8,0.8,0.6,1.3,1.3,0.8,7.2,10.4,17.6),
+(1,'Build','RPA','2-Low',16,1.0,1.0,4.5,1.6,1.6,12.8,1.6,1.6,1.6,1.3,2.6,2.6,1.6,14.6,20.8,35.4),
+(1,'Build','RPA','3-Medium',32,1.9,1.9,9.0,3.2,3.2,25.6,3.2,3.2,3.2,2.6,5.1,5.1,3.2,28.8,41.6,70.4),
+(1,'Build','RPA','4-High',64,3.8,3.8,17.9,6.4,6.4,51.2,6.4,6.4,6.4,5.1,10.2,10.2,6.4,57.4,83.2,140.6),
+(1,'Build','RPA','5-Very High',128,7.7,7.7,35.8,12.8,12.8,102.4,12.8,12.8,12.8,10.2,20.5,20.5,12.8,115.2,166.4,281.6);
 
 
 -- ============================================================
@@ -463,7 +464,7 @@ INSERT INTO sheet_column_config (sheet_type_code, column_key, column_label, data
 ('RICEF','total_tech_hours', 'Total TECH',       'number',  NULL,                1,0,30, '7rem'),
 ('RICEF','grand_total_hours','Grand Total',      'number',  NULL,                1,0,31, '7rem');
 
--- Sheet Column Config (BI sheet - same structure, different dropdowns)
+-- Sheet Column Config (BI sheet)
 INSERT INTO sheet_column_config (sheet_type_code, column_key, column_label, data_type, dropdown_code, is_visible, is_editable, sort_order, width) VALUES
 ('BI','backlog_number','Backlog #','text',NULL,1,1,1,'8rem'),
 ('BI','seq_number','Seq #','number',NULL,1,0,2,'5rem'),

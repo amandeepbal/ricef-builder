@@ -1,0 +1,66 @@
+_schema-version: "3.1"
+ID: ricef-builder
+version: 1.0.0
+description: RICEFW Estimator Tool - SAP Project Estimation
+
+parameters:
+  enable-parallel-deployments: true
+
+modules:
+  # App Router — serves UI, handles XSUAA auth
+  - name: ricef-builder-approuter
+    type: approuter.nodejs
+    path: approuter
+    parameters:
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: ricef-builder-xsuaa
+        group: destinations
+        properties:
+          forwardAuthToken: true
+      - name: ricef-builder-srv-api
+        group: destinations
+        properties:
+          name: srv-api
+          url: ~{srv-url}
+          forwardAuthToken: true
+
+  # Backend — Express.js REST API
+  - name: ricef-builder-srv
+    type: nodejs
+    path: server
+    parameters:
+      disk-quota: 512M
+      memory: 512M
+    provides:
+      - name: ricef-builder-srv-api
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: ricef-builder-xsuaa
+      - name: ricef-builder-db
+
+  # Static webapp content — deployed alongside approuter
+  - name: ricef-builder-webapp
+    type: html5-app-deployer
+    path: webapp
+    parameters:
+      disk-quota: 256M
+      memory: 256M
+
+resources:
+  # XSUAA service instance
+  - name: ricef-builder-xsuaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: xs-security.json
+
+  # PostgreSQL service instance
+  - name: ricef-builder-db
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: postgresql-db
+      service-plan: trial

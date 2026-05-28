@@ -1,38 +1,61 @@
-const Database = require('better-sqlite3');
+const { Pool } = require('pg');
+const fs = require('fs');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, '..', '..', 'data', 'ricef-builder.db');
+let _pool;
 
-let _db;
+function getPool() {
+  if (_pool) return _pool;
 
-function getDb() {
-  if (!_db) {
-    _db = new Database(DB_PATH);
-    _db.pragma('journal_mode = WAL');
-    _db.pragma('foreign_keys = ON');
+  let config;
+
+  if (process.env.VCAP_SERVICES) {
+    const vcap = JSON.parse(process.env.VCAP_SERVICES);
+    const pgService = (vcap['postgresql-db'] || vcap.postgresql || [])[0];
+    if (pgService) {
+      const creds = pgService.credentials;
+      config = {
+        host: creds.hostname || creds.host,
+        port: creds.port,
+        database: creds.dbname || creds.database,
+        user: creds.username || creds.user,
+        password: creds.password,
+        ssl: creds.sslcert ? { ca: creds.sslcert } : { rejectUnauthorized: false },
+        max: 10
+      };
+    }
   }
-  return _db;
+
+  if (!config) {
+    config = {
+      host: process.env.PGHOST || 'localhost',
+      port: parseInt(process.env.PGPORT || '5432', 10),
+      database: process.env.PGDATABASE || 'ricef_builder',
+      user: process.env.PGUSER || 'postgres',
+      password: process.env.PGPASSWORD || 'postgres',
+      max: 10
+    };
+  }
+
+  _pool = new Pool(config);
+  return _pool;
 }
 
-function initDb() {
-  const db = getDb();
-  const fs = require('fs');
+async function initDb() {
+  const pool = getPool();
 
-  const schemaPath = path.join(__dirname, 'schema.sql');
-  const seedPath = path.join(__dirname, 'seed.sql');
+  const tableCheck = await pool.query(
+    "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = 'projects'"
+  );
 
-  const tableCheck = db.prepare(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name='projects'"
-  ).get();
-
-  if (!tableCheck) {
+  if (tableCheck.rows.length === 0) {
     console.log('Initializing database schema...');
-    const schema = fs.readFileSync(schemaPath, 'utf8');
-    db.exec(schema);
+    const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+    await pool.query(schema);
 
     console.log('Seeding reference data...');
-    const seed = fs.readFileSync(seedPath, 'utf8');
-    db.exec(seed);
+    const seed = fs.readFileSync(path.join(__dirname, 'seed.sql'), 'utf8');
+    await pool.query(seed);
 
     console.log('Database initialized.');
   } else {
@@ -40,4 +63,4 @@ function initDb() {
   }
 }
 
-module.exports = { getDb, initDb };
+module.exports = { getPool, initDb };

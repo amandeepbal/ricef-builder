@@ -1,32 +1,32 @@
 const { Router } = require('express');
-const { getDb } = require('../db/connection');
+const { getPool } = require('../db/connection');
 const { buildSummary } = require('../services/summary-aggregator');
 const router = Router();
 
-function captureProjectState(db, pid) {
-  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(pid);
-  const factors = db.prepare('SELECT * FROM project_factors WHERE project_id = ?').get(pid);
-  const phases = db.prepare('SELECT * FROM project_phases WHERE project_id = ?').get(pid);
-  const funcPhasePct = db.prepare('SELECT * FROM project_func_phase_pct WHERE project_id = ?').get(pid);
-  const pgo = db.prepare('SELECT * FROM project_pgo WHERE project_id = ?').get(pid);
-  const contingency = db.prepare('SELECT * FROM project_contingency WHERE project_id = ?').get(pid);
-  const scopeConfig = db.prepare('SELECT * FROM project_scope_config WHERE project_id = ?').get(pid);
-  const scopeItems = db.prepare('SELECT * FROM project_scope_items WHERE project_id = ? ORDER BY id').all(pid);
-  const sheetFuncPct = db.prepare('SELECT * FROM project_sheet_func_pct WHERE project_id = ? ORDER BY sheet_type_code, grid_type').all(pid);
-  const fixedRoles = db.prepare('SELECT * FROM project_fixed_roles WHERE project_id = ? ORDER BY team, grid_type, id').all(pid);
-  const staffingProfiles = db.prepare('SELECT * FROM project_staffing_profiles WHERE project_id = ? ORDER BY team, sort_order').all(pid);
+async function captureProjectState(pool, pid) {
+  const project = (await pool.query('SELECT * FROM projects WHERE id = $1', [pid])).rows[0];
+  const factors = (await pool.query('SELECT * FROM project_factors WHERE project_id = $1', [pid])).rows[0];
+  const phases = (await pool.query('SELECT * FROM project_phases WHERE project_id = $1', [pid])).rows[0];
+  const funcPhasePct = (await pool.query('SELECT * FROM project_func_phase_pct WHERE project_id = $1', [pid])).rows[0];
+  const pgo = (await pool.query('SELECT * FROM project_pgo WHERE project_id = $1', [pid])).rows[0];
+  const contingency = (await pool.query('SELECT * FROM project_contingency WHERE project_id = $1', [pid])).rows[0];
+  const scopeConfig = (await pool.query('SELECT * FROM project_scope_config WHERE project_id = $1', [pid])).rows[0];
+  const scopeItems = (await pool.query('SELECT * FROM project_scope_items WHERE project_id = $1 ORDER BY id', [pid])).rows;
+  const sheetFuncPct = (await pool.query('SELECT * FROM project_sheet_func_pct WHERE project_id = $1 ORDER BY sheet_type_code, grid_type', [pid])).rows;
+  const fixedRoles = (await pool.query('SELECT * FROM project_fixed_roles WHERE project_id = $1 ORDER BY team, grid_type, id', [pid])).rows;
+  const staffingProfiles = (await pool.query('SELECT * FROM project_staffing_profiles WHERE project_id = $1 ORDER BY team, sort_order', [pid])).rows;
 
-  const items = db.prepare(`
+  const items = (await pool.query(`
     SELECT i.*, rt.label as type_label, rt.code as type_code, rt.sheet_type_code
     FROM items i JOIN ricef_types rt ON i.ricef_type_id = rt.id
-    WHERE i.project_id = ? ORDER BY rt.sort_order, i.ricef_number, i.seq_number
-  `).all(pid);
+    WHERE i.project_id = $1 ORDER BY rt.sort_order, i.ricef_number, i.seq_number
+  `, [pid])).rows;
 
   const activeItems = items.filter(i => i.seq_number > 0);
   const totalHours = activeItems.reduce((s, i) => s + (i.grand_total_hours || 0), 0);
 
   // Capture calculated outputs
-  const summary = buildSummary(db, pid);
+  const summary = await buildSummary(pool, pid);
   const P = ['prep', 'fts', 'design', 'build', 'sit_uat', 'dep', 'hyp'];
 
   function flattenRows(rows) {
@@ -95,62 +95,82 @@ function captureProjectState(db, pid) {
   };
 }
 
-router.get('/:projectId/snapshots', (req, res) => {
-  const db = getDb();
-  const rows = db.prepare(
-    'SELECT id, project_id, phase, label, total_items, total_hours, created_at FROM project_snapshots WHERE project_id = ? ORDER BY created_at DESC'
-  ).all(req.params.projectId);
-  res.json(rows);
+router.get('/:projectId/snapshots', async (req, res, next) => {
+  try {
+    const pool = getPool();
+    const rows = (await pool.query(
+      'SELECT id, project_id, phase, label, total_items, total_hours, created_at FROM project_snapshots WHERE project_id = $1 ORDER BY created_at DESC',
+      [req.params.projectId]
+    )).rows;
+    res.json(rows);
+  } catch (e) {
+    next(e);
+  }
 });
 
-router.post('/:projectId/snapshots', (req, res) => {
-  const db = getDb();
-  const pid = req.params.projectId;
-  const { phase, label } = req.body;
-  if (!phase) return res.status(400).json({ error: 'phase is required' });
+router.post('/:projectId/snapshots', async (req, res, next) => {
+  try {
+    const pool = getPool();
+    const pid = req.params.projectId;
+    const { phase, label } = req.body;
+    if (!phase) return res.status(400).json({ error: 'phase is required' });
 
-  const state = captureProjectState(db, pid);
-  const json = JSON.stringify(state);
+    const state = await captureProjectState(pool, pid);
+    const json = JSON.stringify(state);
 
-  const result = db.prepare(
-    `INSERT INTO project_snapshots (project_id, phase, label, total_items, total_hours, snapshot_json)
-     VALUES (?, ?, ?, ?, ?, ?)`
-  ).run(pid, phase, label || null, state._meta.totalItems, state._meta.totalHours, json);
+    const { rows } = await pool.query(
+      `INSERT INTO project_snapshots (project_id, phase, label, total_items, total_hours, snapshot_json)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      [pid, phase, label || null, state._meta.totalItems, state._meta.totalHours, json]
+    );
 
-  res.status(201).json({ id: result.lastInsertRowid });
+    res.status(201).json({ id: rows[0].id });
+  } catch (e) {
+    next(e);
+  }
 });
 
-router.get('/:projectId/snapshots/:snapshotId', (req, res) => {
-  const db = getDb();
-  const snap = db.prepare(
-    'SELECT * FROM project_snapshots WHERE id = ? AND project_id = ?'
-  ).get(req.params.snapshotId, req.params.projectId);
-  if (!snap) return res.status(404).json({ error: 'Snapshot not found' });
+router.get('/:projectId/snapshots/:snapshotId', async (req, res, next) => {
+  try {
+    const pool = getPool();
+    const snap = (await pool.query(
+      'SELECT * FROM project_snapshots WHERE id = $1 AND project_id = $2',
+      [req.params.snapshotId, req.params.projectId]
+    )).rows[0];
+    if (!snap) return res.status(404).json({ error: 'Snapshot not found' });
 
-  snap.data = JSON.parse(snap.snapshot_json);
-  delete snap.snapshot_json;
-  res.json(snap);
+    snap.data = JSON.parse(snap.snapshot_json);
+    delete snap.snapshot_json;
+    res.json(snap);
+  } catch (e) {
+    next(e);
+  }
 });
 
-router.get('/:projectId/compare/:snapshotId', (req, res) => {
-  const db = getDb();
-  const pid = req.params.projectId;
-  const snap = db.prepare(
-    'SELECT * FROM project_snapshots WHERE id = ? AND project_id = ?'
-  ).get(req.params.snapshotId, pid);
-  if (!snap) return res.status(404).json({ error: 'Snapshot not found' });
+router.get('/:projectId/compare/:snapshotId', async (req, res, next) => {
+  try {
+    const pool = getPool();
+    const pid = req.params.projectId;
+    const snap = (await pool.query(
+      'SELECT * FROM project_snapshots WHERE id = $1 AND project_id = $2',
+      [req.params.snapshotId, pid]
+    )).rows[0];
+    if (!snap) return res.status(404).json({ error: 'Snapshot not found' });
 
-  const current = captureProjectState(db, pid);
-  const previous = JSON.parse(snap.snapshot_json);
+    const current = await captureProjectState(pool, pid);
+    const previous = JSON.parse(snap.snapshot_json);
 
-  const diff = buildDiff(current, previous);
-  diff.snapshot = { id: snap.id, phase: snap.phase, label: snap.label, created_at: snap.created_at };
-  diff.currentMeta = current._meta;
-  diff.previousMeta = previous._meta;
-  diff.currentCalculated = current.calculated || null;
-  diff.previousCalculated = previous.calculated || null;
+    const diff = buildDiff(current, previous);
+    diff.snapshot = { id: snap.id, phase: snap.phase, label: snap.label, created_at: snap.created_at };
+    diff.currentMeta = current._meta;
+    diff.previousMeta = previous._meta;
+    diff.currentCalculated = current.calculated || null;
+    diff.previousCalculated = previous.calculated || null;
 
-  res.json(diff);
+    res.json(diff);
+  } catch (e) {
+    next(e);
+  }
 });
 
 function buildDiff(current, previous) {
@@ -359,11 +379,15 @@ function buildCalculatedDiff(cur, prev) {
   return hasChanges ? result : null;
 }
 
-router.delete('/:projectId/snapshots/:snapshotId', (req, res) => {
-  const db = getDb();
-  db.prepare('DELETE FROM project_snapshots WHERE id = ? AND project_id = ?')
-    .run(req.params.snapshotId, req.params.projectId);
-  res.json({ ok: true });
+router.delete('/:projectId/snapshots/:snapshotId', async (req, res, next) => {
+  try {
+    const pool = getPool();
+    await pool.query('DELETE FROM project_snapshots WHERE id = $1 AND project_id = $2',
+      [req.params.snapshotId, req.params.projectId]);
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
 });
 
 module.exports = router;

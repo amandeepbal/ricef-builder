@@ -1,0 +1,47 @@
+{
+  "xsappname": "ricef-builder",
+  "tenant-mode": "dedicated",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.Admin",
+      "description": "Admin access to configuration"
+    },
+    {
+      "name": "$XSAPPNAME.User",
+      "description": "Standard user access"
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "Admin",
+      "description": "Administrator role with full access",
+      "scope-references": [
+        "$XSAPPNAME.Admin",
+        "$XSAPPNAME.User"
+      ]
+    },
+    {
+      "name": "User",
+      "description": "Standard user role",
+      "scope-references": [
+        "$XSAPPNAME.User"
+      ]
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "RICEF Builder Admin",
+      "description": "Full access to RICEFW Estimator",
+      "role-template-references": [
+        "$XSAPPNAME.Admin"
+      ]
+    },
+    {
+      "name": "RICEF Builder User",
+      "description": "Standard access to RICEFW Estimator",
+      "role-template-references": [
+        "$XSAPPNAME.User"
+      ]
+    }
+  ]
+}

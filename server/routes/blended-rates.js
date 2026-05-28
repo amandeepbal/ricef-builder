@@ -1,48 +1,59 @@
 const { Router } = require('express');
-const { getDb } = require('../db/connection');
+const { getPool } = require('../db/connection');
 const router = Router();
 
-router.get('/', (req, res) => {
-  const db = getDb();
-  const vid = req.query.version_id || 1;
-  const configs = db.prepare('SELECT * FROM blended_rate_configs WHERE version_id = ? ORDER BY id').all(vid);
-  for (const config of configs) {
-    config.effort_by_complexity = db.prepare(
-      'SELECT * FROM blended_effort_by_complexity WHERE config_id = ? ORDER BY complexity'
-    ).all(config.id);
+router.get('/', async (req, res, next) => {
+  try {
+    const pool = getPool();
+    const vid = req.query.version_id || 1;
+    const { rows: configs } = await pool.query('SELECT * FROM blended_rate_configs WHERE version_id = $1 ORDER BY id', [vid]);
+    for (const config of configs) {
+      config.effort_by_complexity = (await pool.query(
+        'SELECT * FROM blended_effort_by_complexity WHERE config_id = $1 ORDER BY complexity',
+        [config.id]
+      )).rows;
 
-    config.delivery_levels = db.prepare(
-      'SELECT * FROM blended_delivery_levels WHERE config_id = ? ORDER BY level_number'
-    ).all(config.id);
+      config.delivery_levels = (await pool.query(
+        'SELECT * FROM blended_delivery_levels WHERE config_id = $1 ORDER BY level_number',
+        [config.id]
+      )).rows;
 
-    for (const level of config.delivery_levels) {
-      level.rates = db.prepare(
-        'SELECT * FROM blended_rates WHERE level_id = ? ORDER BY currency'
-      ).all(level.id);
+      for (const level of config.delivery_levels) {
+        level.rates = (await pool.query(
+          'SELECT * FROM blended_rates WHERE level_id = $1 ORDER BY currency',
+          [level.id]
+        )).rows;
+      }
     }
-  }
-  res.json(configs);
+    res.json(configs);
+  } catch (e) { next(e); }
 });
 
-router.get('/:id', (req, res) => {
-  const db = getDb();
-  const config = db.prepare('SELECT * FROM blended_rate_configs WHERE id = ?').get(req.params.id);
-  if (!config) return res.status(404).json({ error: 'Not found' });
+router.get('/:id', async (req, res, next) => {
+  try {
+    const pool = getPool();
+    const { rows } = await pool.query('SELECT * FROM blended_rate_configs WHERE id = $1', [req.params.id]);
+    const config = rows[0];
+    if (!config) return res.status(404).json({ error: 'Not found' });
 
-  config.effort_by_complexity = db.prepare(
-    'SELECT * FROM blended_effort_by_complexity WHERE config_id = ? ORDER BY complexity'
-  ).all(config.id);
+    config.effort_by_complexity = (await pool.query(
+      'SELECT * FROM blended_effort_by_complexity WHERE config_id = $1 ORDER BY complexity',
+      [config.id]
+    )).rows;
 
-  config.delivery_levels = db.prepare(
-    'SELECT * FROM blended_delivery_levels WHERE config_id = ? ORDER BY level_number'
-  ).all(config.id);
+    config.delivery_levels = (await pool.query(
+      'SELECT * FROM blended_delivery_levels WHERE config_id = $1 ORDER BY level_number',
+      [config.id]
+    )).rows;
 
-  for (const level of config.delivery_levels) {
-    level.rates = db.prepare(
-      'SELECT * FROM blended_rates WHERE level_id = ? ORDER BY currency'
-    ).all(level.id);
-  }
-  res.json(config);
+    for (const level of config.delivery_levels) {
+      level.rates = (await pool.query(
+        'SELECT * FROM blended_rates WHERE level_id = $1 ORDER BY currency',
+        [level.id]
+      )).rows;
+    }
+    res.json(config);
+  } catch (e) { next(e); }
 });
 
 function requireFiniteNumber(val, field) {
@@ -51,44 +62,58 @@ function requireFiniteNumber(val, field) {
   return n;
 }
 
-router.put('/:configId/effort-by-complexity', (req, res, next) => {
+router.put('/:configId/effort-by-complexity', async (req, res, next) => {
   try {
-    const db = getDb();
+    const pool = getPool();
     const { items } = req.body;
-    const update = db.prepare(
-      'UPDATE blended_effort_by_complexity SET multiplier = ? WHERE config_id = ? AND complexity = ?'
-    );
-    const txn = db.transaction(() => {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
       for (const item of items) {
         const m = requireFiniteNumber(item.multiplier, 'multiplier');
-        update.run(m, req.params.configId, item.complexity);
+        await client.query(
+          'UPDATE blended_effort_by_complexity SET multiplier = $1 WHERE config_id = $2 AND complexity = $3',
+          [m, req.params.configId, item.complexity]
+        );
       }
-    });
-    txn();
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
     res.json({ ok: true });
   } catch (e) { next(e); }
 });
 
-router.put('/:configId/levels/:levelId/rates', (req, res, next) => {
+router.put('/:configId/levels/:levelId/rates', async (req, res, next) => {
   try {
-    const db = getDb();
+    const pool = getPool();
     const { rates } = req.body;
-    const update = db.prepare(
-      `UPDATE blended_rates SET billable_rate=?, effort_multiplier=?, blended_cost=?, margin_pct=?
-       WHERE level_id=? AND currency=?`
-    );
-    const txn = db.transaction(() => {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
       for (const r of rates) {
-        update.run(
-          requireFiniteNumber(r.billable_rate, 'billable_rate'),
-          requireFiniteNumber(r.effort_multiplier, 'effort_multiplier'),
-          requireFiniteNumber(r.blended_cost, 'blended_cost'),
-          requireFiniteNumber(r.margin_pct, 'margin_pct'),
-          req.params.levelId, r.currency
+        await client.query(
+          `UPDATE blended_rates SET billable_rate=$1, effort_multiplier=$2, blended_cost=$3, margin_pct=$4
+           WHERE level_id=$5 AND currency=$6`,
+          [
+            requireFiniteNumber(r.billable_rate, 'billable_rate'),
+            requireFiniteNumber(r.effort_multiplier, 'effort_multiplier'),
+            requireFiniteNumber(r.blended_cost, 'blended_cost'),
+            requireFiniteNumber(r.margin_pct, 'margin_pct'),
+            req.params.levelId, r.currency
+          ]
         );
       }
-    });
-    txn();
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
     res.json({ ok: true });
   } catch (e) { next(e); }
 });
