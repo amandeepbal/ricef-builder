@@ -6,6 +6,12 @@ description: RICEFW Estimator Tool - SAP Project Estimation
 parameters:
   enable-parallel-deployments: true
 
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - echo "Build phase"
+
 modules:
   # App Router — serves UI, handles XSUAA auth
   - name: ricef-builder-approuter
@@ -14,11 +20,14 @@ modules:
     parameters:
       disk-quota: 256M
       memory: 256M
+    build-parameters:
+      requires:
+        - name: ricef-builder-webapp
+          artifacts:
+            - "./*"
+          target-path: webapp
     requires:
       - name: ricef-builder-xsuaa
-        group: destinations
-        properties:
-          forwardAuthToken: true
       - name: ricef-builder-srv-api
         group: destinations
         properties:
@@ -41,13 +50,13 @@ modules:
       - name: ricef-builder-xsuaa
       - name: ricef-builder-db
 
-  # Static webapp content — deployed alongside approuter
+  # Static webapp content — built into approuter
   - name: ricef-builder-webapp
-    type: html5-app-deployer
+    type: html5-app
     path: webapp
-    parameters:
-      disk-quota: 256M
-      memory: 256M
+    build-parameters:
+      supported-platforms: []
+      build-result: "."
 
 resources:
   # XSUAA service instance
@@ -63,4 +72,4 @@ resources:
     type: org.cloudfoundry.managed-service
     parameters:
       service: postgresql-db
-      service-plan: trial
+      service-plan: standard
