@@ -1,17 +1,23 @@
-<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f"
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:tnt="sap.tnt" xmlns:f="sap.f"
     controllerName="com.syntax.ricefbuilder.controller.App">
-    <f:ShellBar id="shellBar"
-        title="RICEFW Estimator"
-        secondTitle="SAP Project Estimation"
-        homeIcon="./resources/Syntax-logo.webp"
-        showNavButton="{appView>/showNavButton}"
-        navButtonPressed="onShellHome"
-        homeIconPressed="onShellHome"
-        avatarPressed="onUserInfo">
-        <f:profile>
-            <Avatar initials="{userInfo>/initials}" displaySize="XS"
-                backgroundColor="Accent6"/>
-        </f:profile>
-    </f:ShellBar>
-    <NavContainer id="appNavContainer"/>
+    <tnt:ToolPage id="toolPage" sideExpanded="false" class="ricefAppShell">
+        <tnt:header>
+            <f:ShellBar id="shellBar"
+                title="RICEFW Estimator"
+                secondTitle="SAP Project Estimation"
+                homeIcon="./resources/Syntax-logo.webp"
+                showNavButton="{appView>/showNavButton}"
+                navButtonPressed="onShellHome"
+                homeIconPressed="onShellHome"
+                avatarPressed="onUserInfo">
+                <f:profile>
+                    <Avatar initials="{userInfo>/initials}" displaySize="XS"
+                        backgroundColor="Accent6"/>
+                </f:profile>
+            </f:ShellBar>
+        </tnt:header>
+        <tnt:mainContents>
+            <NavContainer id="appNavContainer"/>
+        </tnt:mainContents>
+    </tnt:ToolPage>
 </mvc:View>
