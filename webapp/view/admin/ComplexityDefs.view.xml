@@ -32,7 +32,9 @@
                     <Column width="3rem"/>
                 </columns>
                 <items>
-                    <ColumnListItem type="Navigation" press="onRowPress">
+                    <ColumnListItem press="onRowPress"
+                        type="{= ${defs>factors}.length > 0 ? 'Navigation' : 'Inactive' }"
+                        highlight="{= ${defs>factors}.length > 0 ? 'Information' : 'None' }">
                         <Text text="{defs>_classificationKey}" wrapping="false"/>
                         <ObjectNumber number="{defs>func_very_low}" unit="h" textAlign="Center"/>
                         <ObjectNumber number="{defs>func_low}" unit="h" textAlign="Center"/>
@@ -44,8 +46,9 @@
                         <ObjectNumber number="{defs>tech_medium}" unit="h" textAlign="Center"/>
                         <ObjectNumber number="{defs>tech_high}" unit="h" textAlign="Center"/>
                         <ObjectNumber number="{defs>tech_very_high}" unit="h" textAlign="Center"/>
-                        <core:Icon src="sap-icon://slim-arrow-right" color="#888"
-                            visible="{= ${defs>factors}.length > 0 }"/>
+                        <core:Icon src="sap-icon://decision" color="Positive"
+                            visible="{= ${defs>factors}.length > 0 }"
+                            tooltip="Complexity factors available — click to view"/>
                     </ColumnListItem>
                 </items>
             </Table>
