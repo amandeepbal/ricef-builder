@@ -17,6 +17,17 @@ MCP server for SAP ABAP development via ADT (ABAP Development Tools).
 
 If `Login` returns `_meta.authenticated: true` directly (non-2FA tenant), just retry the original tool call. Do not bother the user.
 
+## Installation
+
+Install via Claude Code's plugin marketplace:
+
+```
+claude plugin marketplace add https://dev-genie-bb7e18.gitlab.io/marketplace.json
+claude plugin install abap-development@sap-abap-marketplace
+```
+
+The plugin is delivered as the `@dev-genie/mcp-sap-abap` npm package (MCP server + skills + agents + slash commands + hooks bundled together) from this repo's GitLab npm registry. You will need an npm token to authenticate — Syntax engineers pull it from the team 1Password vault (the link is on the DevGenie entry in [Backstage](https://backstage.syncxl.com/)).
+
 ## Skills
 
 | Need | Skill | When |
