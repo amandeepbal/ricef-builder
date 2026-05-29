@@ -191,9 +191,7 @@ router.post('/:id/clone', async (req, res, next) => {
       // Complexity definitions -> factors
       const srcDefs = (await client.query('SELECT * FROM complexity_definitions WHERE version_id = $1', [srcId])).rows;
       for (const def of srcDefs) {
-        const defCols = ['team', 'classification_group', 'subgroup',
-          'func_very_low', 'func_low', 'func_medium', 'func_high', 'func_very_high',
-          'tech_very_low', 'tech_low', 'tech_medium', 'tech_high', 'tech_very_high'];
+        const defCols = ['team', 'classification_group', 'subgroup'];
         const vals = defCols.map(c => def[c]);
         const placeholders = defCols.map((_, i) => `$${i + 2}`).join(',');
         const { rows: newDefRows } = await client.query(

@@ -3,9 +3,11 @@
     <Page title="Complexity Definitions" showNavButton="true" navButtonPress="onNavBack">
         <headerContent>
             <Button icon="sap-icon://sys-help" tooltip="Help" press="onHelp" type="Transparent"/>
-            <Button text="Add" icon="sap-icon://add" press="onAdd" type="Emphasized"/>
         </headerContent>
         <content>
+            <MessageStrip text="Values are calculated from the Estimation Grid (total functional and technical hours per classification and complexity). Edit the grid to change these values."
+                type="Information" showIcon="true" class="sapUiSmallMarginBottom"/>
+
             <IconTabBar id="teamTabs" select="onTeamSelect" selectedKey="DEV">
                 <items>
                     <IconTabFilter key="DEV" text="DEV" icon="sap-icon://developer-scenario"/>
@@ -16,36 +18,34 @@
 
             <Table id="defsTable" items="{ path: 'defs>/' }">
                 <columns>
-                    <Column width="16rem"><Text text="Classification"/></Column>
-                    <Column hAlign="Center"><Text text="FUNC V.Low"/></Column>
-                    <Column hAlign="Center"><Text text="FUNC Low"/></Column>
-                    <Column hAlign="Center"><Text text="FUNC Med"/></Column>
-                    <Column hAlign="Center"><Text text="FUNC High"/></Column>
-                    <Column hAlign="Center"><Text text="FUNC V.High"/></Column>
-                    <Column hAlign="Center"><Text text="TECH V.Low"/></Column>
-                    <Column hAlign="Center"><Text text="TECH Low"/></Column>
-                    <Column hAlign="Center"><Text text="TECH Med"/></Column>
-                    <Column hAlign="Center"><Text text="TECH High"/></Column>
-                    <Column hAlign="Center"><Text text="TECH V.High"/></Column>
+                    <Column width="14rem"><Text text="Classification"/></Column>
+                    <Column hAlign="Center" width="5.5rem"><Text text="FUNC V.Low"/></Column>
+                    <Column hAlign="Center" width="5.5rem"><Text text="FUNC Low"/></Column>
+                    <Column hAlign="Center" width="5.5rem"><Text text="FUNC Med"/></Column>
+                    <Column hAlign="Center" width="5.5rem"><Text text="FUNC High"/></Column>
+                    <Column hAlign="Center" width="5.5rem"><Text text="FUNC V.High"/></Column>
+                    <Column hAlign="Center" width="5.5rem"><Text text="TECH V.Low"/></Column>
+                    <Column hAlign="Center" width="5.5rem"><Text text="TECH Low"/></Column>
+                    <Column hAlign="Center" width="5.5rem"><Text text="TECH Med"/></Column>
+                    <Column hAlign="Center" width="5.5rem"><Text text="TECH High"/></Column>
+                    <Column hAlign="Center" width="5.5rem"><Text text="TECH V.High"/></Column>
                     <Column width="3rem"/>
                 </columns>
                 <items>
-                    <ColumnListItem>
-                        <Select selectedKey="{defs>_classificationKey}" items="{ path: 'classifs>/' }"
-                            change="onClassificationChange">
-                            <core:Item key="{classifs>value}" text="{classifs>value}"/>
-                        </Select>
-                        <Input value="{defs>func_very_low}" type="Number" textAlign="Center" change="onFieldChange"/>
-                        <Input value="{defs>func_low}" type="Number" textAlign="Center" change="onFieldChange"/>
-                        <Input value="{defs>func_medium}" type="Number" textAlign="Center" change="onFieldChange"/>
-                        <Input value="{defs>func_high}" type="Number" textAlign="Center" change="onFieldChange"/>
-                        <Input value="{defs>func_very_high}" type="Number" textAlign="Center" change="onFieldChange"/>
-                        <Input value="{defs>tech_very_low}" type="Number" textAlign="Center" change="onFieldChange"/>
-                        <Input value="{defs>tech_low}" type="Number" textAlign="Center" change="onFieldChange"/>
-                        <Input value="{defs>tech_medium}" type="Number" textAlign="Center" change="onFieldChange"/>
-                        <Input value="{defs>tech_high}" type="Number" textAlign="Center" change="onFieldChange"/>
-                        <Input value="{defs>tech_very_high}" type="Number" textAlign="Center" change="onFieldChange"/>
-                        <Button icon="sap-icon://delete" type="Reject" press="onDelete"/>
+                    <ColumnListItem type="Navigation" press="onRowPress">
+                        <Text text="{defs>_classificationKey}" wrapping="false"/>
+                        <ObjectNumber number="{defs>func_very_low}" unit="h" textAlign="Center"/>
+                        <ObjectNumber number="{defs>func_low}" unit="h" textAlign="Center"/>
+                        <ObjectNumber number="{defs>func_medium}" unit="h" textAlign="Center"/>
+                        <ObjectNumber number="{defs>func_high}" unit="h" textAlign="Center"/>
+                        <ObjectNumber number="{defs>func_very_high}" unit="h" textAlign="Center"/>
+                        <ObjectNumber number="{defs>tech_very_low}" unit="h" textAlign="Center"/>
+                        <ObjectNumber number="{defs>tech_low}" unit="h" textAlign="Center"/>
+                        <ObjectNumber number="{defs>tech_medium}" unit="h" textAlign="Center"/>
+                        <ObjectNumber number="{defs>tech_high}" unit="h" textAlign="Center"/>
+                        <ObjectNumber number="{defs>tech_very_high}" unit="h" textAlign="Center"/>
+                        <core:Icon src="sap-icon://slim-arrow-right" color="#888"
+                            visible="{= ${defs>factors}.length > 0 }"/>
                     </ColumnListItem>
                 </items>
             </Table>
