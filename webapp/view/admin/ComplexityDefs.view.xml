@@ -8,6 +8,17 @@
             <MessageStrip text="Hours are calculated from the Estimation Grid. Click any row to edit its complexity factor definitions (the criteria that determine each complexity level)."
                 type="Information" showIcon="true" class="sapUiSmallMarginBottom"/>
 
+            <Toolbar>
+                <SearchField width="15rem" search="onSearch" id="defSearch" placeholder="Search classification..."/>
+                <ToolbarSpacer/>
+                <Label text="FRICE:"/>
+                <Select id="friceFilter" change="onFilter">
+                    <items><core:Item key="" text="All"/></items>
+                </Select>
+                <ToolbarSpacer/>
+                <CheckBox id="factorsOnly" text="With factors only" select="onFilter"/>
+            </Toolbar>
+
             <IconTabBar id="teamTabs" select="onTeamSelect" selectedKey="DEV">
                 <items>
                     <IconTabFilter key="DEV" text="DEV" icon="sap-icon://developer-scenario"/>

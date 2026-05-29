@@ -41,18 +41,54 @@ sap.ui.define([
             var that = this;
             this.getOwnerComponent().api("GET", "/admin/complexity-definitions?version_id=" + this._getVersionId()).then(function (data) {
                 that._allDefs = data;
+                that._populateFriceFilter();
                 that._applyFilter();
             });
         },
 
         _applyFilter: function () {
             var team = this._team;
-            var filtered = this._allDefs.filter(function (d) { return d.team === team; });
+            var friceKey = this.byId("friceFilter").getSelectedKey();
+            var factorsOnly = this.byId("factorsOnly").getSelected();
+            var search = (this.byId("defSearch").getValue() || "").toLowerCase();
+
+            var filtered = this._allDefs.filter(function (d) {
+                if (d.team !== team) return false;
+                if (friceKey && d.classification_group !== friceKey) return false;
+                if (factorsOnly && (!d.factors || d.factors.length === 0)) return false;
+                if (search && (d._classificationKey || "").toLowerCase().indexOf(search) < 0) return false;
+                return true;
+            });
             this.getView().getModel("defs").setData(filtered);
+        },
+
+        _populateFriceFilter: function () {
+            var team = this._team;
+            var filter = this.byId("friceFilter");
+            var items = filter.getItems();
+            while (items.length > 1) { filter.removeItem(items[items.length - 1]); items = filter.getItems(); }
+            filter.setSelectedKey("");
+
+            var unique = {};
+            this._allDefs.forEach(function (d) {
+                if (d.team === team) unique[d.classification_group] = true;
+            });
+            Object.keys(unique).sort().forEach(function (f) {
+                filter.addItem(new sap.ui.core.Item({ key: f, text: f }));
+            });
         },
 
         onTeamSelect: function (oEvent) {
             this._team = oEvent.getParameter("key");
+            this._populateFriceFilter();
+            this._applyFilter();
+        },
+
+        onFilter: function () {
+            this._applyFilter();
+        },
+
+        onSearch: function () {
             this._applyFilter();
         },
 
