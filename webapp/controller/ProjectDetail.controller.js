@@ -934,12 +934,16 @@ sap.ui.define([
             if (!container) return;
             var that = this;
             var snap = diff.snapshot;
-            var changesOnly = !!this._changesOnly;
+            var enhanced = this._compareView !== "classic";
+            var changesOnly = enhanced && !!this._changesOnly;
             var navEntries = [];
             var html = '';
 
             // Anchored section title with a change-count badge; registers a jump entry.
             function navTitle(label, count, anchorId) {
+                if (!enhanced) {
+                    return '<div style="font-weight:600;margin-bottom:8px;font-size:14px;color:var(--sapTextColor, #333)">' + label + '</div>';
+                }
                 if (count > 0) { navEntries.push({ label: label, count: count, anchorId: anchorId }); }
                 var badge = count > 0
                     ? '<span style="background:#fff3cd;color:#7a5c00;border:1px solid #e6cf8a;border-radius:10px;font-size:10px;font-weight:700;padding:1px 8px;margin-left:8px">' + count + ' changed</span>'
@@ -951,15 +955,22 @@ sap.ui.define([
             html += '<div style="font-size:16px;font-weight:700;margin-bottom:12px;color:var(--sapTextColor, #333)">Comparison: Current vs Snapshot "' +
                 snap.phase + (snap.label ? ' - ' + snap.label : '') + '" (' + snap.created_at + ')</div>';
 
-            // Control bar: Changes-only toggle (listener attached after innerHTML)
-            html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:6px 10px;background:var(--sapList_Background, #f7f7f7);border-radius:4px">' +
-                '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;user-select:none">' +
-                '<input type="checkbox" data-changes-only' + (changesOnly ? ' checked' : '') + ' style="cursor:pointer">' +
+            // Control bar: view mode toggle + changes-only checkbox
+            var btnBase = 'padding:4px 14px;font-size:12px;font-weight:600;border:1px solid #ccc;cursor:pointer;';
+            var btnOn = 'background:#0854a0;color:#fff;border-color:#0854a0;';
+            var btnOff = 'background:var(--sapTile_Background, #fff);color:var(--sapTextColor, #333);';
+            html += '<div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;padding:6px 10px;background:var(--sapList_Background, #f7f7f7);border-radius:4px;flex-wrap:wrap">';
+            html += '<div style="display:flex">' +
+                '<button data-view="enhanced" style="' + btnBase + 'border-radius:4px 0 0 4px;' + (enhanced ? btnOn : btnOff) + '">Enhanced</button>' +
+                '<button data-view="classic" style="' + btnBase + 'border-radius:0 4px 4px 0;border-left:none;' + (!enhanced ? btnOn : btnOff) + '">Classic</button>' +
+                '</div>';
+            html += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;user-select:none;' + (enhanced ? '' : 'opacity:0.4;pointer-events:none') + '">' +
+                '<input type="checkbox" data-changes-only' + (changesOnly ? ' checked' : '') + ' style="cursor:pointer"' + (enhanced ? '' : ' disabled') + '>' +
                 '<span style="font-weight:600">Changes only</span>' +
                 '<span style="color:#888">— hide unchanged rows and grids</span>' +
                 '</label></div>';
 
-            // Jump bar placeholder — replaced after build once change counts are known
+            // Jump bar placeholder — replaced after build once change counts are known (enhanced mode only)
             html += '{{NAVBAR}}';
 
             // KPI delta
@@ -1072,7 +1083,7 @@ sap.ui.define([
             id.changed.forEach(function (it) { itemFieldChanges += Object.keys(it.changes).length; });
             var itemTotalChanges = itemFieldChanges + id.added.length + id.removed.length;
             if (!(changesOnly && itemTotalChanges === 0)) {
-                if (itemTotalChanges > 0) { navEntries.push({ label: "Item Changes", count: itemTotalChanges, anchorId: "cmpItems" }); }
+                if (enhanced && itemTotalChanges > 0) { navEntries.push({ label: "Item Changes", count: itemTotalChanges, anchorId: "cmpItems" }); }
                 html += '<div id="cmpItems" style="font-weight:600;margin-bottom:8px;font-size:14px;color:var(--sapTextColor, #333);scroll-margin-top:12px">Item Changes (' +
                     id.changed.length + ' changed, ' + id.added.length + ' added, ' + id.removed.length + ' removed)</div>';
 
@@ -1195,25 +1206,26 @@ sap.ui.define([
                             changedCells += cells;
                         });
 
-                        var anchorId = 'cmpSec' + (++gridSeq);
-                        if (changedCells > 0) {
-                            navEntries.push({ label: title.replace(/\s+—\s+/g, ' '), count: changedCells, anchorId: anchorId });
-                        } else if (changesOnly) {
-                            return; // hide unchanged grids entirely
+                        if (enhanced) {
+                            var anchorId = 'cmpSec' + (++gridSeq);
+                            if (changedCells > 0) {
+                                navEntries.push({ label: title.replace(/\s+—\s+/g, ' '), count: changedCells, anchorId: anchorId });
+                            } else if (changesOnly) {
+                                return;
+                            }
+                            var badge = changedCells > 0
+                                ? '<span style="background:#fff3cd;color:#7a5c00;border:1px solid #e6cf8a;border-radius:10px;font-size:10px;font-weight:700;padding:1px 8px;margin-left:8px">' + changedCells + ' changed</span>'
+                                : '<span style="color:#1a6e3a;font-size:10px;font-weight:600;margin-left:8px">no changes</span>';
+                            html += '<div id="' + anchorId + '" style="font-weight:600;font-size:12px;margin:12px 0 4px;color:#e76500;scroll-margin-top:12px">' + title + badge + '</div>';
+                            if (changedCells === 0) {
+                                html += '<div style="font-size:11px;color:#999;font-style:italic;margin-bottom:6px;padding-left:4px">Identical in current and snapshot.</div>';
+                                return;
+                            }
+                        } else {
+                            html += '<div style="font-weight:600;font-size:12px;margin:12px 0 4px;color:#e76500">' + title + '</div>';
                         }
 
-                        var badge = changedCells > 0
-                            ? '<span style="background:#fff3cd;color:#7a5c00;border:1px solid #e6cf8a;border-radius:10px;font-size:10px;font-weight:700;padding:1px 8px;margin-left:8px">' + changedCells + ' changed</span>'
-                            : '<span style="color:#1a6e3a;font-size:10px;font-weight:600;margin-left:8px">no changes</span>';
-                        html += '<div id="' + anchorId + '" style="font-weight:600;font-size:12px;margin:12px 0 4px;color:#e76500;scroll-margin-top:12px">' + title + badge + '</div>';
-
-                        // Collapse unchanged grids into a one-liner (full view)
-                        if (changedCells === 0) {
-                            html += '<div style="font-size:11px;color:#999;font-style:italic;margin-bottom:6px;padding-left:4px">Identical in current and snapshot.</div>';
-                            return;
-                        }
-
-                        var renderRoles = changesOnly
+                        var renderRoles = (enhanced && changesOnly)
                             ? allRoles.filter(function (role) { return rowState[role].changed; })
                             : allRoles;
 
@@ -1233,11 +1245,13 @@ sap.ui.define([
                             return '<div style="font-size:9px;color:' + color + ';font-weight:600">' + sign + d + '</div>';
                         }
                         function rowAccent(role) {  // eslint-disable-line no-inner-declarations
+                            if (!enhanced) { return ''; }
                             var rs = rowState[role];
                             if (!rs.changed) { return ''; }
                             return 'border-left:3px solid ' + (rs.dir > 0 ? '#1a6e3a' : rs.dir < 0 ? '#bb0000' : '#e76500') + ';';
                         }
                         function rowArrow(role) {  // eslint-disable-line no-inner-declarations
+                            if (!enhanced) { return ''; }
                             var rs = rowState[role];
                             if (!rs.changed) { return ''; }
                             var a = rs.dir > 0 ? '▲' : rs.dir < 0 ? '▼' : '◆';
@@ -1254,7 +1268,7 @@ sap.ui.define([
                         renderRoles.forEach(function (role) {
                             var r = curMap[role];
                             var prev = prevMap[role];
-                            var rowBg = rowState[role].changed ? 'background:#fffdf5;' : '';
+                            var rowBg = (enhanced && rowState[role].changed) ? 'background:#fffdf5;' : '';
                             html += '<tr style="' + rowBg + '">';
                             html += '<td style="padding:2px 6px;border:' + bdr + ';' + rowAccent(role) + 'font-weight:500;font-size:10px;white-space:nowrap">' + rowArrow(role) + role + '</td>';
                             P.forEach(function (p) {
@@ -1281,7 +1295,7 @@ sap.ui.define([
                         renderRoles.forEach(function (role) {
                             var r = prevMap[role];
                             var cur = curMap[role];
-                            var rowBg = rowState[role].changed ? 'background:#fffdf5;' : '';
+                            var rowBg = (enhanced && rowState[role].changed) ? 'background:#fffdf5;' : '';
                             html += '<tr style="' + rowBg + '">';
                             html += '<td style="padding:2px 6px;border:' + bdr + ';' + rowAccent(role) + 'font-weight:500;font-size:10px;white-space:nowrap;color:var(--sapContent_LabelColor, #666)">' + role + '</td>';
                             P.forEach(function (p) {
@@ -1336,26 +1350,36 @@ sap.ui.define([
 
             html += '</div>';
 
-            // Build jump bar from collected change entries
+            // Build jump bar from collected change entries (enhanced only)
             var navHtml = '';
-            if (navEntries.length > 0) {
-                navHtml = '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:14px">' +
-                    '<span style="font-size:12px;font-weight:600;color:var(--sapContent_LabelColor,#666);margin-right:4px">' +
-                    navEntries.length + ' section' + (navEntries.length === 1 ? '' : 's') + ' changed:</span>';
-                navEntries.forEach(function (e) {
-                    navHtml += '<a href="#" data-jump="' + e.anchorId + '" ' +
-                        'style="font-size:11px;text-decoration:none;background:#fff3cd;color:#7a5c00;border:1px solid #e6cf8a;border-radius:12px;padding:2px 10px;cursor:pointer;white-space:nowrap">' +
-                        e.label + ' <b>(' + e.count + ')</b></a>';
-                });
-                navHtml += '</div>';
-            } else {
-                navHtml = '<div style="font-size:12px;color:#1a6e3a;font-weight:600;margin-bottom:14px">' +
-                    '✓ No differences between current and this snapshot.</div>';
+            if (enhanced) {
+                if (navEntries.length > 0) {
+                    navHtml = '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:14px">' +
+                        '<span style="font-size:12px;font-weight:600;color:var(--sapContent_LabelColor,#666);margin-right:4px">' +
+                        navEntries.length + ' section' + (navEntries.length === 1 ? '' : 's') + ' changed:</span>';
+                    navEntries.forEach(function (e) {
+                        navHtml += '<a href="#" data-jump="' + e.anchorId + '" ' +
+                            'style="font-size:11px;text-decoration:none;background:#fff3cd;color:#7a5c00;border:1px solid #e6cf8a;border-radius:12px;padding:2px 10px;cursor:pointer;white-space:nowrap">' +
+                            e.label + ' <b>(' + e.count + ')</b></a>';
+                    });
+                    navHtml += '</div>';
+                } else {
+                    navHtml = '<div style="font-size:12px;color:#1a6e3a;font-weight:600;margin-bottom:14px">' +
+                        'No differences between current and this snapshot.</div>';
+                }
             }
             html = html.replace('{{NAVBAR}}', navHtml);
 
             container.innerHTML = html;
 
+            // View mode toggle: Enhanced / Classic
+            container.querySelectorAll('[data-view]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    that._compareView = btn.dataset.view;
+                    if (btn.dataset.view === 'classic') { that._changesOnly = false; }
+                    that._renderCompare(that._lastDiff);
+                });
+            });
             // Toggle: Changes only
             var cb = container.querySelector('[data-changes-only]');
             if (cb) {
