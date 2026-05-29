@@ -97,15 +97,19 @@
     "sections": [
       {
         "heading": "What it is",
-        "content": "Reference definitions that describe what each complexity level means for different classification types. Each definition has functional and technical hour ranges across 5 complexity levels (Very Low through Very High)."
+        "content": "Shows the total functional and technical hours per classification and complexity level, calculated from the Estimation Grid. These values are read-only — edit the Estimation Grid to change the hours.\n\nBelow the hours, each classification can have complexity factor definitions: qualitative criteria that describe what each complexity level means (e.g., 'Number of tables: 1-2 = Low, 6+ = Very High')."
       },
       {
-        "heading": "Teams",
-        "content": "Definitions are grouped by team: DEV, BI, and Migration. Each team has its own set of classifications with different hour ranges."
+        "heading": "Teams & Filtering",
+        "content": "Definitions are grouped by team: DEV, BI, and Migration. Use the tabs to switch teams.\n\n• Search: Free-text filter across classification names\n• FRICE dropdown: Filter by classification group (e.g., Interface Abap, Migration)\n• 'With factors only' checkbox: Hide classifications that don't have factor definitions yet"
       },
       {
-        "heading": "What it drives",
-        "content": "These are reference data used by estimators to determine the appropriate complexity level for an item. They don't directly feed into calculations — the Estimation Grid holds the actual baseline hours."
+        "heading": "Editing Factors",
+        "content": "Click any row to open the factor editor. Rows with existing factors show a blue highlight and green icon; rows without show a + icon.\n\nIn the editor:\n• Add Factor: Creates a new criteria row\n• Each factor has a name and 5 text fields (one per complexity level)\n• Delete: Removes a factor row\n• Save: Persists changes. Empty factor names are auto-removed."
+      },
+      {
+        "heading": "How estimators use this",
+        "content": "When assigning complexity to an item, estimators reference these factor definitions to decide whether the item is Low, Medium, High, etc. The factors don't feed into calculations directly — they guide the human decision of which complexity level to choose."
       }
     ]
   },
@@ -304,7 +308,7 @@
       },
       {
         "heading": "Comparing",
-        "content": "Select a snapshot and click 'Compare with Current'. The comparison shows:\n• KPI deltas: hours, items, func/tech totals with +/- indicators\n• Control section changes: field-by-field diff of all settings\n• Scope item changes: added, removed, or modified scope items\n• Item changes: added/removed items (as chips) and changed items with per-field current vs snapshot values and delta"
+        "content": "Select a snapshot and click 'Compare with Current'. Two view modes are available:\n\n• Enhanced (default): Jump bar with change counts per section, auto-collapsed unchanged grids, row-level arrows showing direction of change, and a 'Changes only' toggle to hide unchanged rows\n• Classic: The original side-by-side view with cell-level highlighting and delta tags, all rows and grids shown\n\nBoth modes show KPI delta tiles, control/scope/item change tables, and side-by-side calculated impact grids."
       },
       {
         "heading": "Matching Logic",
