@@ -5,7 +5,7 @@
             <Button icon="sap-icon://sys-help" tooltip="Help" press="onHelp" type="Transparent"/>
         </headerContent>
         <content>
-            <MessageStrip text="Values are calculated from the Estimation Grid (total functional and technical hours per classification and complexity). Edit the grid to change these values."
+            <MessageStrip text="Hours are calculated from the Estimation Grid. Click any row to edit its complexity factor definitions (the criteria that determine each complexity level)."
                 type="Information" showIcon="true" class="sapUiSmallMarginBottom"/>
 
             <IconTabBar id="teamTabs" select="onTeamSelect" selectedKey="DEV">
@@ -32,8 +32,7 @@
                     <Column width="3rem"/>
                 </columns>
                 <items>
-                    <ColumnListItem press="onRowPress"
-                        type="{= ${defs>factors}.length > 0 ? 'Navigation' : 'Inactive' }"
+                    <ColumnListItem press="onRowPress" type="Navigation"
                         highlight="{= ${defs>factors}.length > 0 ? 'Information' : 'None' }">
                         <Text text="{defs>_classificationKey}" wrapping="false"/>
                         <ObjectNumber number="{defs>func_very_low}" unit="h" textAlign="Center"/>
@@ -46,9 +45,9 @@
                         <ObjectNumber number="{defs>tech_medium}" unit="h" textAlign="Center"/>
                         <ObjectNumber number="{defs>tech_high}" unit="h" textAlign="Center"/>
                         <ObjectNumber number="{defs>tech_very_high}" unit="h" textAlign="Center"/>
-                        <core:Icon src="sap-icon://decision" color="Positive"
-                            visible="{= ${defs>factors}.length > 0 }"
-                            tooltip="Complexity factors available — click to view"/>
+                        <core:Icon src="{= ${defs>factors}.length > 0 ? 'sap-icon://decision' : 'sap-icon://add' }"
+                            color="{= ${defs>factors}.length > 0 ? 'Positive' : 'Neutral' }"
+                            tooltip="{= ${defs>factors}.length > 0 ? 'Edit complexity factors' : 'Add complexity factors' }"/>
                     </ColumnListItem>
                 </items>
             </Table>
