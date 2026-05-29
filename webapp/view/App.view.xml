@@ -14,6 +14,10 @@
                     <Avatar initials="{userInfo>/initials}" displaySize="XS"
                         backgroundColor="Accent6"/>
                 </f:profile>
+                <f:additionalContent>
+                    <OverflowToolbarButton icon="sap-icon://sys-help-2" tooltip="Application Guide"
+                        press="onGuide" type="Transparent"/>
+                </f:additionalContent>
             </f:ShellBar>
         </tnt:header>
         <tnt:mainContents>

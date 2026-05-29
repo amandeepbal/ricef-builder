@@ -1,0 +1,109 @@
+{
+  "tabs": [
+    {
+      "key": "getting-started",
+      "title": "Getting Started",
+      "icon": "sap-icon://begin",
+      "sections": [
+        {
+          "heading": "What is the RICEFW Estimator?",
+          "content": "The RICEFW Estimator is a project estimation tool for SAP implementations. It helps teams estimate effort for custom development objects — Reports, Interfaces, Conversions/Migrations, Enhancements, Forms, and Workflows (RICEF/RICEFW) — as well as BI objects and functional scope items.\n\nEach project is an independent workspace with its own items, control settings, and calculations. All estimation data (grid values, blended rates, dropdown options) is centrally maintained through the Admin area."
+        },
+        {
+          "heading": "Navigation",
+          "content": "• Launchpad: Your home screen with tiles for Projects and Admin (if you have admin access)\n• Projects: Lists all projects you have access to — click a row to open it\n• Project Detail: Tabbed view with RICEF, BI, Migration, Functional, Summary, Analytics, and Snapshots tabs\n• Admin: Configuration screens for estimation grid, blended rates, RICEF types, dropdowns, and more\n• ShellBar: The top bar — click the logo or back arrow to return to the Launchpad. The ? icon opens this guide. Your avatar shows user info and theme settings."
+        },
+        {
+          "heading": "Creating a Project",
+          "content": "From the Projects list, click 'New Project' and fill in:\n• Project Number: A unique identifier (e.g., PRJ-001)\n• Description: Client name and phase (e.g., Client ABC - Discovery Phase 1)\n• Validity Period: Start and end dates — the project becomes read-only outside this range. Leave empty to keep it always editable.\n• Config Version: Determines which estimation grid, blended rates, and dropdown values are used. Clone the Template in Admin to create project-specific versions.\n• Currency: USD, CAD, or EUR — affects blended rate calculations\n• Delivery Level: 1 (Minimal), 2 (Moderate), or 3 (Significant) — affects blended rates and effort multipliers"
+        },
+        {
+          "heading": "Config Versions",
+          "content": "All admin data (estimation grid, blended rates, dropdowns, complexity definitions) is versioned. Each project links to a specific config version.\n\n• Template (ID 1): The baseline config — not recommended for direct use in projects\n• Custom versions: Clone the Template in Admin to create a version for your project or time period\n• Changing a version mid-project recalculates all items using the new grid values and rates"
+        },
+        {
+          "heading": "Contextual Help",
+          "content": "Every page in the application has a ? help button in its toolbar. This opens page-specific help explaining the controls, fields, and calculations on that screen. Use the ? buttons for detailed help on individual pages."
+        }
+      ]
+    },
+    {
+      "key": "estimation",
+      "title": "Estimation Guide",
+      "icon": "sap-icon://curriculum",
+      "sections": [
+        {
+          "heading": "Estimation Overview",
+          "content": "The estimation process follows this flow:\n1. Create a project and set its delivery level and config version\n2. Add RICEF items (Reports, Interfaces, Enhancements, Forms, etc.) to the appropriate tabs\n3. For each item, set Classification and Complexity — this triggers automatic effort calculation\n4. Optionally adjust effort using the Effort ADJ factors\n5. Configure control sections (explore/build splits, fixed roles) on each sheet\n6. Set up Functional scope items for functional consultant hours\n7. Review aggregated results on the Summary, Analytics, and Snapshots tabs"
+        },
+        {
+          "heading": "RICEF Items",
+          "content": "The RICEF tab is the main working area for development objects. Each item gets:\n• A RICEF Number: Auto-generated from the type's sequence range (e.g., FI-I-4001 for an Interface in FI module)\n• Module: The SAP functional area (FI, SD, MM, PP, etc.)\n• Classification: Determines the estimation grid row (e.g., 'CPI / Mapping', 'Enhancement / BAdI')\n• Complexity: Very Low through Very High — higher complexity = more hours\n• Status: New, In Progress, Complete, Cancelled, On Hold, or TBD\n\nKey rules:\n• Many RICEF types are designed as single-line items rather than groups of sub-items\n• Interfaces focus on the middleware transformation — if extract/load adjustments are needed, create a separate Enhancement\n• Fiori UX items focus on front-end tasks — create an Enhancement or RAP item for back-end work\n• Use the Special Notes field to document when specific skills are needed (e.g., MDK, ABAP Cloud)"
+        },
+        {
+          "heading": "BI and Migration Items",
+          "content": "BI Tab: Same structure as RICEF but for Business Intelligence objects. Uses BI-specific classifications and a separate blended rate team (B).\n\nMigration Tab: For data migration objects. Key differences:\n• A default list of migration objects with pre-set complexity is available as a starting point — adjust or cancel irrelevant items and add missing ones\n• By default, the customer is responsible for Extraction and Cleansing\n• Mock loads are estimated with a x2 multiplier (2 mock cycles)\n• Functional roles should be maintained carefully — they assign functional time to the right team for FMD/Mapping workshops, load activities, and related meetings\n• Uses the Migration blended rate team (M)"
+        },
+        {
+          "heading": "Effort Adjustments",
+          "content": "Each item has two effort adjustment factors:\n• Effort ADJ FUNC: Multiplier for functional hours (default: 1.0)\n• Effort ADJ TECH: Multiplier for technical hours (default: 1.0)\n\nUse these to fine-tune estimates without changing the complexity level:\n• Lower the value to reduce effort (e.g., 0.8 = 80% of baseline hours)\n• Raise the value to increase effort without jumping to the next complexity level (e.g., 1.2 = 120%)\n\nThis is useful when an item's actual effort falls between two complexity levels."
+        },
+        {
+          "heading": "Calculation Engine",
+          "content": "When Classification and Complexity are set, the engine calculates:\n1. Grid Lookup: Classification is split at ' / ' — left side = FRICE type, right side = sub-classification. Both are matched against the estimation grid.\n2. Baseline: grid.total_func and grid.total_tech are the starting hours\n3. Adjustment: Baseline × Effort ADJ factor\n4. Blended Multiplier: Technical hours × complexity-based multiplier from blended rates\n5. Contingency: Hours × (1 + contingency %) — FUNC default 0%, TECH default 15%\n6. SIT Hours: Build hours × SIT % — FUNC default 10%, TECH default 12%\n\nThe 'Recalculate All' button re-runs this for every item — use it after changing Item Factors or contingency percentages."
+        },
+        {
+          "heading": "Control Sections (Orange & Blue Grids)",
+          "content": "Each sheet (RICEF, BI, Migration) has two control sections:\n• Orange Grid (Vendor/Syntax): Summarizes effort for items assigned to the SYNTAX team\n• Blue Grid (Customer): Summarizes effort for items assigned to the CUSTOMER team\n\nEach grid's control section includes:\n• FUNC % Explore vs Build: How functional hours split between DESIGN and BUILD phases\n• Fixed Roles: Architect and Tech Lead hours per phase (absolute hours/week or percentages for DEP/HYP)\n\nItems are assigned to a team via the FUNC Team and TECH Team fields. If no items are assigned to CUSTOMER, the Blue Grid shows empty."
+        },
+        {
+          "heading": "Staffing Explosion (Purple Grid)",
+          "content": "The Purple Grid distributes technical hours across resource types (Onsite, Offshore, Delivery Center) on a per-week basis. It uses staffing profiles to split developer hours and fixed role hours across the phase timeline.\n\nThis is used for resource planning and team composition."
+        },
+        {
+          "heading": "Functional Tab",
+          "content": "The Functional tab estimates functional consultant hours separately from RICEF items:\n• Scope Items: List functional roles and lines of business (LoB). Enter counts per complexity level (Low, Medium, High). Hours are calculated as: count × baseline hours per complexity.\n• KDD Items: Additional Key Design Decision effort (adds hours)\n• IP Items: Accelerator items that reduce implementation effort (subtracts hours)\n• Complexity Multiplier: Scales all scope hours based on client cloud maturity\n\nDistribution settings control how scope hours split across phases, architect allocation per phase, and contingency percentages.\n\nThe Functional tab feeds into the Summary page's functional section."
+        },
+        {
+          "heading": "Summary & Analytics",
+          "content": "Summary Tab: Aggregates all hours from RICEF, BI, Migration, and Functional tabs. Key settings:\n• Number of Weeks per phase (PREP, FTS, DESIGN, BUILD, SIT/UAT, DEP, HYP)\n• PGO % (Project Governance & Oversight) per phase\n• Item Factors: Contingency %, SIT % — changing these triggers full recalculation\n• Delivery Level: Toggles which blended rate tier is used for cost calculations\n\nAnalytics Tab: Visual dashboards — KPI tiles, cost analytics, effort concentration (Pareto), and complexity heatmap.\n\nSnapshots: Capture project state at a point in time. Compare snapshots to track how estimates evolve across project phases."
+        },
+        {
+          "heading": "Tips for Accurate Estimates",
+          "content": "• Set complexity using the Complexity Definitions as a reference — they describe what each level means for each classification type\n• Use Effort ADJ factors for fine-tuning rather than over-using Very High complexity\n• Mark uncertain items as TBD status and 0-TBD complexity — the Analytics tab tracks these as estimation risk\n• Use the Predecessor column to document dependencies between items\n• Document special skills or assumptions in the Special Notes field\n• Take Snapshots at phase gates to track estimation evolution\n• Review the Pareto chart in Analytics — if 80% of effort is in a few items, validate those estimates carefully"
+        }
+      ]
+    },
+    {
+      "key": "security",
+      "title": "Security & Roles",
+      "icon": "sap-icon://shield",
+      "sections": [
+        {
+          "heading": "Overview",
+          "content": "Access control operates at two levels:\n1. Application Level: BTP role collections determine who can access the app and the Admin area\n2. Project Level: Project member assignments control who can view, edit, or manage each project\n\nBoth levels work together — you need application-level access to log in, and project-level access to work with specific projects."
+        },
+        {
+          "heading": "BTP Role Collections",
+          "content": "Two role collections are configured in SAP BTP:\n\n• RICEFW_User: Grants access to the application. Users can see the Projects tile and work with projects they're assigned to.\n• RICEFW_Admin: Grants access to the Admin area. Admins can see both the Projects and Admin tiles, and are automatically treated as Supervisors on all projects.\n\nRole collections are assigned to users by BTP subaccount administrators in the SAP BTP Cockpit under Security > Role Collections."
+        },
+        {
+          "heading": "Project Roles",
+          "content": "Each project has its own member list with three roles:\n\n• Viewer: Can open and view the project, but cannot make any changes. Useful for stakeholders who need visibility without edit access.\n• Member: Can edit items, control sections, scope items, and other project data. Cannot manage project members or delete the project.\n• Supervisor: Full access — can edit everything, manage project members (add/remove/change roles), copy the project, and delete it. At least one Supervisor is required per project.\n\nThe project creator is automatically assigned as Supervisor. BTP Admins are treated as Supervisors on all projects regardless of explicit assignment."
+        },
+        {
+          "heading": "Access Behavior",
+          "content": "• Project List: All users see all projects in the list. Projects you don't have access to show a lock icon next to the project number.\n• Opening a Project: If you're not assigned to a project (and not a BTP Admin), you'll see a 'No access' message and cannot open it.\n• Read-Only Projects: Projects outside their validity date range become read-only for everyone, regardless of role.\n• Role Display: Your role is shown in the 'My Role' column on the project list. 'No Access' appears with a lock icon if you're unassigned.\n• Action Buttons: Edit, Copy, and Delete buttons in the project list only appear based on your role — Edit for Members and Supervisors, Copy and Delete for Supervisors only."
+        },
+        {
+          "heading": "Managing Project Members",
+          "content": "Supervisors can manage members from the Members tab inside a project:\n\n• Adding Members: Enter the user's email address and select a role (Viewer, Member, or Supervisor). The email must match the user's BTP login email.\n• Changing Roles: Use the role dropdown next to a member's name to change their role.\n• Removing Members: Click the delete button next to a member to remove their access.\n\nNotes:\n• At least one Supervisor must remain on every project\n• BTP Admins always have Supervisor-level access — they don't need to be explicitly added\n• The Members tab is only visible to Supervisors of the project"
+        },
+        {
+          "heading": "Recommended Setup",
+          "content": "For a typical project team:\n1. Assign the project lead as Supervisor — they manage the team and project settings\n2. Add estimation contributors as Members — they can add and edit items\n3. Add reviewers and stakeholders as Viewers — they can see everything but not change it\n4. Assign BTP Admin role to the tool administrator — they get Supervisor access to all projects automatically\n\nFor new projects, the creator is automatically a Supervisor. They should add other team members before sharing the project number."
+        }
+      ]
+    }
+  ]
+}

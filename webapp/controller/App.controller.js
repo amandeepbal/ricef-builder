@@ -1,8 +1,9 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
-    "sap/ui/core/Fragment"
-], function (Controller, JSONModel, Fragment) {
+    "sap/ui/core/Fragment",
+    "../model/guideDialog"
+], function (Controller, JSONModel, Fragment, guideDialog) {
     "use strict";
 
     return Controller.extend("com.syntax.ricefbuilder.controller.App", {
@@ -81,6 +82,10 @@ sap.ui.define([
             var sTheme = oEvent.getParameter("item").getKey();
             sap.ui.getCore().applyTheme(sTheme);
             this.getOwnerComponent().getModel("userInfo").setProperty("/theme", sTheme);
+        },
+
+        onGuide: function () {
+            guideDialog.show();
         }
     });
 });
