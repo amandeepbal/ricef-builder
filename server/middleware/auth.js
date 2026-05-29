@@ -17,6 +17,11 @@ function setupAuth(app) {
         if (parts.length !== 3) throw new Error('Invalid JWT');
 
         const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+
+        if (payload.exp && Math.floor(Date.now() / 1000) > payload.exp) {
+          return res.status(401).json({ error: 'Token expired' });
+        }
+
         const scopes = payload.scope || [];
 
         req.user = {
