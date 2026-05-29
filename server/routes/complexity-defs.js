@@ -51,7 +51,7 @@ router.get('/', async (req, res, next) => {
       `SELECT dc.code, dv.value FROM dropdown_categories dc
        JOIN dropdown_values dv ON dv.category_id = dc.id
        WHERE dc.code IN ('CLASSIFICATION_DEV','CLASSIFICATION_BI','CLASSIFICATION_MIG')
-         AND dc.version_id = $1 AND dv.is_active = true AND dv.is_separator = false`,
+         AND dc.version_id = $1 AND dv.is_active = 1 AND dv.is_separator = 0`,
       [vid]
     );
     for (const cr of catRows) {
