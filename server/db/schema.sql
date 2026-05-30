@@ -180,6 +180,34 @@ CREATE TABLE IF NOT EXISTS blended_rates (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_br ON blended_rates(level_id, currency);
 
+-- Blended Complexity Distribution (expected work mix per level)
+CREATE TABLE IF NOT EXISTS blended_complexity_dist (
+    id              SERIAL PRIMARY KEY,
+    config_id       INTEGER NOT NULL,
+    level_number    INTEGER NOT NULL,
+    pct_low         DOUBLE PRECISION NOT NULL DEFAULT 0,
+    pct_med         DOUBLE PRECISION NOT NULL DEFAULT 0,
+    pct_high        DOUBLE PRECISION NOT NULL DEFAULT 0,
+    pct_vhigh       DOUBLE PRECISION NOT NULL DEFAULT 0,
+    FOREIGN KEY (config_id) REFERENCES blended_rate_configs(id) ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bcd ON blended_complexity_dist(config_id, level_number);
+
+-- Blended Team Composition (consultant mix per level)
+CREATE TABLE IF NOT EXISTS blended_team_composition (
+    id              SERIAL PRIMARY KEY,
+    config_id       INTEGER NOT NULL,
+    level_number    INTEGER NOT NULL,
+    sort_order      INTEGER NOT NULL DEFAULT 0,
+    multi           DOUBLE PRECISION NOT NULL DEFAULT 0,
+    complexity      TEXT NOT NULL,
+    individual      TEXT NOT NULL,
+    weight          DOUBLE PRECISION NOT NULL DEFAULT 0,
+    col_ref         INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (config_id) REFERENCES blended_rate_configs(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_btc ON blended_team_composition(config_id, level_number);
+
 -- Complexity Definitions
 CREATE TABLE IF NOT EXISTS complexity_definitions (
     id                  SERIAL PRIMARY KEY,

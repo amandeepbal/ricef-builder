@@ -186,6 +186,24 @@ router.post('/:id/clone', async (req, res, next) => {
             );
           }
         }
+
+        // Complexity distribution
+        const dists = (await client.query('SELECT * FROM blended_complexity_dist WHERE config_id = $1', [cfg.id])).rows;
+        for (const d of dists) {
+          await client.query(
+            'INSERT INTO blended_complexity_dist (config_id,level_number,pct_low,pct_med,pct_high,pct_vhigh) VALUES ($1,$2,$3,$4,$5,$6)',
+            [newCfgId, d.level_number, d.pct_low, d.pct_med, d.pct_high, d.pct_vhigh]
+          );
+        }
+
+        // Team composition
+        const teams = (await client.query('SELECT * FROM blended_team_composition WHERE config_id = $1 ORDER BY level_number, sort_order', [cfg.id])).rows;
+        for (const t of teams) {
+          await client.query(
+            'INSERT INTO blended_team_composition (config_id,level_number,sort_order,multi,complexity,individual,weight,col_ref) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
+            [newCfgId, t.level_number, t.sort_order, t.multi, t.complexity, t.individual, t.weight, t.col_ref]
+          );
+        }
       }
 
       // Complexity definitions -> factors

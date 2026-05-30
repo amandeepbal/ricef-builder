@@ -24,6 +24,16 @@ router.get('/', async (req, res, next) => {
           [level.id]
         )).rows;
       }
+
+      config.complexity_dist = (await pool.query(
+        'SELECT * FROM blended_complexity_dist WHERE config_id = $1 ORDER BY level_number',
+        [config.id]
+      )).rows;
+
+      config.team_composition = (await pool.query(
+        'SELECT * FROM blended_team_composition WHERE config_id = $1 ORDER BY level_number, sort_order',
+        [config.id]
+      )).rows;
     }
     res.json(configs);
   } catch (e) { next(e); }
@@ -52,6 +62,17 @@ router.get('/:id', async (req, res, next) => {
         [level.id]
       )).rows;
     }
+
+    config.complexity_dist = (await pool.query(
+      'SELECT * FROM blended_complexity_dist WHERE config_id = $1 ORDER BY level_number',
+      [config.id]
+    )).rows;
+
+    config.team_composition = (await pool.query(
+      'SELECT * FROM blended_team_composition WHERE config_id = $1 ORDER BY level_number, sort_order',
+      [config.id]
+    )).rows;
+
     res.json(config);
   } catch (e) { next(e); }
 });
@@ -114,6 +135,53 @@ router.put('/:configId/levels/:levelId/rates', async (req, res, next) => {
     } finally {
       client.release();
     }
+    res.json({ ok: true });
+  } catch (e) { next(e); }
+});
+
+router.put('/:configId/complexity-dist', async (req, res, next) => {
+  try {
+    const pool = getPool();
+    const { items } = req.body;
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('DELETE FROM blended_complexity_dist WHERE config_id = $1', [req.params.configId]);
+      for (const d of items) {
+        await client.query(
+          'INSERT INTO blended_complexity_dist (config_id,level_number,pct_low,pct_med,pct_high,pct_vhigh) VALUES ($1,$2,$3,$4,$5,$6)',
+          [req.params.configId, d.level_number,
+           requireFiniteNumber(d.pct_low, 'pct_low'), requireFiniteNumber(d.pct_med, 'pct_med'),
+           requireFiniteNumber(d.pct_high, 'pct_high'), requireFiniteNumber(d.pct_vhigh, 'pct_vhigh')]
+        );
+      }
+      await client.query('COMMIT');
+    } catch (e) { await client.query('ROLLBACK'); throw e; }
+    finally { client.release(); }
+    res.json({ ok: true });
+  } catch (e) { next(e); }
+});
+
+router.put('/:configId/team-composition', async (req, res, next) => {
+  try {
+    const pool = getPool();
+    const { items } = req.body;
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('DELETE FROM blended_team_composition WHERE config_id = $1', [req.params.configId]);
+      for (let i = 0; i < items.length; i++) {
+        const t = items[i];
+        await client.query(
+          'INSERT INTO blended_team_composition (config_id,level_number,sort_order,multi,complexity,individual,weight,col_ref) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
+          [req.params.configId, t.level_number, i + 1,
+           requireFiniteNumber(t.multi, 'multi'), t.complexity, t.individual,
+           requireFiniteNumber(t.weight, 'weight'), parseInt(t.col_ref) || 0]
+        );
+      }
+      await client.query('COMMIT');
+    } catch (e) { await client.query('ROLLBACK'); throw e; }
+    finally { client.release(); }
     res.json({ ok: true });
   } catch (e) { next(e); }
 });

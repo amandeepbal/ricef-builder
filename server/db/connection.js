@@ -90,7 +90,113 @@ async function initDb() {
     }
 
     await seedComplexityFactors(pool);
+    await migrateBlendedTeamTables(pool);
   }
+}
+
+async function migrateBlendedTeamTables(pool) {
+  const tblCheck = await pool.query(
+    "SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename='blended_complexity_dist'"
+  );
+  if (tblCheck.rows.length === 0) {
+    console.log('Creating blended_complexity_dist and blended_team_composition tables...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS blended_complexity_dist (
+        id SERIAL PRIMARY KEY, config_id INTEGER NOT NULL, level_number INTEGER NOT NULL,
+        pct_low DOUBLE PRECISION NOT NULL DEFAULT 0, pct_med DOUBLE PRECISION NOT NULL DEFAULT 0,
+        pct_high DOUBLE PRECISION NOT NULL DEFAULT 0, pct_vhigh DOUBLE PRECISION NOT NULL DEFAULT 0,
+        FOREIGN KEY (config_id) REFERENCES blended_rate_configs(id) ON DELETE CASCADE);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_bcd ON blended_complexity_dist(config_id, level_number);
+      CREATE TABLE IF NOT EXISTS blended_team_composition (
+        id SERIAL PRIMARY KEY, config_id INTEGER NOT NULL, level_number INTEGER NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0, multi DOUBLE PRECISION NOT NULL DEFAULT 0,
+        complexity TEXT NOT NULL, individual TEXT NOT NULL,
+        weight DOUBLE PRECISION NOT NULL DEFAULT 0, col_ref INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (config_id) REFERENCES blended_rate_configs(id) ON DELETE CASCADE);
+      CREATE INDEX IF NOT EXISTS idx_btc ON blended_team_composition(config_id, level_number);
+    `);
+  }
+
+  const { rows } = await pool.query('SELECT count(*) AS cnt FROM blended_complexity_dist');
+  if (parseInt(rows[0].cnt) > 0) return;
+
+  console.log('Seeding blended complexity distribution and team composition...');
+  const DIST = [
+    // (D) config_id=1
+    { c:1, l:1, low:80, med:10, high:10, vh:0 },
+    { c:1, l:2, low:60, med:20, high:15, vh:5 },
+    { c:1, l:3, low:10, med:51, high:29, vh:10 },
+    // (B) config_id=2
+    { c:2, l:1, low:80, med:10, high:10, vh:0 },
+    { c:2, l:2, low:60, med:20, high:15, vh:5 },
+    { c:2, l:3, low:10, med:21, high:59, vh:10 },
+    // (M) config_id=3
+    { c:3, l:1, low:80, med:10, high:10, vh:0 },
+    { c:3, l:2, low:60, med:20, high:15, vh:5 },
+    { c:3, l:3, low:10, med:21, high:59, vh:10 }
+  ];
+  for (const d of DIST) {
+    await pool.query(
+      'INSERT INTO blended_complexity_dist (config_id,level_number,pct_low,pct_med,pct_high,pct_vhigh) VALUES ($1,$2,$3,$4,$5,$6)',
+      [d.c, d.l, d.low, d.med, d.high, d.vh]
+    );
+  }
+
+  // Team composition: [config_id, level, sort, multi, complexity, individual, weight, col]
+  const TEAM = [
+    // (D) Level 1
+    [1,1,1,80,'Low','Low-Med.DC.Jr',0.80,17],[1,1,2,80,'Low','Low-Med.OF.In',0.20,16],
+    [1,1,3,10,'Med','Low-Med.DC.Jr',0.30,17],[1,1,4,10,'Med','Low-Med.OF.In',0.35,16],[1,1,5,10,'Med','Low-Med.ON.In',0.35,12],
+    [1,1,6,10,'High','High-VHigh.ON.Sr',0.80,21],[1,1,7,10,'High','High-VHigh.ON.Ar',0.20,22],
+    [1,1,8,0,'VHigh','High-VHigh.ON.Sr',0.20,21],[1,1,9,0,'VHigh','High-VHigh.ON.Ar',0.80,22],
+    // (D) Level 2
+    [1,2,1,60,'Low','Low-Med.DC.Jr',0.80,17],[1,2,2,60,'Low','Low-Med.OF.In',0.20,16],
+    [1,2,3,20,'Med','Low-Med.DC.Jr',0.30,17],[1,2,4,20,'Med','Low-Med.OF.In',0.35,16],[1,2,5,20,'Med','Low-Med.ON.In',0.35,12],
+    [1,2,6,15,'High','High-VHigh.ON.Sr',0.80,21],[1,2,7,15,'High','High-VHigh.ON.Ar',0.20,22],
+    [1,2,8,5,'VHigh','High-VHigh.ON.Sr',0.20,21],[1,2,9,5,'VHigh','High-VHigh.ON.Ar',0.80,22],
+    // (D) Level 3
+    [1,3,1,10,'Low','Low-Med.DC.Jr',0.80,17],[1,3,2,10,'Low','Low-Med.OF.In',0.20,16],
+    [1,3,3,51,'Med','Low-Med.DC.Jr',0.30,17],[1,3,4,51,'Med','Low-Med.OF.In',0.35,16],[1,3,5,51,'Med','Low-Med.ON.In',0.35,12],
+    [1,3,6,29,'High','High-VHigh.ON.Sr',0.80,21],[1,3,7,29,'High','High-VHigh.ON.Ar',0.20,22],
+    [1,3,8,10,'VHigh','High-VHigh.ON.Sr',0.20,21],[1,3,9,10,'VHigh','High-VHigh.ON.Ar',0.80,22],
+    // (B) Level 1
+    [2,1,1,80,'Low','Low-Med.ON.In',0.40,11],[2,1,2,80,'Low','Low-Med.ON.Sr',0.10,12],[2,1,3,80,'Low','Low-Med.OF.In',0.50,14],
+    [2,1,4,10,'Med','Low-Med.ON.In',0.30,11],[2,1,5,10,'Med','Low-Med.ON.Sr',0.30,12],[2,1,6,10,'Med','Low-Med.NR.In',0.40,13],
+    [2,1,7,10,'High','High-VHigh.ON.Sr',0.60,16],[2,1,8,10,'High','High-VHigh.ON.Ar',0.40,17],
+    [2,1,9,0,'VHigh','High-VHigh.ON.Sr',0.60,16],[2,1,10,0,'VHigh','High-VHigh.ON.Ar',0.40,17],
+    // (B) Level 2
+    [2,2,1,50,'Low','Low-Med.ON.In',0.40,11],[2,2,2,50,'Low','Low-Med.ON.Sr',0.10,12],[2,2,3,50,'Low','Low-Med.OF.In',0.50,14],
+    [2,2,4,30,'Med','Low-Med.ON.In',0.30,11],[2,2,5,30,'Med','Low-Med.ON.Sr',0.30,12],[2,2,6,30,'Med','Low-Med.NR.In',0.40,13],
+    [2,2,7,15,'High','High-VHigh.ON.Sr',0.60,16],[2,2,8,15,'High','High-VHigh.ON.Ar',0.40,17],
+    [2,2,9,5,'VHigh','High-VHigh.ON.Sr',0.60,16],[2,2,10,5,'VHigh','High-VHigh.ON.Ar',0.40,17],
+    // (B) Level 3
+    [2,3,1,10,'Low','Low-Med.ON.In',0.40,11],[2,3,2,10,'Low','Low-Med.ON.Sr',0.10,12],[2,3,3,10,'Low','Low-Med.OF.In',0.50,14],
+    [2,3,4,21,'Med','Low-Med.ON.In',0.30,11],[2,3,5,21,'Med','Low-Med.ON.Sr',0.30,12],[2,3,6,21,'Med','Low-Med.NR.In',0.40,13],
+    [2,3,7,59,'High','High-VHigh.ON.Sr',0.60,16],[2,3,8,59,'High','High-VHigh.ON.Ar',0.40,17],
+    [2,3,9,10,'VHigh','High-VHigh.ON.Sr',0.60,16],[2,3,10,10,'VHigh','High-VHigh.ON.Ar',0.40,17],
+    // (M) Level 1
+    [3,1,1,80,'Low','Low-Med.NR.Jr',0.50,13],[3,1,2,80,'Low','Low-Med.OF.Jr',0.50,16],
+    [3,1,3,10,'Med','Low-Med.ON.In',0.40,11],[3,1,4,10,'Med','Low-Med.ON.Sr',0.20,12],[3,1,5,10,'Med','Low-Med.NR.In',0.30,14],[3,1,6,10,'Med','Low-Med.NR.Sr',0.10,15],
+    [3,1,7,10,'High','High-VHigh.ON.Sr',0.70,17],[3,1,8,10,'High','High-VHigh.ON.Ar',0.30,18],
+    [3,1,9,0,'VHigh','High-VHigh.ON.Sr',0.30,17],[3,1,10,0,'VHigh','High-VHigh.ON.Ar',0.70,18],
+    // (M) Level 2
+    [3,2,1,50,'Low','Low-Med.NR.Jr',0.50,13],[3,2,2,50,'Low','Low-Med.OF.Jr',0.50,16],
+    [3,2,3,30,'Med','Low-Med.ON.In',0.40,11],[3,2,4,30,'Med','Low-Med.ON.Sr',0.20,12],[3,2,5,30,'Med','Low-Med.NR.In',0.30,14],[3,2,6,30,'Med','Low-Med.NR.Sr',0.10,15],
+    [3,2,7,15,'High','High-VHigh.ON.Sr',0.70,17],[3,2,8,15,'High','High-VHigh.ON.Ar',0.30,18],
+    [3,2,9,5,'VHigh','High-VHigh.ON.Sr',0.30,17],[3,2,10,5,'VHigh','High-VHigh.ON.Ar',0.70,18],
+    // (M) Level 3
+    [3,3,1,10,'Low','Low-Med.NR.Jr',0.50,13],[3,3,2,10,'Low','Low-Med.OF.Jr',0.50,16],
+    [3,3,3,21,'Med','Low-Med.ON.In',0.40,11],[3,3,4,21,'Med','Low-Med.ON.Sr',0.20,12],[3,3,5,21,'Med','Low-Med.NR.In',0.30,14],[3,3,6,21,'Med','Low-Med.NR.Sr',0.10,15],
+    [3,3,7,59,'High','High-VHigh.ON.Sr',0.70,17],[3,3,8,59,'High','High-VHigh.ON.Ar',0.30,18],
+    [3,3,9,10,'VHigh','High-VHigh.ON.Sr',0.30,17],[3,3,10,10,'VHigh','High-VHigh.ON.Ar',0.70,18]
+  ];
+  for (const t of TEAM) {
+    await pool.query(
+      'INSERT INTO blended_team_composition (config_id,level_number,sort_order,multi,complexity,individual,weight,col_ref) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
+      t
+    );
+  }
+  console.log('Blended team data seeded (3 teams × 3 levels).');
 }
 
 async function seedComplexityFactors(pool) {

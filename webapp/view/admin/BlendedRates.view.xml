@@ -24,6 +24,64 @@
                     </items>
                 </Table>
             </Panel>
+            <Panel headerText="Complexity Distribution (%)" class="sapUiSmallMargin" expandable="true" expanded="true">
+                <Table id="distTable" items="{ path: 'rates>/complexity_dist' }">
+                    <columns>
+                        <Column width="10rem"><Text text="Level"/></Column>
+                        <Column hAlign="Center"><Text text="Low %"/></Column>
+                        <Column hAlign="Center"><Text text="Med %"/></Column>
+                        <Column hAlign="Center"><Text text="High %"/></Column>
+                        <Column hAlign="Center"><Text text="V.High %"/></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <Text text="{= ${rates>level_number} === 1 ? '1 : Minimal' : ${rates>level_number} === 2 ? '2 : Balanced' : '3 : Expertise' }"/>
+                            <StepInput value="{rates>pct_low}" min="0" max="100" step="1" width="6rem" textAlign="Center"/>
+                            <StepInput value="{rates>pct_med}" min="0" max="100" step="1" width="6rem" textAlign="Center"/>
+                            <StepInput value="{rates>pct_high}" min="0" max="100" step="1" width="6rem" textAlign="Center"/>
+                            <StepInput value="{rates>pct_vhigh}" min="0" max="100" step="1" width="6rem" textAlign="Center"/>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </Panel>
+            <Panel headerText="Team Composition" class="sapUiSmallMargin" expandable="true" expanded="true">
+                <headerToolbar>
+                    <Toolbar>
+                        <Title text="Team Composition"/>
+                        <ToolbarSpacer/>
+                        <Label text="Level:"/>
+                        <Select id="teamLevelSelect" change="onTeamLevelChange">
+                            <items>
+                                <core:Item xmlns:core="sap.ui.core" key="1" text="1 : Minimal Adaptation"/>
+                                <core:Item xmlns:core="sap.ui.core" key="2" text="2 : Balanced Delivery"/>
+                                <core:Item xmlns:core="sap.ui.core" key="3" text="3 : Expertise Driven"/>
+                            </items>
+                        </Select>
+                        <Button text="Add Row" icon="sap-icon://add" press="onAddTeamRow" type="Transparent"/>
+                    </Toolbar>
+                </headerToolbar>
+                <Table id="teamTable" items="{ path: 'rates>/teamRows' }">
+                    <columns>
+                        <Column width="6rem" hAlign="Center"><Text text="Multi"/></Column>
+                        <Column width="6rem"><Text text="Complexity"/></Column>
+                        <Column width="12rem"><Text text="Individual"/></Column>
+                        <Column width="6rem" hAlign="Center"><Text text="Weight"/></Column>
+                        <Column width="5rem" hAlign="Center"><Text text="Col"/></Column>
+                        <Column width="3rem"/>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <StepInput value="{rates>multi}" min="0" max="100" step="1" width="5rem" textAlign="Center"/>
+                            <Input value="{rates>complexity}"/>
+                            <Input value="{rates>individual}"/>
+                            <StepInput value="{rates>weight}" min="0" max="1" step="0.01"
+                                displayValuePrecision="2" width="5rem" textAlign="Center"/>
+                            <StepInput value="{rates>col_ref}" min="0" max="99" step="1" width="4rem" textAlign="Center"/>
+                            <Button icon="sap-icon://delete" type="Reject" press="onDeleteTeamRow"/>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </Panel>
             <Panel headerText="Delivery Levels &amp; Rates" class="sapUiSmallMargin">
                 <Table id="ratesTable" items="{ path: 'rates>/allRates' }">
                     <columns>

@@ -64,7 +64,34 @@ sap.ui.define([
                 });
             });
             config.allRates = allRates;
+            this._teamComposition = config.team_composition || [];
+            var levelSel = this.byId("teamLevelSelect");
+            var lvl = parseInt(levelSel.getSelectedKey()) || 1;
+            config.teamRows = this._teamComposition.filter(function (t) { return t.level_number === lvl; });
             this.getView().getModel("rates").setData(config);
+        },
+
+        onTeamLevelChange: function () {
+            var lvl = parseInt(this.byId("teamLevelSelect").getSelectedKey()) || 1;
+            var model = this.getView().getModel("rates");
+            model.setProperty("/teamRows", this._teamComposition.filter(function (t) { return t.level_number === lvl; }));
+        },
+
+        onAddTeamRow: function () {
+            var lvl = parseInt(this.byId("teamLevelSelect").getSelectedKey()) || 1;
+            var row = { level_number: lvl, multi: 0, complexity: "", individual: "", weight: 0, col_ref: 0 };
+            this._teamComposition.push(row);
+            var model = this.getView().getModel("rates");
+            model.setProperty("/teamRows", this._teamComposition.filter(function (t) { return t.level_number === lvl; }));
+        },
+
+        onDeleteTeamRow: function (oEvent) {
+            var obj = oEvent.getSource().getBindingContext("rates").getObject();
+            var idx = this._teamComposition.indexOf(obj);
+            if (idx >= 0) this._teamComposition.splice(idx, 1);
+            var lvl = parseInt(this.byId("teamLevelSelect").getSelectedKey()) || 1;
+            var model = this.getView().getModel("rates");
+            model.setProperty("/teamRows", this._teamComposition.filter(function (t) { return t.level_number === lvl; }));
         },
 
         onSaveAll: function () {
@@ -99,7 +126,23 @@ sap.ui.define([
                 );
             });
 
-            Promise.all([saveEffort].concat(saveRates)).then(function () {
+            var saveDist = this.getOwnerComponent().api("PUT",
+                "/admin/blended-rates/" + configId + "/complexity-dist",
+                { items: model.getProperty("/complexity_dist").map(function (d) {
+                    return { level_number: d.level_number, pct_low: parseFloat(d.pct_low), pct_med: parseFloat(d.pct_med),
+                             pct_high: parseFloat(d.pct_high), pct_vhigh: parseFloat(d.pct_vhigh) };
+                })}
+            );
+
+            var saveTeam = this.getOwnerComponent().api("PUT",
+                "/admin/blended-rates/" + configId + "/team-composition",
+                { items: this._teamComposition.map(function (t) {
+                    return { level_number: t.level_number, multi: parseFloat(t.multi), complexity: t.complexity,
+                             individual: t.individual, weight: parseFloat(t.weight), col_ref: parseInt(t.col_ref) || 0 };
+                })}
+            );
+
+            Promise.all([saveEffort, saveDist, saveTeam].concat(saveRates)).then(function () {
                 MessageToast.show("Blended rates saved");
                 that._load();
             });
